@@ -110,3 +110,21 @@ Best regards,
 {{mobile}}
 {{email}}'
 WHERE NOT EXISTS (SELECT 1 FROM email_template LIMIT 1);
+
+
+-- ── WhatsApp Module ─────────────────────────────────────────
+-- Run this section after the initial schema to add WhatsApp support.
+
+CREATE TABLE IF NOT EXISTS whatsapp_logs (
+    id             SERIAL PRIMARY KEY,
+    company_id     INTEGER REFERENCES companies(id) ON DELETE SET NULL,
+    hr_name        VARCHAR(255),
+    mobile         VARCHAR(50),
+    candidate_name VARCHAR(255),
+    sent_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status         VARCHAR(20),          -- 'sent' | 'failed'
+    failure_reason TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_company ON whatsapp_logs(company_id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_logs_status  ON whatsapp_logs(status);

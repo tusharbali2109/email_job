@@ -1,0 +1,766 @@
+<?php
+include 'db.php';
+
+$profile  = $pdo->query("SELECT * FROM user_profile LIMIT 1")->fetch();
+$template = $pdo->query("SELECT * FROM email_template LIMIT 1")->fetch();
+
+$resumePath = '';
+if (!empty($profile['resume'])) {
+    $rp = __DIR__ . '/uploads/' . $profile['resume'];
+    if (file_exists($rp)) $resumePath = $rp;
+}
+
+// Windows path slashes for JS
+$resumePathJS = addslashes(str_replace('\\', '\\\\', $resumePath));
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4fffb0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ReachOut">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2325d366' width='100' height='100'/><text x='50%' y='50%' font-size='60' fill='white' text-anchor='middle' dy='.35em'>💬</text></svg>">
+<title>Send WhatsApp — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0c0f14; --surface: #141820; --surface2: #1c2230;
+  --border: #252d3d; --accent: #25d366; --accent2: #128c7e;
+  --accent-wa: #25d366; --text: #e8edf5; --muted: #6b7a99;
+  --danger: #ff5f6d; --warning: #ffd166; --radius: 12px;
+}
+body {
+  font-family: 'DM Sans', sans-serif; background: var(--bg);
+  color: var(--text); min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% -20%, rgba(37,211,102,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 90% 90%, rgba(18,140,126,0.05) 0%, transparent 50%);
+}
+.layout { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border); display: flex;
+  flex-direction: column; padding: 28px 0;
+  position: sticky; top: 0; height: 100vh;
+}
+.logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; padding: 0 24px 32px; letter-spacing: -0.5px; }
+.logo span { color: #4fffb0; }
+.nav-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 0 24px 10px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: var(--muted); text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active { color: var(--accent-wa); border-left-color: var(--accent-wa); background: rgba(37,211,102,0.06); }
+.nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
+.sidebar-bottom { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
+.version-text { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
+
+/* MAIN */
+.main { flex: 1; padding: 40px 48px; overflow-x: hidden; }
+.page-header { margin-bottom: 32px; }
+.page-title { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+.page-subtitle { font-size: 14px; color: var(--muted); margin-top: 5px; }
+
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+.card-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.card-body { padding: 24px; }
+
+/* CONNECT SECTION */
+.connect-section { display: flex; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
+.connect-left { flex: 1; min-width: 240px; }
+.connect-status { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); margin-bottom: 16px; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dot-green  { background: var(--accent-wa); box-shadow: 0 0 6px rgba(37,211,102,0.5); }
+.dot-yellow { background: var(--warning); animation: blink 1s infinite; }
+.dot-red    { background: var(--danger); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.status-label { font-size: 14px; font-weight: 500; }
+.status-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.qr-wrap { text-align: center; }
+.qr-wrap img { width: 220px; height: 220px; border-radius: 12px; border: 3px solid var(--accent-wa); background: white; padding: 6px; }
+.qr-label { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+/* STATS ROW */
+.stat-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-chip { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; min-width: 130px; }
+.stat-chip-icon { font-size: 20px; }
+.stat-chip-label { font-size: 11px; color: var(--muted); }
+.stat-chip-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+.val-total  { color: var(--accent2); }
+.val-sent   { color: var(--accent-wa); }
+.val-fail   { color: var(--danger); }
+.val-remain { color: var(--warning); }
+
+/* CONTACTS */
+.contacts-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.contact-search { flex: 1; min-width: 180px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
+.contact-search:focus { border-color: var(--accent-wa); }
+.contact-search::placeholder { color: var(--muted); }
+.contacts-list { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface2); }
+.contacts-list::-webkit-scrollbar { width: 4px; }
+.contacts-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.contact-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+.contact-item:last-child { border-bottom: none; }
+.contact-item:hover { background: rgba(37,211,102,0.04); }
+.contact-item input[type=checkbox] { accent-color: var(--accent-wa); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+.contact-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-wa), var(--accent2)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: #0c0f14; flex-shrink: 0; }
+.contact-main { flex: 1; min-width: 0; }
+.contact-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contact-meta { font-size: 12px; color: var(--muted); }
+.contact-phone { font-size: 12px; color: var(--muted); flex-shrink: 0; font-family: monospace; }
+.badge-wa-sent { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; background: rgba(37,211,102,0.15); color: var(--accent-wa); flex-shrink: 0; }
+.no-contacts { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+
+/* TEMPLATE PREVIEW */
+.tmpl-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; max-height: 200px; overflow-y: auto; font-family: 'DM Sans', monospace; }
+.tmpl-preview::-webkit-scrollbar { width: 4px; }
+.tmpl-preview::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
+.btn-wa { background: var(--accent-wa); color: #0c0f14; font-weight: 700; }
+.btn-wa:hover { background: #34eb7a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,211,102,0.3); }
+.btn-wa:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--text); border-color: var(--text); }
+.btn-danger { background: rgba(255,95,109,0.1); color: var(--danger); border: 1px solid rgba(255,95,109,0.3); }
+.btn-danger:hover { background: rgba(255,95,109,0.18); }
+.btn-sm { padding: 7px 14px; font-size: 12px; }
+
+/* PROGRESS */
+.progress-wrap { padding: 20px 0; }
+.progress-labels { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.progress-labels strong { color: var(--text); font-size: 15px; }
+.progress-track { width: 100%; height: 10px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--accent-wa), var(--accent2)); transition: width 0.4s ease; }
+
+/* CURRENT STATUS */
+.current-status { display: flex; align-items: center; gap: 14px; padding: 14px 0; min-height: 56px; }
+.pulse-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-wa); flex-shrink: 0; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(37,211,102,0.4)} 50%{opacity:0.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(37,211,102,0)} }
+.pulse-dot.idle { background: var(--muted); animation: none; }
+.status-text .name { font-weight: 600; color: var(--text); font-size: 15px; }
+.status-text .sub  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+/* LOG */
+.log-wrap { max-height: 340px; overflow-y: auto; margin-top: 8px; }
+.log-wrap::-webkit-scrollbar { width: 4px; }
+.log-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.log-entry { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; animation: fadeSlide 0.2s ease; }
+@keyframes fadeSlide { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+.log-entry:last-child { border-bottom: none; }
+.log-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; margin-top: 2px; }
+.log-main { flex: 1; min-width: 0; }
+.log-name    { font-weight: 500; color: var(--text); }
+.log-meta    { font-size: 12px; color: var(--muted); }
+.log-error   { font-size: 11px; color: var(--danger); margin-top: 3px; word-break: break-word; }
+.log-badge   { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
+.badge-sent  { background: rgba(37,211,102,0.12); color: var(--accent-wa); }
+.badge-failed{ background: rgba(255,95,109,0.12); color: var(--danger); }
+
+/* CONTROLS */
+.send-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* DONE PANEL */
+.done-panel { text-align: center; padding: 40px 20px; }
+.done-icon  { font-size: 52px; margin-bottom: 14px; }
+.done-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+.done-sub   { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+.done-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 28px; }
+.done-stat-val   { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 700; }
+.done-stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* INFO BANNER */
+.info-banner { background: rgba(255,209,102,0.08); border: 1px solid rgba(255,209,102,0.3); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--warning); margin-bottom: 20px; }
+
+/* SELECT ALL BAR */
+.select-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.select-bar label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.select-bar label input { accent-color: var(--accent-wa); }
+.selected-count { font-size: 13px; color: var(--accent-wa); font-weight: 600; }
+
+@media (max-width: 800px) {
+  .layout { flex-direction: column; } .sidebar { display: none; }
+  .main { padding: 20px 16px; } .page-title { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">Reach<span>Out</span></div>
+  <div class="nav-label">Menu</div>
+  <a class="nav-item" href="index.php"><span class="icon">📋</span> Dashboard</a>
+  <a class="nav-item" href="send.php"><span class="icon">📤</span> Send Emails</a>
+  <a class="nav-item active" href="whatsapp.php"><span class="icon">💬</span> Send WhatsApp</a>
+  <a class="nav-item" href="whatsapp_logs.php"><span class="icon">📝</span> WA Logs</a>
+  <a class="nav-item" href="profile.php"><span class="icon">👤</span> My Profile</a>
+  <a class="nav-item" href="index.php#csv-section"><span class="icon">📂</span> CSV Import</a>
+  <a class="nav-item" href="template.php"><span class="icon">✏️</span> Template</a>
+  <div class="sidebar-bottom">
+    <div class="version-text">ReachOut v1.0 · WhatsApp Module</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div class="page-title">Send WhatsApp Messages</div>
+    <div class="page-subtitle">Bulk send resumes via WhatsApp using your existing email template</div>
+  </div>
+
+  <!-- INFO BANNER -->
+  <div class="info-banner">
+    ⚡ <strong>Local Service Required:</strong>
+    This feature needs the WhatsApp Node.js service running on your machine.
+    Run: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">cd whatsapp-service &amp;&amp; npm install &amp;&amp; node server.js</code>
+  </div>
+
+  <!-- STAT CHIPS -->
+  <div class="stat-row">
+    <div class="stat-chip">
+      <div class="stat-chip-icon">📱</div>
+      <div><div class="stat-chip-label">Selected</div><div class="stat-chip-val val-total" id="statTotal">0</div></div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon">✅</div>
+      <div><div class="stat-chip-label">Sent</div><div class="stat-chip-val val-sent" id="statSent">0</div></div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon">❌</div>
+      <div><div class="stat-chip-label">Failed</div><div class="stat-chip-val val-fail" id="statFail">0</div></div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-chip-icon">⏳</div>
+      <div><div class="stat-chip-label">Remaining</div><div class="stat-chip-val val-remain" id="statRemain">0</div></div>
+    </div>
+  </div>
+
+  <!-- STEP 1: CONNECTION -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">💬 WhatsApp Connection</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-wa btn-sm" id="btnConnect" onclick="connectWA()">Connect</button>
+        <button class="btn btn-ghost btn-sm" id="btnDisconnect" onclick="disconnectWA()" style="display:none">Disconnect</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="connect-section">
+        <div class="connect-left">
+          <div class="connect-status" id="connectStatus">
+            <div class="status-dot dot-red" id="statusDot"></div>
+            <div>
+              <div class="status-label" id="statusLabel">Not Connected</div>
+              <div class="status-sub"  id="statusSub">Click "Connect" to start</div>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--muted);line-height:1.6;">
+            1. Make sure <code style="color:var(--text)">node server.js</code> is running in <code style="color:var(--text)">whatsapp-service/</code><br>
+            2. Scan the QR code with WhatsApp on your phone<br>
+            3. Session is saved — QR scan only needed once
+          </p>
+        </div>
+        <div id="qrContainer" style="display:none" class="qr-wrap">
+          <img id="qrImage" src="" alt="QR Code">
+          <div class="qr-label">Scan with WhatsApp → Linked Devices</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: CONTACT SELECTION -->
+  <div class="card" id="contactsCard">
+    <div class="card-header">
+      <div class="card-title">📋 Select Contacts</div>
+      <span id="contactsLoading" style="font-size:13px;color:var(--muted)">Loading...</span>
+    </div>
+    <div class="card-body" style="padding-bottom:0;">
+      <div class="contacts-toolbar">
+        <input type="text" class="contact-search" id="contactSearch" placeholder="Search by name or company..." oninput="filterContacts()">
+        <button class="btn btn-ghost btn-sm" onclick="filterSentToggle()" id="filterSentBtn">Hide Sent</button>
+      </div>
+      <div class="select-bar">
+        <label><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"> Select All</label>
+        <span class="selected-count" id="selectedCount">0 selected</span>
+      </div>
+      <div class="contacts-list" id="contactsList">
+        <div class="no-contacts">Loading contacts...</div>
+      </div>
+      <div style="padding:16px 0;font-size:12px;color:var(--muted)">
+        Only contacts with a phone number are shown. Add phone numbers via CSV import or Edit Contact.
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: TEMPLATE PREVIEW -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">✏️ Message Template</div>
+      <a href="template.php" class="btn btn-ghost btn-sm">Edit Template</a>
+    </div>
+    <div class="card-body">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">
+        Variables: <code>{{name}}</code> = HR name, <code>{{company}}</code> = company,
+        <code>{{mobile}}</code> = your mobile, <code>{{email}}</code> = your email
+      </div>
+      <div class="tmpl-preview" id="tmplPreview"><?= htmlspecialchars(strip_tags(str_replace(['<br>', '<br/>', '<br />', '</p>'], "\n", $template['body'] ?? ''))) ?></div>
+      <?php if ($resumePath): ?>
+      <div style="margin-top:10px;font-size:13px;color:var(--accent-wa);">
+        📎 Resume will be attached: <strong><?= htmlspecialchars(basename($resumePath)) ?></strong>
+      </div>
+      <?php else: ?>
+      <div style="margin-top:10px;font-size:13px;color:var(--warning);">
+        ⚠️ No resume found. Upload your resume in <a href="profile.php" style="color:var(--warning);">Profile</a>.
+      </div>
+      <?php endif; ?>
+    </div>
+  </div>
+
+  <!-- STEP 4: SEND + PROGRESS -->
+  <div class="card" id="sendCard">
+    <div class="card-header">
+      <div class="card-title">🚀 Bulk Send</div>
+      <div class="send-controls">
+        <button class="btn btn-wa" id="startBtn" onclick="startSending()" disabled>
+          📱 Send WhatsApp
+        </button>
+        <button class="btn btn-ghost" id="pauseBtn" onclick="pauseResume()" style="display:none">⏸ Pause</button>
+        <button class="btn btn-danger btn-sm" id="stopBtn" onclick="stopSending()" style="display:none">■ Stop</button>
+        <button class="btn btn-wa btn-sm" id="retryBtn" onclick="retrySending()" style="display:none">🔄 Retry Failed</button>
+      </div>
+    </div>
+    <div class="card-body" id="sendCardBody">
+
+      <!-- Idle -->
+      <div id="idleState">
+        <div style="text-align:center;padding:32px;color:var(--muted);">
+          <div style="font-size:36px;margin-bottom:10px;">💬</div>
+          <div style="font-size:15px;">Select contacts above, then click <strong style="color:var(--text)">Send WhatsApp</strong></div>
+        </div>
+      </div>
+
+      <!-- Sending -->
+      <div id="sendingState" style="display:none;">
+        <div class="progress-wrap">
+          <div class="progress-labels">
+            <span><strong id="progressNum">0</strong> / <span id="progressTotal">0</span> messages</span>
+            <span id="progressPct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+        <div class="current-status">
+          <div class="pulse-dot" id="pulseDot"></div>
+          <div class="status-text">
+            <div class="name" id="currentName">Starting...</div>
+            <div class="sub" id="currentSub">Preparing messages</div>
+          </div>
+        </div>
+        <div class="log-wrap" id="logWrap"></div>
+      </div>
+
+      <!-- Done -->
+      <div class="done-panel" id="donePanel" style="display:none;">
+        <div class="done-icon" id="doneIcon">🎉</div>
+        <div class="done-title" id="doneTitle">All Done!</div>
+        <div class="done-sub"   id="doneSub">Messages have been sent.</div>
+        <div class="done-stats">
+          <div class="done-stat"><div class="done-stat-val val-sent" id="doneSent">0</div><div class="done-stat-label">Sent</div></div>
+          <div class="done-stat"><div class="done-stat-val val-fail" id="doneFail">0</div><div class="done-stat-label">Failed</div></div>
+        </div>
+        <a href="whatsapp.php" class="btn btn-ghost" style="margin-right:10px">🔄 Send More</a>
+        <a href="whatsapp_logs.php" class="btn btn-wa">📝 View Logs</a>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+const WA_HOST   = 'http://localhost:3001';
+const TEMPLATE  = <?= json_encode($template['body'] ?? '') ?>;
+const RESUME    = <?= json_encode($resumePathJS) ?>;
+const CANDIDATE = {
+  name:   <?= json_encode($profile['name']   ?? '') ?>,
+  mobile: <?= json_encode($profile['mobile'] ?? '') ?>,
+  email:  <?= json_encode($profile['email']  ?? '') ?>,
+};
+
+let allContacts   = [];
+let selectedIds   = new Set();
+let hideSent      = false;
+let waState       = 'disconnected';
+let qrPollTimer   = null;
+let progressTimer = null;
+let isPaused      = false;
+
+/* ─── INIT ─── */
+window.addEventListener('DOMContentLoaded', () => {
+  loadContacts();
+  checkStatus();
+  setInterval(checkStatus, 8000); // keep status fresh
+});
+
+/* ─── STATUS ─── */
+async function checkStatus() {
+  try {
+    const r = await fetch(WA_HOST + '/status');
+    const d = await r.json();
+    waState = d.state;
+    updateStatusUI(d.state, d.hasQR);
+  } catch (_) {
+    waState = 'disconnected';
+    updateStatusUI('disconnected', false);
+  }
+}
+
+function updateStatusUI(state, hasQR) {
+  const dot   = document.getElementById('statusDot');
+  const label = document.getElementById('statusLabel');
+  const sub   = document.getElementById('statusSub');
+  const qrBox = document.getElementById('qrContainer');
+  const btnC  = document.getElementById('btnConnect');
+  const btnD  = document.getElementById('btnDisconnect');
+  const sBtn  = document.getElementById('startBtn');
+
+  dot.className = 'status-dot ' + { disconnected:'dot-red', initializing:'dot-yellow', qr:'dot-yellow', ready:'dot-green' }[state];
+
+  if (state === 'disconnected') {
+    label.textContent = 'Not Connected';
+    sub.textContent   = 'Click Connect to start WhatsApp session';
+    qrBox.style.display = 'none';
+    btnC.style.display  = 'inline-flex';
+    btnD.style.display  = 'none';
+    clearInterval(qrPollTimer);
+  } else if (state === 'initializing') {
+    label.textContent = 'Initializing...';
+    sub.textContent   = 'Starting WhatsApp Web, please wait';
+    btnC.style.display = 'none';
+    btnD.style.display = 'inline-flex';
+  } else if (state === 'qr') {
+    label.textContent = 'Scan QR Code';
+    sub.textContent   = 'Open WhatsApp → Linked Devices → Link a Device';
+    qrBox.style.display = 'block';
+    btnC.style.display  = 'none';
+    btnD.style.display  = 'inline-flex';
+    if (!qrPollTimer) qrPollTimer = setInterval(loadQR, 3000);
+    loadQR();
+  } else if (state === 'ready') {
+    label.textContent = 'Connected ✓';
+    sub.textContent   = 'WhatsApp is ready to send messages';
+    qrBox.style.display = 'none';
+    btnC.style.display  = 'none';
+    btnD.style.display  = 'inline-flex';
+    clearInterval(qrPollTimer);
+    qrPollTimer = null;
+    if (selectedIds.size > 0) sBtn.disabled = false;
+  }
+}
+
+async function loadQR() {
+  try {
+    const r = await fetch(WA_HOST + '/qr');
+    const d = await r.json();
+    if (d.qr) document.getElementById('qrImage').src = d.qr;
+  } catch (_) {}
+}
+
+async function connectWA() {
+  document.getElementById('statusLabel').textContent = 'Connecting...';
+  document.getElementById('statusSub').textContent   = 'Launching WhatsApp Web';
+  document.getElementById('btnConnect').disabled = true;
+  try {
+    await fetch(WA_HOST + '/init', { method: 'POST' });
+    setTimeout(checkStatus, 1500);
+  } catch (_) {
+    alert('Cannot reach WhatsApp service.\nMake sure you ran:\n\ncd whatsapp-service\nnpm install\nnode server.js');
+    document.getElementById('btnConnect').disabled = false;
+  }
+}
+
+async function disconnectWA() {
+  if (!confirm('Disconnect WhatsApp? You will need to scan QR again next time.')) return;
+  await fetch(WA_HOST + '/disconnect', { method: 'POST' }).catch(() => {});
+  checkStatus();
+}
+
+/* ─── CONTACTS ─── */
+async function loadContacts() {
+  try {
+    const r    = await fetch('get_whatsapp_contacts.php');
+    allContacts = await r.json();
+    document.getElementById('contactsLoading').textContent = allContacts.length + ' contacts with phone';
+    renderContacts();
+  } catch (_) {
+    document.getElementById('contactsLoading').textContent = 'Failed to load';
+    document.getElementById('contactsList').innerHTML = '<div class="no-contacts">Error loading contacts.</div>';
+  }
+}
+
+function getFilteredContacts() {
+  const q = document.getElementById('contactSearch').value.toLowerCase();
+  return allContacts.filter(c => {
+    if (hideSent && c.wa_sent) return false;
+    if (q && !c.name.toLowerCase().includes(q) && !c.company.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function renderContacts() {
+  const list = document.getElementById('contactsList');
+  const data = getFilteredContacts();
+
+  if (!data.length) {
+    list.innerHTML = '<div class="no-contacts">No contacts found.</div>';
+    updateSelectedCount();
+    return;
+  }
+
+  list.innerHTML = data.map(c => `
+    <div class="contact-item" onclick="toggleContact(${c.id}, this)">
+      <input type="checkbox" id="chk_${c.id}" ${selectedIds.has(c.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleContact(${c.id}, this.closest('.contact-item'))">
+      <div class="contact-avatar">${(c.name||'?')[0].toUpperCase()}</div>
+      <div class="contact-main">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-meta">${esc(c.company)}</div>
+      </div>
+      <div class="contact-phone">${esc(c.phone)}</div>
+      ${c.wa_sent ? '<span class="badge-wa-sent">✓ Sent</span>' : ''}
+    </div>
+  `).join('');
+
+  updateSelectedCount();
+}
+
+function toggleContact(id, row) {
+  const cb = document.getElementById('chk_' + id);
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+    if (cb) cb.checked = false;
+    row.style.background = '';
+  } else {
+    selectedIds.add(id);
+    if (cb) cb.checked = true;
+    row.style.background = 'rgba(37,211,102,0.06)';
+  }
+  updateSelectedCount();
+}
+
+function toggleSelectAll(el) {
+  const data = getFilteredContacts();
+  if (el.checked) data.forEach(c => selectedIds.add(c.id));
+  else            data.forEach(c => selectedIds.delete(c.id));
+  renderContacts();
+}
+
+function filterContacts() { renderContacts(); }
+
+function filterSentToggle() {
+  hideSent = !hideSent;
+  document.getElementById('filterSentBtn').textContent = hideSent ? 'Show Sent' : 'Hide Sent';
+  renderContacts();
+}
+
+function updateSelectedCount() {
+  const n = selectedIds.size;
+  document.getElementById('selectedCount').textContent = n + ' selected';
+  document.getElementById('statTotal').textContent     = n;
+  document.getElementById('statRemain').textContent    = n;
+  document.getElementById('startBtn').disabled = (n === 0 || waState !== 'ready');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ─── SEND ─── */
+async function startSending() {
+  if (waState !== 'ready') { alert('Connect WhatsApp first.'); return; }
+  if (selectedIds.size === 0) { alert('Select at least one contact.'); return; }
+
+  const contacts = allContacts.filter(c => selectedIds.has(c.id));
+
+  document.getElementById('startBtn').style.display   = 'none';
+  document.getElementById('pauseBtn').style.display   = 'inline-flex';
+  document.getElementById('stopBtn').style.display    = 'inline-flex';
+  document.getElementById('idleState').style.display  = 'none';
+  document.getElementById('sendingState').style.display = 'block';
+  document.getElementById('progressTotal').textContent  = contacts.length;
+
+  const res = await fetch(WA_HOST + '/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contacts,
+      template:        TEMPLATE,
+      resume:          RESUME,
+      candidateMobile: CANDIDATE.mobile,
+      candidateEmail:  CANDIDATE.email,
+    }),
+  });
+
+  if (!res.ok) {
+    const e = await res.json();
+    alert('Error: ' + (e.error || 'Unknown error'));
+    resetControls();
+    return;
+  }
+
+  // Poll progress
+  progressTimer = setInterval(pollProgress, 1500);
+}
+
+async function pollProgress() {
+  try {
+    const r = await fetch(WA_HOST + '/progress');
+    const d = await r.json();
+
+    const done = d.sent + d.failed;
+    const pct  = d.total > 0 ? Math.round((done / d.total) * 100) : 0;
+
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressNum').textContent  = done;
+    document.getElementById('progressPct').textContent  = pct + '%';
+    document.getElementById('statSent').textContent     = d.sent;
+    document.getElementById('statFail').textContent     = d.failed;
+    document.getElementById('statRemain').textContent   = d.remaining;
+
+    if (d.current) {
+      document.getElementById('currentName').textContent = d.current;
+      document.getElementById('currentSub').textContent  = 'Sending message...';
+      document.getElementById('pulseDot').className = 'pulse-dot';
+    }
+
+    if (d.isPaused) {
+      document.getElementById('currentName').textContent = 'Paused';
+      document.getElementById('currentSub').textContent  = 'Click Resume to continue';
+      document.getElementById('pulseDot').className = 'pulse-dot idle';
+    }
+
+    // Refresh logs
+    fetchLogs();
+
+    if (!d.isSending && !d.isPaused) {
+      clearInterval(progressTimer);
+      fetchLogs(() => showDone(d));
+      if (d.failed > 0) document.getElementById('retryBtn').style.display = 'inline-flex';
+    }
+
+  } catch (_) {}
+}
+
+let lastLogCount = 0;
+async function fetchLogs(cb) {
+  try {
+    const r    = await fetch(WA_HOST + '/logs');
+    const logs = await r.json();
+
+    if (logs.length !== lastLogCount) {
+      lastLogCount = logs.length;
+      const wrap = document.getElementById('logWrap');
+      wrap.innerHTML = logs.map(l => `
+        <div class="log-entry">
+          <div class="log-icon">${l.status === 'sent' ? '✅' : '❌'}</div>
+          <div class="log-main">
+            <div class="log-name">${esc(l.name)}</div>
+            <div class="log-meta">${esc(l.company)} · ${esc(l.phone)}</div>
+            ${l.error ? `<div class="log-error">⚠️ ${esc(l.error)}</div>` : ''}
+          </div>
+          <div class="log-badge ${l.status === 'sent' ? 'badge-sent' : 'badge-failed'}">${l.status}</div>
+        </div>
+      `).join('');
+    }
+
+    if (cb) cb();
+  } catch (_) { if (cb) cb(); }
+}
+
+function showDone(d) {
+  document.getElementById('sendingState').style.display = 'none';
+  document.getElementById('donePanel').style.display    = 'block';
+  document.getElementById('doneSent').textContent       = d.sent;
+  document.getElementById('doneFail').textContent       = d.failed;
+  document.getElementById('pauseBtn').style.display     = 'none';
+  document.getElementById('stopBtn').style.display      = 'none';
+
+  if (d.failed > 0 && d.sent === 0) {
+    document.getElementById('doneIcon').textContent  = '😞';
+    document.getElementById('doneTitle').textContent = 'All messages failed';
+    document.getElementById('doneSub').textContent   = 'Check phone numbers and WhatsApp connection.';
+  } else if (d.failed > 0) {
+    document.getElementById('doneIcon').textContent  = '⚠️';
+    document.getElementById('doneTitle').textContent = 'Mostly done!';
+    document.getElementById('doneSub').textContent   = d.failed + ' message(s) failed. Use Retry to resend.';
+  }
+
+  // Save logs to DB
+  fetch(WA_HOST + '/logs').then(r => r.json()).then(logs => {
+    fetch('save_whatsapp_log.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logs, candidateName: CANDIDATE.name }),
+    }).catch(() => {});
+  });
+}
+
+async function pauseResume() {
+  const btn = document.getElementById('pauseBtn');
+  if (isPaused) {
+    await fetch(WA_HOST + '/control', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'resume'}) });
+    isPaused = false;
+    btn.textContent = '⏸ Pause';
+  } else {
+    await fetch(WA_HOST + '/control', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'pause'}) });
+    isPaused = true;
+    btn.textContent = '▶ Resume';
+  }
+}
+
+async function stopSending() {
+  if (!confirm('Stop sending? Progress so far will be saved.')) return;
+  await fetch(WA_HOST + '/control', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'stop'}) });
+  clearInterval(progressTimer);
+  fetchLogs(() => {
+    const sentN  = parseInt(document.getElementById('statSent').textContent);
+    const failN  = parseInt(document.getElementById('statFail').textContent);
+    showDone({ sent: sentN, failed: failN });
+    document.getElementById('doneTitle').textContent = 'Stopped';
+    document.getElementById('doneSub').textContent   = 'Sending stopped by user.';
+    document.getElementById('doneIcon').textContent  = '⏹️';
+  });
+}
+
+async function retrySending() {
+  document.getElementById('retryBtn').style.display    = 'none';
+  document.getElementById('donePanel').style.display   = 'none';
+  document.getElementById('sendingState').style.display = 'block';
+  document.getElementById('stopBtn').style.display     = 'inline-flex';
+  lastLogCount = 0;
+
+  await fetch(WA_HOST + '/retry', { method: 'POST' });
+  progressTimer = setInterval(pollProgress, 1500);
+}
+
+function resetControls() {
+  document.getElementById('startBtn').style.display  = 'inline-flex';
+  document.getElementById('pauseBtn').style.display  = 'none';
+  document.getElementById('stopBtn').style.display   = 'none';
+  document.getElementById('startBtn').disabled = false;
+}
+</script>
+</body>
+</html>

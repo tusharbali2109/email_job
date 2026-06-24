@@ -365,6 +365,7 @@ $rows  = $pdo->query("SELECT * FROM companies ORDER BY id DESC")->fetchAll();
     <div class="nav-label">Menu</div>
     <a class="nav-item active" href="index.php"><span class="icon">📋</span> Dashboard</a>
     <a class="nav-item" href="send.php"><span class="icon">📤</span> Send Emails</a>
+    <a class="nav-item" href="whatsapp.php"><span class="icon">💬</span> Send WhatsApp</a>
     <a class="nav-item" href="#" id="add-contact-nav"><span class="icon">➕</span> Add Contact</a>
     <a class="nav-item" href="#csv-section"><span class="icon">📂</span> CSV Import</a>
 <a class="nav-item" href="profile.php">
@@ -417,6 +418,7 @@ $rows  = $pdo->query("SELECT * FROM companies ORDER BY id DESC")->fetchAll();
       </div>
       <div class="topbar-actions">
         <button class="btn btn-outline" id="add-contact-top">➕ Add Contact</button>
+        <a href="whatsapp.php" class="btn btn-outline" style="border-color:#25d366;color:#25d366;">💬 Send WhatsApp</a>
         <a href="send.php" class="btn btn-send">📤 Send All Emails</a>
       </div>
     </div>
