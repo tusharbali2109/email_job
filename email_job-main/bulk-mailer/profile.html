@@ -474,7 +474,7 @@ window.saveProfile = async (e) => {
     prog.textContent = 'Uploading resume...';
     const ext      = file.name.split('.').pop();
     const fileName = `${Date.now()}_${file.name}`;
-    const { error: upErr } = await sb.storage.from('resumes').upload(fileName, file, { upsert: true });
+    const { error: upErr } = await sb.storage.from('Resume').upload(fileName, file, { upsert: true });
     if (upErr) { prog.textContent = '❌ Upload failed: ' + upErr.message; btn.disabled=false; btn.textContent='💾 Save Profile'; return; }
     resumeFileName = fileName;
     prog.textContent = '✅ Resume uploaded!';
