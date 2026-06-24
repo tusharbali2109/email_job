@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4fffb0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ReachOut">
+<link rel="manifest" href="manifest.json">
+<title>ReachOut — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0f14;--surface:#141820;--surface2:#1c2230;
+  --border:#252d3d;--accent:#4fffb0;--accent2:#00c9ff;
+  --text:#e8edf5;--muted:#6b7a99;--danger:#ff5f6d;--sent:#4fffb0;--pending:#ffd166;--radius:12px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(ellipse 60% 40% at 80% -10%,rgba(79,255,176,.07) 0%,transparent 60%),
+  radial-gradient(ellipse 50% 30% at 10% 100%,rgba(0,201,255,.05) 0%,transparent 50%);}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:240px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:28px 0;position:sticky;top:0;height:100vh}
+.logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;padding:0 24px 32px;letter-spacing:-.5px}
+.logo span{color:var(--accent)}
+.nav-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:0 24px 10px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;font-size:14px;color:var(--muted);
+  text-decoration:none;transition:all .15s;border-left:3px solid transparent;cursor:pointer}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(79,255,176,.06)}
+.nav-item .icon{font-size:18px;width:22px;text-align:center}
+.sidebar-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.user-avatar-sm{width:34px;height:34px;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#0c0f14}
+.user-info{min-width:0}
+.user-name-sm{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-email-sm{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#logout-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;
+  background:rgba(255,95,109,.1);border:1px solid rgba(255,95,109,.35);border-radius:9px;
+  color:#ff8f97;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+#logout-btn:hover{background:rgba(255,95,109,.2);color:var(--danger)}
+.version-text{font-size:11px;color:var(--muted);text-align:center;margin-top:10px}
+.main{flex:1;padding:36px 40px;overflow-x:hidden}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;gap:20px}
+.page-title{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.page-title small{display:block;font-family:'DM Sans',sans-serif;font-weight:400;font-size:14px;color:var(--muted);margin-top:4px;letter-spacing:0}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .2s}
+.stat-card:hover::before{opacity:1}
+.stat-label{font-size:12px;color:var(--muted);margin-bottom:8px}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:700}
+.stat-value.green{color:var(--accent)}.stat-value.yellow{color:var(--pending)}.stat-value.blue{color:var(--accent2)}
+.panels{display:grid;grid-template-columns:1fr 380px;gap:24px;margin-bottom:32px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+.panel-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;display:flex;align-items:center;gap:10px}
+.panel-body{padding:24px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead th{text-align:left;padding:12px 16px;font-size:11px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface2)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody td{padding:13px 16px;vertical-align:middle}
+.avatar{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#0c0f14;flex-shrink:0}
+.name-cell{display:flex;align-items:center;gap:12px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.badge-sent{background:rgba(79,255,176,.12);color:var(--sent)}
+.badge-pending{background:rgba(255,209,102,.12);color:var(--pending)}
+.badge-failed{background:rgba(255,95,109,.12);color:var(--danger)}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border:none;text-decoration:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#0c0f14;font-weight:600}
+.btn-primary:hover{background:#6bffc0;transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-send{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0c0f14;font-weight:700;padding:13px 28px;font-size:15px;border-radius:10px}
+.btn-send:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,255,176,.3)}
+.btn-danger{background:rgba(255,95,109,.1);color:var(--danger);border:1px solid rgba(255,95,109,.3)}
+.btn-danger:hover{background:rgba(255,95,109,.2)}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:7px 14px;font-size:12px}
+.dropzone{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.dropzone:hover{border-color:var(--accent);background:rgba(79,255,176,.03)}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.dropzone-icon{font-size:32px;margin-bottom:10px}
+.dropzone-text{font-size:14px;color:var(--muted)}
+.dropzone-text strong{color:var(--accent)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;
+  width:100%;max-width:480px;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:24px;
+  display:flex;justify-content:space-between;align-items:center}
+.modal-close{cursor:pointer;font-size:22px;background:none;border:none;color:var(--muted)}
+.modal-close:hover{color:var(--text)}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px}
+input[type="text"],input[type="email"],input[type="file"],select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--surface2);border:1px solid var(--accent);
+  color:var(--accent);padding:14px 20px;border-radius:10px;font-size:14px;display:none;
+  align-items:center;gap:10px;z-index:200;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:15px}
+.search-bar{display:flex;gap:10px;padding:16px 24px;border-bottom:1px solid var(--border)}
+.search-bar input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 14px;outline:none}
+.search-bar input:focus{border-color:var(--accent)}
+.search-bar input::placeholder{color:var(--muted)}
+.menu-toggle{display:none;position:fixed;top:16px;left:16px;width:44px;height:44px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;z-index:999;
+  flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.menu-toggle .line{width:20px;height:2px;background:var(--text);border-radius:1px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sidebar-overlay.open{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:1200px){.main{padding:28px}}
+@media(max-width:900px){
+  .panels{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:100;transform:translateX(-100%);transition:transform .3s ease}
+  .sidebar.open{transform:translateX(0)}
+  .menu-toggle{display:flex}
+  .main{padding:24px 20px;padding-top:80px}
+  .page-header{flex-direction:column;gap:16px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  .main{padding:16px 12px;padding-top:76px}
+  .page-title{font-size:20px}
+  .topbar-actions .btn{display:none}
+  table{font-size:12px}
+  thead th{padding:8px 10px;font-size:9px}
+  tbody td{padding:8px 10px}
+  .modal{padding:24px;max-width:92vw}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<button class="menu-toggle" id="menuBtn"><span class="line"></span><span class="line"></span><span class="line"></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">Reach<span>Out</span></div>
+  <div class="nav-label">Menu</div>
+  <a class="nav-item active" href="index.html"><span class="icon">📋</span> Dashboard</a>
+  <a class="nav-item" href="send.html"><span class="icon">📤</span> Send Emails</a>
+  <a class="nav-item" href="whatsapp.html"><span class="icon">💬</span> Send WhatsApp</a>
+  <a class="nav-item" href="whatsapp_logs.html"><span class="icon">📝</span> WA Logs</a>
+  <a class="nav-item" href="#" id="add-contact-nav"><span class="icon">➕</span> Add Contact</a>
+  <a class="nav-item" href="profile.html"><span class="icon">👤</span> My Profile</a>
+  <a class="nav-item" href="template.html"><span class="icon">✏️</span> Template</a>
+  <a class="nav-item" href="jobs.html"><span class="icon">🔍</span> Job Hunt</a>
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="user-avatar-sm" id="sidebar-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name-sm" id="sidebar-name">Loading...</div>
+        <div class="user-email-sm" id="sidebar-email">...</div>
+      </div>
+    </div>
+    <button id="logout-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Logout
+    </button>
+    <div class="version-text">ReachOut v2.0 · Supabase</div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-title">Dashboard<small>Manage contacts &amp; bulk send your resume</small></div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" id="add-contact-top">➕ Add Contact</button>
+      <a href="whatsapp.html" class="btn btn-outline" style="border-color:#25d366;color:#25d366;">💬 WhatsApp</a>
+      <a href="send.html" class="btn btn-send">📤 Send Emails</a>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card"><div class="stat-label">Total Contacts</div><div class="stat-value blue" id="sTotal">—</div></div>
+    <div class="stat-card"><div class="stat-label">Emails Sent</div><div class="stat-value green" id="sSent">—</div></div>
+    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value yellow" id="sPend">—</div></div>
+    <div class="stat-card"><div class="stat-label">Success Rate</div><div class="stat-value green" id="sRate">—</div></div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">👥 Contacts</div>
+        <button class="btn btn-outline btn-sm" id="add-contact-panel">+ Add</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search by name, email or company..." oninput="filterContacts()">
+      </div>
+      <div class="table-wrap">
+        <div id="contactsTable"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="panel" id="csv-section">
+        <div class="panel-header"><div class="panel-title">📂 CSV Import</div></div>
+        <div class="panel-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+            Upload a CSV file with columns: <strong style="color:var(--text)">name, email, company, phone</strong>
+          </p>
+          <div class="dropzone" id="dropzone">
+            <input type="file" accept=".csv" id="csv-input" onchange="handleCSV(this)">
+            <div class="dropzone-icon">📄</div>
+            <div class="dropzone-text" id="dz-text"><strong>Click to browse</strong> or drag &amp; drop<br>CSV files only</div>
+          </div>
+          <div id="csvProgress" style="display:none;margin-top:12px;font-size:13px;color:var(--accent)"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">🚀 Quick Actions</div></div>
+        <div class="panel-body">
+          <a href="send.html" class="btn btn-send btn-full" style="margin-bottom:12px">📤 Send All Pending Emails</a>
+          <p style="text-align:center;font-size:12px;color:var(--muted)" id="pendingCount">Loading...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Add Contact Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">Add New Contact
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <form id="contactForm" onsubmit="addContact(event)">
+      <div class="form-group"><label class="form-label">Full Name</label>
+        <input type="text" name="name" placeholder="Jane Smith" required></div>
+      <div class="form-group"><label class="form-label">Email Address</label>
+        <input type="email" name="email" placeholder="jane@company.com" required></div>
+      <div class="form-group"><label class="form-label">Company</label>
+        <input type="text" name="company" placeholder="Acme Corp" required></div>
+      <div class="form-group"><label class="form-label">Phone (Optional)</label>
+        <input type="text" name="phone" placeholder="+91-9876543210"></div>
+      <div style="display:flex;gap:12px;margin-top:24px">
+        <button type="button" class="btn btn-outline" onclick="closeModal()" style="flex:1;justify-content:center">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center" id="saveBtn">Save Contact</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const sb = createClient(
+  'https://wcsckcyxbixcgjrrjoyo.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjc2NrY3l4Yml4Y2dqcnJqb3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNzA4MTgsImV4cCI6MjA5Nzg0NjgxOH0.YQ_iaVv0HwE1jdQFPN1uYXeqan36TsIs7AY11CPmjTM'
+);
+
+let allContacts = [];
+
+// Auth guard
+const { data: { session } } = await sb.auth.getSession();
+if (!session) { window.location.href = 'login.html'; }
+else {
+  const u = session.user;
+  const name = u.user_metadata?.name || u.email.split('@')[0];
+  document.getElementById('sidebar-avatar').textContent = name[0].toUpperCase();
+  document.getElementById('sidebar-name').textContent   = name;
+  document.getElementById('sidebar-email').textContent  = u.email;
+}
+
+// Logout
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+});
+
+// Load data
+async function loadStats() {
+  const { data } = await sb.from('companies').select('status');
+  if (!data) return;
+  allContacts = data;
+  const total = data.length;
+  const sent  = data.filter(r => r.status === 'sent').length;
+  const pend  = data.filter(r => !r.status || r.status === 'pending').length;
+  document.getElementById('sTotal').textContent = total;
+  document.getElementById('sSent').textContent  = sent;
+  document.getElementById('sPend').textContent  = pend;
+  document.getElementById('sRate').textContent  = total > 0 ? Math.round((sent/total)*100) + '%' : '0%';
+  document.getElementById('pendingCount').textContent = pend + ' email' + (pend !== 1 ? 's' : '') + ' queued to send';
+}
+
+async function loadContacts() {
+  const { data } = await sb.from('companies').select('*').order('id', { ascending: false });
+  if (!data) return;
+  allContacts = data;
+  renderContacts(data);
+}
+
+function renderContacts(data) {
+  const wrap = document.getElementById('contactsTable');
+  if (!data.length) {
+    wrap.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">No contacts yet. Add one or import a CSV.</div></div>';
+    return;
+  }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Contact</th><th>Email</th><th>Company</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${data.map(r => {
+      const s = (r.status || 'pending').toLowerCase();
+      const cls = s === 'sent' ? 'badge-sent' : s === 'failed' ? 'badge-failed' : 'badge-pending';
+      const lbl = s === 'sent' ? 'Sent' : s === 'failed' ? 'Failed' : 'Pending';
+      return `<tr>
+        <td><div class="name-cell">
+          <div class="avatar">${(r.name||'?')[0].toUpperCase()}</div>
+          <div>${esc(r.name)}</div>
+        </div></td>
+        <td style="color:var(--muted)">${esc(r.email)}</td>
+        <td>${esc(r.company)}</td>
+        <td style="color:var(--muted);font-size:12px">${esc(r.contact||r.phone||'—')}</td>
+        <td><span class="badge ${cls}">${lbl}</span></td>
+        <td><button class="btn btn-danger btn-sm" onclick="deleteContact(${r.id})">🗑</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+window.filterContacts = () => {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = q
+    ? allContacts.filter(c =>
+        (c.name||'').toLowerCase().includes(q) ||
+        (c.email||'').toLowerCase().includes(q) ||
+        (c.company||'').toLowerCase().includes(q))
+    : allContacts;
+  renderContacts(filtered);
+};
+
+window.deleteContact = async (id) => {
+  if (!confirm('Delete this contact?')) return;
+  const { error } = await sb.from('companies').delete().eq('id', id);
+  if (error) showToast('❌ Error: ' + error.message, 'var(--danger)');
+  else { showToast('✅ Contact deleted!'); loadContacts(); loadStats(); }
+};
+
+window.addContact = async (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const { error } = await sb.from('companies').insert([{
+    name:    f.get('name'),
+    email:   f.get('email'),
+    company: f.get('company'),
+    phone:   f.get('phone') || null,
+    status:  'pending',
+  }]);
+  btn.disabled = false; btn.textContent = 'Save Contact';
+  if (error) showToast('❌ ' + error.message, 'var(--danger)');
+  else { closeModal(); showToast('✅ Contact added!'); e.target.reset(); loadContacts(); loadStats(); }
+};
+
+// CSV import
+window.handleCSV = async (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('dz-text').innerHTML = `<strong style="color:var(--accent)">${file.name}</strong><br>Processing...`;
+  const prog = document.getElementById('csvProgress');
+  prog.style.display = 'block';
+  prog.textContent = 'Reading CSV...';
+
+  const text  = await file.text();
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z]/g,''));
+
+  const colIdx = (names) => { for(const n of names){ const i=headers.indexOf(n); if(i>=0)return i;} return -1; };
+  const iName  = colIdx(['name','fullname','contactname']);
+  const iEmail = colIdx(['email','emailaddress']);
+  const iComp  = colIdx(['company','companyname','organization']);
+  const iPhone = colIdx(['phone','mobile','contact','phonenumber']);
+
+  if (iEmail < 0) { prog.textContent = '❌ No email column found.'; prog.style.color='var(--danger)'; return; }
+
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+    if (!cols[iEmail]) continue;
+    rows.push({
+      name:    iName  >= 0 ? cols[iName]  : 'N/A',
+      email:   cols[iEmail],
+      company: iComp  >= 0 ? cols[iComp]  : 'N/A',
+      phone:   iPhone >= 0 ? cols[iPhone] : null,
+      status:  'pending',
+    });
+  }
+
+  prog.textContent = `Importing ${rows.length} contacts...`;
+  const { error } = await sb.from('companies').upsert(rows, { onConflict: 'email', ignoreDuplicates: true });
+  if (error) { prog.textContent = '❌ Error: ' + error.message; prog.style.color='var(--danger)'; }
+  else {
+    prog.textContent = `✅ Imported ${rows.length} contacts!`;
+    prog.style.color = 'var(--accent)';
+    showToast(`✅ Imported ${rows.length} contacts!`);
+    loadContacts(); loadStats();
+  }
+  document.getElementById('dz-text').innerHTML = '<strong>Click to browse</strong> or drag &amp; drop<br>CSV files only';
+};
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display='flex';
+  t.style.borderColor = color||'var(--accent)';
+  t.style.color = color||'var(--accent)';
+  setTimeout(()=> t.style.display='none', 3500);
+}
+
+window.closeModal = () => document.getElementById('modal').classList.remove('open');
+
+// Sidebar
+document.getElementById('menuBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+});
+
+const openModal = () => document.getElementById('modal').classList.add('open');
+document.getElementById('add-contact-top').addEventListener('click', openModal);
+document.getElementById('add-contact-nav').addEventListener('click', openModal);
+document.getElementById('add-contact-panel').addEventListener('click', openModal);
+document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
+
+// URL params
+const p = new URLSearchParams(location.search);
+if (p.has('success')) { showToast('✅ ' + p.get('success')); history.replaceState({},'',location.pathname); }
+
+loadStats();
+loadContacts();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

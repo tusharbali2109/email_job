@@ -98,6 +98,223 @@ function createClient() {
 
 /* ─── routes ─── */
 
+// Status page
+app.get('/', (req, res) => {
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Service — ReachOut</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0f14;--surface:#141820;--surface2:#1c2230;
+  --border:#252d3d;--accent:#25d366;--accent2:#128c7e;
+  --text:#e8edf5;--muted:#6b7a99;--danger:#ff5f6d;--warning:#ffd166;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(ellipse 70% 50% at 50% -20%,rgba(37,211,102,.08) 0%,transparent 65%),
+  radial-gradient(ellipse 40% 40% at 90% 90%,rgba(18,140,126,.05) 0%,transparent 50%);
+  display:flex;align-items:flex-start;justify-content:center;padding:48px 16px;}
+.container{width:100%;max-width:520px;}
+.logo{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-1px;margin-bottom:4px;}
+.logo span{color:#4fffb0;}
+.tagline{font-size:13px;color:var(--muted);margin-bottom:32px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;}
+.card-body{padding:20px;}
+/* status pill */
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:600;}
+.pill-ready{background:rgba(37,211,102,.15);color:var(--accent);}
+.pill-qr{background:rgba(255,209,102,.12);color:var(--warning);}
+.pill-other{background:rgba(107,122,153,.12);color:var(--muted);}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-green{background:var(--accent);box-shadow:0 0 6px rgba(37,211,102,.6);}
+.dot-yellow{background:var(--warning);animation:blink 1s infinite;}
+.dot-red{background:var(--danger);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* stats grid */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;}
+.c-sent{color:var(--accent);}
+.c-fail{color:var(--danger);}
+.c-total{color:var(--accent2);}
+.c-remain{color:var(--warning);}
+/* progress */
+.progress-track{width:100%;height:8px;background:var(--surface2);border-radius:99px;overflow:hidden;margin:12px 0;}
+.progress-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease;}
+.progress-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);}
+/* current */
+.current-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--border);margin-top:12px;}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:pulse 1.2s infinite;}
+.pulse.idle{background:var(--muted);animation:none;}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(37,211,102,.4)}50%{transform:scale(1.15);box-shadow:0 0 0 5px rgba(37,211,102,0)}}
+.current-name{font-size:14px;font-weight:500;}
+.current-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+/* qr */
+.qr-wrap{text-align:center;padding:8px 0;}
+.qr-wrap img{width:200px;height:200px;border-radius:12px;border:3px solid var(--accent);background:#fff;padding:6px;}
+.qr-hint{font-size:12px;color:var(--muted);margin-top:10px;}
+/* endpoints */
+.ep-list{display:flex;flex-wrap:wrap;gap:8px;}
+.ep{font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);text-decoration:none;transition:.15s;}
+.ep:hover{color:var(--accent);border-color:var(--accent);}
+/* sending banner */
+.sending-banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.2);font-size:13px;color:var(--accent);margin-bottom:12px;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="logo">Reach<span>Out</span></div>
+  <div class="tagline">WhatsApp Service · Port ${PORT}</div>
+
+  <!-- Connection Status -->
+  <div class="card">
+    <div class="card-header">
+      <span style="font-size:16px;">💬</span>
+      <div class="card-title">Connection Status</div>
+      <div id="statusPill" style="margin-left:auto;"></div>
+    </div>
+    <div class="card-body">
+      <div id="statusText" style="font-size:13px;color:var(--muted);margin-bottom:12px;"></div>
+      <div id="qrSection" style="display:none">
+        <div class="qr-wrap">
+          <img id="qrImg" src="" alt="QR">
+          <div class="qr-hint">Open WhatsApp → Linked Devices → Scan this QR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="card">
+    <div class="card-header">
+      <span style="font-size:16px;">📊</span>
+      <div class="card-title">Send Progress</div>
+      <div id="sendBadge" style="margin-left:auto;font-size:12px;color:var(--muted);"></div>
+    </div>
+    <div class="card-body">
+      <div id="sendingBanner" style="display:none" class="sending-banner">
+        <div class="pulse"></div> Sending in progress...
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-label">Total</div><div class="stat-val c-total" id="vTotal">0</div></div>
+        <div class="stat-box"><div class="stat-label">Sent</div><div class="stat-val c-sent" id="vSent">0</div></div>
+        <div class="stat-box"><div class="stat-label">Failed</div><div class="stat-val c-fail" id="vFail">0</div></div>
+        <div class="stat-box"><div class="stat-label">Remaining</div><div class="stat-val c-remain" id="vRemain">0</div></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="pFill"></div></div>
+      <div class="progress-labels"><span id="pDone">0 done</span><span id="pPct">0%</span></div>
+      <div class="current-row" id="currentRow" style="display:none">
+        <div class="pulse" id="pDot"></div>
+        <div><div class="current-name" id="curName"></div><div class="current-sub" id="curSub"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Endpoints -->
+  <div class="card">
+    <div class="card-header">
+      <span style="font-size:16px;">🔗</span>
+      <div class="card-title">API Endpoints</div>
+    </div>
+    <div class="card-body">
+      <div class="ep-list">
+        <a href="/status" class="ep">GET /status</a>
+        <a href="/qr" class="ep">GET /qr</a>
+        <a href="/progress" class="ep">GET /progress</a>
+        <a href="/logs" class="ep">GET /logs</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let qrTimer = null;
+
+async function refresh() {
+  try {
+    const [s, p] = await Promise.all([
+      fetch('/status').then(r => r.json()),
+      fetch('/progress').then(r => r.json()),
+    ]);
+
+    // Status pill
+    const pillMap = {
+      ready:        ['pill pill-ready',  '<span class="dot dot-green"></span>Connected ✓'],
+      qr:           ['pill pill-qr',     '<span class="dot dot-yellow"></span>Scan QR'],
+      initializing: ['pill pill-other',  '<span class="dot dot-yellow"></span>Initializing…'],
+      disconnected: ['pill pill-other',  '<span class="dot dot-red"></span>Disconnected'],
+    };
+    const [cls, html] = pillMap[s.state] || pillMap.disconnected;
+    document.getElementById('statusPill').className = cls;
+    document.getElementById('statusPill').innerHTML = html;
+
+    const subMap = {
+      ready:        'WhatsApp is connected and ready to send messages.',
+      qr:           'Open WhatsApp on your phone → Linked Devices → Link a Device → scan QR below.',
+      initializing: 'Launching WhatsApp Web, please wait…',
+      disconnected: 'Service is running but WhatsApp is not connected. Use your ReachOut app to connect.',
+    };
+    document.getElementById('statusText').textContent = subMap[s.state] || '';
+
+    // QR
+    const qrSec = document.getElementById('qrSection');
+    if (s.state === 'qr') {
+      qrSec.style.display = 'block';
+      if (!qrTimer) qrTimer = setInterval(loadQR, 3000);
+      loadQR();
+    } else {
+      qrSec.style.display = 'none';
+      clearInterval(qrTimer); qrTimer = null;
+    }
+
+    // Progress
+    const done = p.sent + p.failed;
+    const pct  = p.total > 0 ? Math.round((done / p.total) * 100) : 0;
+    document.getElementById('vTotal').textContent   = p.total;
+    document.getElementById('vSent').textContent    = p.sent;
+    document.getElementById('vFail').textContent    = p.failed;
+    document.getElementById('vRemain').textContent  = p.remaining;
+    document.getElementById('pFill').style.width    = pct + '%';
+    document.getElementById('pDone').textContent    = done + ' done';
+    document.getElementById('pPct').textContent     = pct + '%';
+    document.getElementById('sendingBanner').style.display = p.isSending ? 'flex' : 'none';
+    document.getElementById('sendBadge').textContent = p.isSending ? '● Live' : (p.total > 0 ? 'Done' : '');
+
+    const crow = document.getElementById('currentRow');
+    if (p.current) {
+      crow.style.display = 'flex';
+      document.getElementById('curName').textContent = p.current;
+      document.getElementById('curSub').textContent  = p.isPaused ? 'Paused' : 'Sending…';
+      document.getElementById('pDot').className = p.isPaused ? 'pulse idle' : 'pulse';
+    } else {
+      crow.style.display = 'none';
+    }
+  } catch(_) {}
+}
+
+async function loadQR() {
+  try {
+    const d = await fetch('/qr').then(r => r.json());
+    if (d.qr) document.getElementById('qrImg').src = d.qr;
+  } catch(_) {}
+}
+
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>`);
+});
+
 // Initialize / reconnect WhatsApp session
 app.post('/init', (req, res) => {
     if (clientState === 'ready') {

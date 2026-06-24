@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Send bulk emails with resume attachments">
+<meta name="theme-color" content="#4fffb0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ReachOut">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234fffb0' width='100' height='100'/><text x='50%' y='50%' font-size='60' fill='%230c0f14' text-anchor='middle' dy='.35em' font-family='Arial' font-weight='bold'>📧</text></svg>">
+<title>Send Emails — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0c0f14; --surface: #141820; --surface2: #1c2230;
+    --border: #252d3d; --accent: #4fffb0; --accent2: #00c9ff;
+    --text: #e8edf5; --muted: #6b7a99; --danger: #ff5f6d;
+    --warning: #ffd166; --radius: 12px;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif; background: var(--bg);
+    color: var(--text); min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 70% 50% at 50% -20%, rgba(79,255,176,0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 40% at 90% 90%, rgba(0,201,255,0.05) 0%, transparent 50%);
+  }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 240px; flex-shrink: 0; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex;
+    flex-direction: column; padding: 28px 0;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; padding: 0 24px 32px; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 0 24px 10px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: var(--muted); text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(79,255,176,0.06); }
+  .nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
+  .sidebar-bottom { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
+  #logout-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; background: rgba(255,95,109,.1); border: 1px solid rgba(255,95,109,.35); border-radius: 9px; color: #ff8f97; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; }
+  #logout-btn:hover { background: rgba(255,95,109,.2); color: var(--danger); }
+  .main { flex: 1; padding: 40px 48px; }
+  .page-header { margin-bottom: 36px; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .page-subtitle { font-size: 14px; color: var(--muted); margin-top: 5px; }
+  .stat-row { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+  .stat-chip { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; min-width: 140px; }
+  .stat-chip-icon { font-size: 22px; }
+  .stat-chip-label { font-size: 11px; color: var(--muted); }
+  .stat-chip-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+  .val-total { color: var(--accent2); } .val-sent { color: var(--accent); }
+  .val-fail { color: var(--danger); } .val-remain { color: var(--warning); }
+  .send-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+  .send-card-header { padding: 22px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .send-card-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .error-banner { display: none; margin: 16px 28px; background: rgba(255,95,109,0.08); border: 1px solid rgba(255,95,109,0.3); border-radius: 10px; padding: 14px 18px; font-size: 13px; color: var(--danger); }
+  .error-banner strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .progress-wrap { padding: 28px; border-bottom: 1px solid var(--border); }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .progress-labels strong { color: var(--text); font-size: 15px; }
+  .progress-track { width: 100%; height: 10px; background: var(--surface2); border-radius: 99px; overflow: hidden; position: relative; }
+  .progress-fill { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s cubic-bezier(0.4,0,0.2,1); position: relative; }
+  .progress-fill::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 60px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3)); animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 0%{opacity:0} 50%{opacity:1} 100%{opacity:0} }
+  .current-status { padding: 20px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; min-height: 70px; background: rgba(79,255,176,0.02); }
+  .pulse-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(79,255,176,0.4)} 50%{opacity:0.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(79,255,176,0)} }
+  .pulse-dot.idle { background: var(--muted); animation: none; }
+  .status-text { font-size: 14px; color: var(--muted); flex: 1; }
+  .status-text strong { color: var(--text); display: block; font-size: 15px; margin-bottom: 2px; }
+  .log-wrap { max-height: 340px; overflow-y: auto; }
+  .log-wrap::-webkit-scrollbar { width: 4px; }
+  .log-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .log-entry { display: flex; align-items: flex-start; gap: 14px; padding: 12px 28px; border-bottom: 1px solid var(--border); font-size: 13px; animation: fadeSlide 0.2s ease; }
+  @keyframes fadeSlide { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  .log-entry:last-child { border-bottom: none; }
+  .log-icon { font-size: 16px; flex-shrink: 0; width: 22px; text-align: center; margin-top: 2px; }
+  .log-main { flex: 1; min-width: 0; }
+  .log-name { font-weight: 500; color: var(--text); }
+  .log-company { color: var(--muted); font-size: 12px; }
+  .log-error { color: var(--danger); font-size: 11px; margin-top: 3px; word-break: break-word; }
+  .log-email { color: var(--muted); font-size: 12px; margin-left: auto; flex-shrink: 0; padding-left: 8px; }
+  .log-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .badge-sent { background: rgba(79,255,176,0.12); color: var(--accent); }
+  .badge-failed { background: rgba(255,95,109,0.12); color: var(--danger); }
+  .badge-sending { background: rgba(0,201,255,0.1); color: var(--accent2); }
+  .done-panel { display: none; padding: 40px 28px; text-align: center; }
+  .done-icon { font-size: 52px; margin-bottom: 16px; }
+  .done-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .done-sub { color: var(--muted); font-size: 14px; }
+  .done-stats { display: flex; justify-content: center; gap: 24px; margin: 24px 0; }
+  .done-stat { text-align: center; }
+  .done-stat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; }
+  .done-stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #0c0f14; font-weight: 700; }
+  .btn-primary:hover { background: #6bffc0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,255,176,0.25); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text); }
+  .rocket-wrap { display: none; flex-direction: column; align-items: center; padding: 48px; gap: 20px; }
+  .rocket { font-size: 52px; animation: rocketFly 2s ease-in-out infinite; }
+  @keyframes rocketFly { 0%{transform:translateY(0) rotate(-5deg)} 50%{transform:translateY(-16px) rotate(5deg)} 100%{transform:translateY(0) rotate(-5deg)} }
+  .rocket-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent); }
+  .rocket-sub { font-size: 13px; color: var(--muted); }
+  .dots::after { content: ''; animation: dotdot 1.5s infinite; }
+  @keyframes dotdot { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} 100%{content:'.'} }
+  .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; width: 44px; height: 44px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+  .menu-toggle .line { width: 20px; height: 2px; background: var(--text); border-radius: 1px; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; }
+  .sidebar-overlay.open { display: block; }
+  @media (max-width: 800px) {
+    .sidebar { position: fixed; left: 0; top: 0; height: 100vh; z-index: 100; transform: translateX(-100%); transition: transform .3s ease; }
+    .sidebar.open { transform: translateX(0); }
+    .menu-toggle { display: flex; }
+    .main { padding: 20px 16px; padding-top: 76px; }
+    .page-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<button class="menu-toggle" id="menuBtn"><span class="line"></span><span class="line"></span><span class="line"></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">Reach<span>Out</span></div>
+  <div class="nav-label">Menu</div>
+  <a class="nav-item" href="index.html"><span class="icon">📋</span> Dashboard</a>
+  <a class="nav-item active" href="send.html"><span class="icon">📤</span> Send Emails</a>
+  <a class="nav-item" href="whatsapp.html"><span class="icon">💬</span> Send WhatsApp</a>
+  <a class="nav-item" href="whatsapp_logs.html"><span class="icon">📝</span> WA Logs</a>
+  <a class="nav-item" href="profile.html"><span class="icon">👤</span> My Profile</a>
+  <a class="nav-item" href="template.html"><span class="icon">✏️</span> Template</a>
+  <a class="nav-item" href="jobs.html"><span class="icon">🔍</span> Job Hunt</a>
+  <div class="sidebar-bottom">
+    <button id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-title">Send Emails</div>
+    <div class="page-subtitle" id="pageSubtitle">Sending with resume attached</div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-chip"><div class="stat-chip-icon">📬</div><div><div class="stat-chip-label">To Send</div><div class="stat-chip-val val-total" id="statTotal">...</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-icon">✅</div><div><div class="stat-chip-label">Sent</div><div class="stat-chip-val val-sent" id="statSent">0</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-icon">❌</div><div><div class="stat-chip-label">Failed</div><div class="stat-chip-val val-fail" id="statFail">0</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-icon">⏳</div><div><div class="stat-chip-label">Remaining</div><div class="stat-chip-val val-remain" id="statRemain">...</div></div></div>
+    <div class="stat-chip"><div class="stat-chip-icon">📊</div><div><div class="stat-chip-label">Today's Quota</div><div class="stat-chip-val" id="statQuota" style="color:var(--warning)">...</div></div></div>
+  </div>
+
+  <div class="send-card">
+    <div class="send-card-header">
+      <div class="send-card-title">📤 Bulk Email Dispatch</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <label style="font-size:14px;color:var(--text);font-weight:500;">Send:</label>
+          <select id="sendLimit" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 12px;font-size:13px;cursor:pointer;">
+            <option value="all">All Pending</option>
+            <option value="20">20 Records (Daily)</option>
+          </select>
+        </div>
+        <a href="index.html" class="btn btn-ghost">← Back</a>
+        <button class="btn btn-primary" id="startBtn" onclick="startSending()" disabled>🚀 Start Sending</button>
+      </div>
+    </div>
+
+    <!-- Daily limit banner -->
+    <div id="limitBanner" style="display:none;margin:16px 28px;background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.35);border-radius:10px;padding:18px 22px;">
+      <div style="font-size:22px;margin-bottom:8px;">⏰</div>
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--warning);margin-bottom:6px;">Your Daily Limit is Over!</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.7;" id="limitMsg"></div>
+      <div style="margin-top:14px;font-size:13px;color:var(--muted)">
+        🕛 Resets at <strong style="color:var(--text)">midnight (12:00 AM)</strong> — Please try tomorrow.
+      </div>
+    </div>
+
+    <div id="idleState">
+      <div style="text-align:center;padding:40px 20px;color:var(--muted);" id="idleMsg">
+        <div style="font-size:36px;margin-bottom:12px;">📮</div>
+        <div style="font-size:15px;">Loading contacts...</div>
+      </div>
+    </div>
+
+    <div id="sendingState" style="display:none;">
+      <div class="rocket-wrap" id="rocketWrap">
+        <div class="rocket">🚀</div>
+        <div class="rocket-text">Launching email campaign<span class="dots"></span></div>
+        <div class="rocket-sub">Connecting to Supabase Edge Function</div>
+      </div>
+      <div class="error-banner" id="errorBanner">
+        <strong>⚠️ Error Detected</strong>
+        <span id="errorMsg"></span>
+      </div>
+      <div class="progress-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-labels">
+          <span><strong id="progressNum">0</strong> / <span id="progressTotal">0</span> emails sent</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div class="current-status" id="currentStatus" style="display:none;">
+        <div class="pulse-dot" id="pulseDot"></div>
+        <div class="status-text">
+          <strong id="statusName">Sending...</strong>
+          <span id="statusEmail"></span>
+        </div>
+        <div class="log-badge badge-sending">Sending</div>
+      </div>
+      <div class="log-wrap" id="logWrap"></div>
+    </div>
+
+    <div class="done-panel" id="donePanel">
+      <div class="done-icon" id="doneIcon">🎉</div>
+      <div class="done-title" id="doneTitle">Campaign Complete!</div>
+      <div class="done-sub" id="doneSub">All emails have been processed.</div>
+      <div class="done-stats">
+        <div class="done-stat"><div class="done-stat-val val-sent" id="doneSent">0</div><div class="done-stat-label">Sent</div></div>
+        <div class="done-stat"><div class="done-stat-val val-fail" id="doneFail">0</div><div class="done-stat-label">Failed</div></div>
+      </div>
+      <a href="send.html" class="btn btn-ghost" style="margin-right:10px">🔄 Send More</a>
+      <a href="index.html" class="btn btn-primary">← Dashboard</a>
+    </div>
+  </div>
+</main>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const sb = createClient(
+  'https://wcsckcyxbixcgjrrjoyo.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjc2NrY3l4Yml4Y2dqcnJqb3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNzA4MTgsImV4cCI6MjA5Nzg0NjgxOH0.YQ_iaVv0HwE1jdQFPN1uYXeqan36TsIs7AY11CPmjTM'
+);
+
+// Auth guard
+const { data: { session } } = await sb.auth.getSession();
+if (!session) { window.location.href = 'login.html'; }
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await sb.auth.signOut(); window.location.href = 'login.html';
+});
+
+// Sidebar mobile
+document.getElementById('menuBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+});
+
+const DAILY_LIMIT = 200;
+
+// Load everything in parallel: profile, template, pending contacts, today's sent count
+const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+const todayISO   = todayStart.toISOString();
+
+const [
+  { data: profile },
+  { data: tmpl },
+  { data: pendingContacts },
+  { count: todaySentCount }
+] = await Promise.all([
+  sb.from('user_profile').select('*').eq('id', 1).maybeSingle(),
+  sb.from('email_template').select('*').eq('id', 1).maybeSingle(),
+  sb.from('companies').select('*').eq('status', 'pending'),
+  sb.from('companies').select('*', { count: 'exact', head: true }).eq('status', 'sent').gte('sent_at', todayISO),
+]);
+
+const allPending   = pendingContacts || [];
+const total        = allPending.length;
+let   sentToday    = todaySentCount || 0;
+const canSendMore  = DAILY_LIMIT - sentToday;   // how many left in today's quota
+
+// Quota chip
+function updateQuotaChip() {
+  const chip = document.getElementById('statQuota');
+  const left = DAILY_LIMIT - sentToday;
+  chip.textContent = left + ' / ' + DAILY_LIMIT;
+  chip.style.color = left <= 0 ? 'var(--danger)' : left < 50 ? 'var(--warning)' : 'var(--accent)';
+}
+updateQuotaChip();
+
+document.getElementById('statTotal').textContent  = total;
+document.getElementById('statRemain').textContent = Math.min(total, canSendMore);
+document.getElementById('pageSubtitle').textContent =
+  `Sending from ${profile?.email || 'N/A'} · Daily quota: ${sentToday}/${DAILY_LIMIT} used`;
+
+// Update send limit dropdown to show real cap
+const limitSel = document.getElementById('sendLimit');
+limitSel.innerHTML = `
+  <option value="all">All Pending (max ${Math.min(total, canSendMore)} today)</option>
+  <option value="20">20 Records</option>
+  <option value="50">50 Records</option>
+  <option value="100">100 Records</option>`;
+
+const idleMsg = document.getElementById('idleMsg');
+
+// Check daily limit FIRST
+if (canSendMore <= 0) {
+  // Limit already hit — show banner, disable button
+  document.getElementById('limitBanner').style.display = 'block';
+  document.getElementById('limitMsg').innerHTML =
+    `You have already sent <strong style="color:var(--warning)">${sentToday} emails</strong> today. ` +
+    `Your free tier daily limit is <strong style="color:var(--text)">${DAILY_LIMIT} emails/day</strong>.`;
+  idleMsg.style.display = 'none';
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('startBtn').title    = 'Daily limit reached';
+} else if (total === 0) {
+  idleMsg.innerHTML = `<div style="font-size:40px;margin-bottom:12px;">🎉</div>
+    <div style="font-size:16px;font-weight:600;color:var(--text)">No pending emails!</div>
+    <div style="font-size:14px;margin-top:6px;">All contacts have been emailed.</div>
+    <a href="index.html" class="btn btn-ghost" style="margin-top:20px;display:inline-flex">← Dashboard</a>`;
+} else {
+  idleMsg.innerHTML = `<div style="font-size:36px;margin-bottom:12px;">📮</div>
+    <div style="font-size:15px;">Ready to send <strong style="color:var(--text)">${Math.min(total,canSendMore)} emails</strong>
+    <span style="font-size:12px;color:var(--muted)"> (${canSendMore} quota left today)</span>. Press Start!</div>`;
+  document.getElementById('startBtn').disabled = false;
+}
+
+// Resume URL
+let resumeUrl = '';
+if (profile?.resume) {
+  const { data: urlData } = sb.storage.from('resumes').getPublicUrl(profile.resume);
+  resumeUrl = urlData?.publicUrl || '';
+}
+
+let sent = 0, failed = 0, actualTotal = 0;
+let firstError = true;
+let limitHit   = false;
+
+function getQueue() {
+  const limitVal = document.getElementById('sendLimit').value;
+  let q = allPending;
+  if (limitVal !== 'all') q = q.slice(0, parseInt(limitVal));
+  // Never exceed today's remaining quota
+  return q.slice(0, canSendMore);
+}
+
+function updateProgress(done) {
+  const pct = actualTotal > 0 ? Math.round((done / actualTotal) * 100) : 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressNum').textContent  = done;
+  document.getElementById('progressPct').textContent  = pct + '%';
+  document.getElementById('statSent').textContent     = sent;
+  document.getElementById('statFail').textContent     = failed;
+  document.getElementById('statRemain').textContent   = Math.max(0, actualTotal - done);
+  sentToday = (todaySentCount || 0) + sent;
+  updateQuotaChip();
+}
+
+function addLog(contact, success, errorMsg = '') {
+  const wrap = document.getElementById('logWrap');
+  const div  = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `
+    <div class="log-icon">${success ? '✅' : '❌'}</div>
+    <div class="log-main">
+      <div class="log-name">${esc(contact.name)}</div>
+      <div class="log-company">${esc(contact.company)}</div>
+      ${!success && errorMsg ? `<div class="log-error">⚠️ ${esc(errorMsg)}</div>` : ''}
+    </div>
+    <div class="log-email">${esc(contact.email)}</div>
+    <div class="log-badge ${success ? 'badge-sent' : 'badge-failed'}">${success ? 'Sent' : 'Failed'}</div>`;
+  wrap.prepend(div);
+}
+
+async function sendOne(contact) {
+  if (!tmpl)           return { success: false, error: 'No email template found. Create one in Template page.' };
+  if (!profile?.email) return { success: false, error: 'No sender email set. Update your Profile first.' };
+  if (!profile?.smtp_pass) return { success: false, error: 'No Gmail App Password set. Add it in Profile → API Keys.' };
+
+  const vars = {
+    name:         contact.name          || '',
+    company:      contact.company       || '',
+    email:        profile?.email        || '',
+    mobile:       profile?.mobile       || '',
+    cover_letter: profile?.cover_letter || '',
+  };
+  const render  = (t) => t.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] || '');
+  const subject = render(tmpl.subject || '');
+  const body    = render(tmpl.body    || '');
+
+  try {
+    const { data, error } = await sb.functions.invoke('send-email', {
+      body: { to: contact.email, subject, html: body, resumeUrl, candidateName: profile?.name || 'Candidate' }
+    });
+    if (error) return { success: false, error: error.message || 'Edge Function not deployed. Deploy via Supabase CLI.' };
+    if (data?.error) return { success: false, error: data.error };
+  } catch (e) {
+    return { success: false, error: 'Edge Function error: ' + (e.message || 'Deploy send-email in Supabase dashboard.') };
+  }
+
+  await sb.from('companies').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', contact.id);
+  return { success: true };
+}
+
+window.startSending = async () => {
+  if (canSendMore <= 0 || total === 0) return;
+
+  const queue = getQueue();
+  if (!queue.length) return;
+  actualTotal = queue.length;
+
+  document.getElementById('startBtn').disabled          = true;
+  document.getElementById('sendLimit').disabled         = true;
+  document.getElementById('idleState').style.display    = 'none';
+  document.getElementById('limitBanner').style.display  = 'none';
+  document.getElementById('sendingState').style.display = 'block';
+  document.getElementById('rocketWrap').style.display   = 'flex';
+
+  await new Promise(r => setTimeout(r, 1400));
+
+  document.getElementById('rocketWrap').style.display   = 'none';
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('currentStatus').style.display= 'flex';
+  document.getElementById('progressTotal').textContent  = actualTotal;
+
+  for (let i = 0; i < queue.length; i++) {
+    // Re-check limit before each send (in case tab was left open overnight)
+    const nowSentToday = (todaySentCount || 0) + sent;
+    if (nowSentToday >= DAILY_LIMIT) {
+      limitHit = true;
+      break;
+    }
+
+    const contact = queue[i];
+    document.getElementById('statusName').textContent  = contact.name + ' · ' + contact.company;
+    document.getElementById('statusEmail').textContent = contact.email;
+    document.getElementById('pulseDot').className      = 'pulse-dot';
+
+    const res = await sendOne(contact);
+    if (res.success) {
+      sent++;
+      addLog(contact, true);
+    } else {
+      failed++;
+      addLog(contact, false, res.error);
+      if (firstError) {
+        firstError = false;
+        document.getElementById('errorMsg').textContent       = res.error;
+        document.getElementById('errorBanner').style.display = 'block';
+      }
+    }
+    updateProgress(sent + failed);
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  // Done — show result panel
+  document.getElementById('sendingState').style.display = 'none';
+  document.getElementById('donePanel').style.display    = 'block';
+  document.getElementById('doneSent').textContent       = sent;
+  document.getElementById('doneFail').textContent       = failed;
+
+  if (limitHit) {
+    // Daily limit hit mid-session
+    document.getElementById('doneIcon').textContent  = '⏰';
+    document.getElementById('doneTitle').textContent = 'Daily Limit Reached!';
+    document.getElementById('doneSub').innerHTML     =
+      `Sent <strong style="color:var(--accent)">${sent}</strong> emails today. ` +
+      `You've hit your <strong style="color:var(--warning)">${DAILY_LIMIT}/day</strong> free tier limit.<br>` +
+      `<span style="color:var(--muted)">🕛 Quota resets at midnight — please try tomorrow.</span>`;
+    // Also show the limit banner again below done panel
+    const lb = document.getElementById('limitBanner');
+    lb.style.display = 'block';
+    document.getElementById('limitMsg').innerHTML =
+      `You reached the <strong style="color:var(--warning)">${DAILY_LIMIT} emails/day</strong> free tier limit. ` +
+      `${failed > 0 ? failed + ' contact(s) were not reached.' : ''}`;
+  } else if (failed > 0 && sent === 0) {
+    document.getElementById('doneIcon').textContent  = '😞';
+    document.getElementById('doneTitle').textContent = 'All emails failed';
+    document.getElementById('doneSub').textContent   = 'Check your Edge Function SMTP settings.';
+  } else if (failed > 0) {
+    document.getElementById('doneIcon').textContent  = '⚠️';
+    document.getElementById('doneTitle').textContent = 'Mostly done!';
+    document.getElementById('doneSub').textContent   = failed + ' email(s) failed.';
+  }
+};
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

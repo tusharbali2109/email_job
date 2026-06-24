@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4fffb0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Profile — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0c0f14; --surface: #141820; --surface2: #1c2230;
+    --border: #252d3d; --accent: #4fffb0; --accent2: #00c9ff;
+    --text: #e8edf5; --muted: #6b7a99; --danger: #ff5f6d; --radius: 12px;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 80% -10%, rgba(79,255,176,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 10% 100%, rgba(0,201,255,0.04) 0%, transparent 50%);
+  }
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 240px; flex-shrink: 0; background: var(--surface);
+    border-right: 1px solid var(--border); display: flex;
+    flex-direction: column; padding: 28px 0;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; padding: 0 24px 32px; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .nav-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 0 24px 10px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: var(--muted); text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; cursor: pointer; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(79,255,176,0.06); }
+  .nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
+  .sidebar-bottom { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
+  #logout-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 16px; background: rgba(255,95,109,0.1); border: 1px solid rgba(255,95,109,0.35);
+    border-radius: 9px; color: #ff8f97; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  #logout-btn:hover { background: rgba(255,95,109,0.2); color: var(--danger); }
+  .main { flex: 1; padding: 40px 48px; max-width: 900px; }
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .page-subtitle { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  .banner {
+    display: none; align-items: center; gap: 12px;
+    background: rgba(79,255,176,0.08); border: 1px solid rgba(79,255,176,0.25);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 28px;
+    font-size: 14px; color: var(--accent); animation: slideDown 0.25s ease;
+  }
+  .banner.show { display: flex; }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-top: 4px; color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+  .card-header { display: flex; align-items: center; gap: 12px; padding: 18px 24px; border-bottom: 1px solid var(--border); }
+  .card-icon { width: 36px; height: 36px; background: var(--surface2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .card-desc { font-size: 12px; color: var(--muted); }
+  .card-body { padding: 24px; }
+  .avatar-row { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; }
+  .avatar-circle {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: #0c0f14; flex-shrink: 0;
+  }
+  .avatar-info h3 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+  .avatar-info p { font-size: 13px; color: var(--muted); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.3px; }
+  .hint { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  input[type="text"], input[type="email"], input[type="tel"],
+  input[type="password"], input[type="number"], input[type="time"], select, textarea {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; padding: 11px 14px; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s; width: 100%;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,255,176,0.08);
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+  .skills-quick { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .stag {
+    background: rgba(79,255,176,0.08); border: 1px solid rgba(79,255,176,0.2);
+    color: var(--accent); padding: 3px 11px; border-radius: 20px;
+    font-size: 12px; cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .stag:hover { background: rgba(79,255,176,0.18); }
+  .range-wrap { display: flex; align-items: center; gap: 14px; }
+  .range-wrap input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .range-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; color: var(--accent); min-width: 36px; }
+  .upload-zone {
+    position: relative; border: 2px dashed var(--border); border-radius: 10px;
+    padding: 24px; text-align: center; cursor: pointer;
+    transition: all 0.2s; background: var(--surface2);
+  }
+  .upload-zone:hover { border-color: var(--accent); background: rgba(79,255,176,0.03); }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .upload-label { font-size: 14px; color: var(--text); font-weight: 500; }
+  .upload-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .upload-filename {
+    margin-top: 12px; display: none; align-items: center; gap: 8px;
+    background: rgba(79,255,176,0.08); border: 1px solid rgba(79,255,176,0.2);
+    color: var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  }
+  .upload-filename.show { display: inline-flex; }
+  .existing-file {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;
+  }
+  .existing-file-name { font-size: 13px; color: var(--text); flex: 1; }
+  .existing-file-tag { font-size: 11px; font-weight: 600; background: rgba(79,255,176,0.1); color: var(--accent); padding: 3px 10px; border-radius: 20px; }
+  .key-field { position: relative; }
+  .key-field input { padding-right: 80px; font-family: monospace; font-size: 13px; }
+  .key-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; padding: 4px 8px; }
+  .key-toggle:hover { color: var(--accent); }
+  .char-counter { text-align: right; font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .loc-wrap { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .loc-section-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 14px 0 8px; }
+  .loc-section-title:first-child { margin-top: 0; }
+  .loc-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+  .loc-tag {
+    padding: 5px 13px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; user-select: none;
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+  }
+  .loc-tag:hover { border-color: var(--accent); color: var(--accent); }
+  .loc-tag.selected { background: rgba(79,255,176,0.12); border-color: var(--accent); color: var(--accent); }
+  .btn-row { display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text); }
+  .btn-primary { background: var(--accent); color: #0c0f14; font-weight: 700; }
+  .btn-primary:hover { background: #6bffc0; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,255,176,0.25); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+  .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; width: 44px; height: 44px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
+  .menu-toggle .line { width: 20px; height: 2px; background: var(--text); border-radius: 1px; }
+  .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+  .sidebar-overlay.open { display: block; }
+  @media (max-width: 900px) {
+    .sidebar { position: fixed; left: 0; top: 0; height: 100vh; z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease; }
+    .sidebar.open { transform: translateX(0); }
+    .menu-toggle { display: flex; }
+    .main { padding: 24px 20px; padding-top: 76px; max-width: 100%; }
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+<button class="menu-toggle" id="menuBtn"><span class="line"></span><span class="line"></span><span class="line"></span></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="logo">Reach<span>Out</span></div>
+  <div class="nav-label">Menu</div>
+  <a class="nav-item" href="index.html"><span class="icon">📋</span> Dashboard</a>
+  <a class="nav-item" href="send.html"><span class="icon">📤</span> Send Emails</a>
+  <a class="nav-item" href="whatsapp.html"><span class="icon">💬</span> Send WhatsApp</a>
+  <a class="nav-item" href="whatsapp_logs.html"><span class="icon">📝</span> WA Logs</a>
+  <a class="nav-item active" href="profile.html"><span class="icon">👤</span> My Profile</a>
+  <a class="nav-item" href="template.html"><span class="icon">✏️</span> Template</a>
+  <a class="nav-item" href="jobs.html"><span class="icon">🔍</span> Job Hunt</a>
+  <div class="sidebar-bottom">
+    <button id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="page-header">
+    <div class="page-title">My Profile</div>
+    <div class="page-subtitle">Ek baar set karo — system automatically apply karta rahega</div>
+  </div>
+
+  <div class="banner" id="banner">✅ <span>Profile saved successfully!</span></div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-label">Today Sent</div><div class="stat-val" id="sTodaySent">—</div></div>
+    <div class="stat"><div class="stat-label">Total Sent</div><div class="stat-val" id="sTotalSent">—</div></div>
+    <div class="stat"><div class="stat-label">Emails Opened</div><div class="stat-val" id="sOpened">—</div></div>
+    <div class="stat"><div class="stat-label">Jobs Fetched</div><div class="stat-val" id="sJobs">—</div></div>
+  </div>
+
+  <form id="profileForm" onsubmit="saveProfile(event)">
+
+    <!-- PERSONAL INFO -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">👤</div>
+        <div><div class="card-title">Personal Information</div><div class="card-desc">Aapka naam aur contact</div></div>
+      </div>
+      <div class="card-body">
+        <div class="avatar-row">
+          <div class="avatar-circle" id="avatarCircle">Y</div>
+          <div class="avatar-info">
+            <h3 id="avatarName">Your Name</h3>
+            <p id="avatarEmail">No email set</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="nameInput" name="name" placeholder="Rahul Sharma" required>
+          </div>
+          <div class="form-group">
+            <label>Email (SMTP sender)</label>
+            <input type="email" id="emailInput" name="email" placeholder="rahul@gmail.com" required>
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="tel" name="mobile" id="mobileInput" placeholder="+91 98765 43210">
+          </div>
+          <div class="form-group full">
+            <label>Preferred Locations <span style="color:var(--muted);font-weight:400">(multiple select)</span></label>
+            <div class="loc-wrap" id="locWrap">
+              <div class="loc-section-title">🌐 Remote / Flexible</div>
+              <div class="loc-tags" id="locRemote"></div>
+              <div class="loc-section-title">🇮🇳 India — Metro</div>
+              <div class="loc-tags" id="locMetro"></div>
+              <div class="loc-section-title">🇮🇳 India — Other Cities</div>
+              <div class="loc-tags" id="locOther"></div>
+              <div class="loc-section-title">🌍 International</div>
+              <div class="loc-tags" id="locIntl"></div>
+            </div>
+            <input type="hidden" name="location" id="locationHidden">
+            <div class="hint" style="margin-top:6px">Selected: <span id="locCount" style="color:var(--accent)">0</span> location(s)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOB PREFERENCES -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🎯</div>
+        <div><div class="card-title">Job Preferences</div><div class="card-desc">Groq AI job match karne ke liye use karega</div></div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Target Job Role</label>
+            <input type="text" name="job_role" id="jobRoleInput" placeholder="Backend Developer / Full Stack / PHP Developer">
+          </div>
+          <div class="form-group full">
+            <label>Your Skills (comma separated)</label>
+            <textarea name="skills" id="skillsInput" placeholder="PHP, MySQL, JavaScript, React, Laravel, Node.js"></textarea>
+            <div class="hint">Groq AI inhe use karke relevant jobs match karega</div>
+            <div class="skills-quick">
+              <span class="stag" onclick="addSkill('PHP')">PHP</span>
+              <span class="stag" onclick="addSkill('MySQL')">MySQL</span>
+              <span class="stag" onclick="addSkill('JavaScript')">JavaScript</span>
+              <span class="stag" onclick="addSkill('React')">React</span>
+              <span class="stag" onclick="addSkill('Laravel')">Laravel</span>
+              <span class="stag" onclick="addSkill('Node.js')">Node.js</span>
+              <span class="stag" onclick="addSkill('Python')">Python</span>
+              <span class="stag" onclick="addSkill('Vue.js')">Vue.js</span>
+              <span class="stag" onclick="addSkill('WordPress')">WordPress</span>
+              <span class="stag" onclick="addSkill('MongoDB')">MongoDB</span>
+              <span class="stag" onclick="addSkill('AWS')">AWS</span>
+              <span class="stag" onclick="addSkill('Docker')">Docker</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Experience Level</label>
+            <select name="experience" id="expInput">
+              <option>Fresher</option><option>0-1 year</option><option>1-2 years</option>
+              <option>2-3 years</option><option>3-5 years</option><option>5+ years</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Daily Email Limit</label>
+            <div class="range-wrap">
+              <input type="range" name="daily_limit" id="limitRange" min="5" max="50" step="5" value="20"
+                oninput="document.getElementById('limitVal').textContent=this.value">
+              <span class="range-val" id="limitVal">20</span>
+            </div>
+            <div class="hint">Week 1→10/day · Week 2→20/day · Week 3+→50/day</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API KEYS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🔑</div>
+        <div><div class="card-title">API Keys & SMTP</div><div class="card-desc">Supabase mein securely store hota hai</div></div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Gmail App Password (SMTP)</label>
+            <div class="key-field">
+              <input type="password" id="smtpPass" name="smtp_pass" placeholder="xxxx xxxx xxxx xxxx">
+              <button type="button" class="key-toggle" onclick="toggleVis('smtpPass',this)">Show</button>
+            </div>
+            <div class="hint">Google Account → Security → 2-Step Verification → App Passwords → 16 digit code</div>
+          </div>
+          <div class="form-group full">
+            <label>Groq API Key (Free — console.groq.com)</label>
+            <div class="key-field">
+              <input type="password" id="groqKey" name="groq_key" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx">
+              <button type="button" class="key-toggle" onclick="toggleVis('groqKey',this)">Show</button>
+            </div>
+            <div class="hint">AI email personalization ke liye</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUME -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📄</div>
+        <div><div class="card-title">Resume</div><div class="card-desc">Har email ke saath automatically attach hoga</div></div>
+      </div>
+      <div class="card-body">
+        <div id="existingFileWrap" style="display:none" class="existing-file">
+          <span style="font-size:22px">📎</span>
+          <div class="existing-file-name" id="existingFileName"></div>
+          <span class="existing-file-tag">Current</span>
+        </div>
+        <div class="upload-zone" id="resumeZone">
+          <input type="file" accept=".pdf,.doc,.docx" id="resumeFile" onchange="showFile(this)">
+          <div class="upload-icon">☁️</div>
+          <div class="upload-label" id="resumeZoneLabel">Upload your resume</div>
+          <div class="upload-sub">PDF, DOC, DOCX — max 10MB</div>
+          <div class="upload-filename" id="resumeName"></div>
+        </div>
+        <div id="uploadProgress" style="display:none;margin-top:10px;font-size:13px;color:var(--accent)"></div>
+      </div>
+    </div>
+
+    <!-- COVER LETTER -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">✉️</div>
+        <div><div class="card-title">Cover Letter / Email Body</div><div class="card-desc">Fallback — Groq AI override kar sakta hai</div></div>
+      </div>
+      <div class="card-body">
+        <div class="form-group full">
+          <label>Cover Letter</label>
+          <textarea name="cover_letter" id="coverInput" maxlength="2000"
+            oninput="document.getElementById('coverCount').textContent=this.value.length"
+            placeholder="Dear Hiring Manager,&#10;&#10;I am writing to express my interest in..."></textarea>
+          <div class="char-counter"><span id="coverCount">0</span> / 2000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <a href="index.html" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-primary" id="saveBtn">💾 Save Profile</button>
+    </div>
+  </form>
+</main>
+</div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const sb = createClient(
+  'https://wcsckcyxbixcgjrrjoyo.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjc2NrY3l4Yml4Y2dqcnJqb3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNzA4MTgsImV4cCI6MjA5Nzg0NjgxOH0.YQ_iaVv0HwE1jdQFPN1uYXeqan36TsIs7AY11CPmjTM'
+);
+
+// Auth guard
+const { data: { session } } = await sb.auth.getSession();
+if (!session) { window.location.href = 'login.html'; }
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await sb.auth.signOut(); window.location.href = 'login.html';
+});
+
+// Location groups
+const LOC_GROUPS = {
+  locRemote: ['Remote','Work from Home','Hybrid','Anywhere'],
+  locMetro:  ['Bangalore','Mumbai','Delhi','Hyderabad','Chennai','Pune','Kolkata','Ahmedabad','Noida','Gurgaon'],
+  locOther:  ['Jaipur','Lucknow','Indore','Bhopal','Chandigarh','Surat','Coimbatore','Kochi','Nagpur','Vizag'],
+  locIntl:   ['USA','UK','Canada','Australia','Germany','UAE','Singapore','Netherlands','New Zealand','Ireland','Sweden'],
+};
+
+let selectedLocs = new Set();
+
+function buildLocTags(saved) {
+  selectedLocs = new Set(saved.map(s => s.trim()).filter(Boolean));
+  for (const [id, tags] of Object.entries(LOC_GROUPS)) {
+    const wrap = document.getElementById(id);
+    wrap.innerHTML = tags.map(t =>
+      `<span class="loc-tag${selectedLocs.has(t)?' selected':''}" onclick="toggleLoc(this,'${t}')">${t}</span>`
+    ).join('');
+  }
+  document.getElementById('locCount').textContent   = selectedLocs.size;
+  document.getElementById('locationHidden').value   = [...selectedLocs].join(', ');
+}
+
+window.toggleLoc = (el, val) => {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) selectedLocs.add(val);
+  else selectedLocs.delete(val);
+  document.getElementById('locCount').textContent  = selectedLocs.size;
+  document.getElementById('locationHidden').value  = [...selectedLocs].join(', ');
+};
+
+// Load profile
+const { data: profile } = await sb.from('user_profile').select('*').eq('id', 1).maybeSingle();
+if (profile) {
+  document.getElementById('nameInput').value    = profile.name    || '';
+  document.getElementById('emailInput').value   = profile.email   || '';
+  document.getElementById('mobileInput').value  = profile.mobile  || '';
+  document.getElementById('jobRoleInput').value = profile.job_role|| '';
+  document.getElementById('skillsInput').value  = profile.skills  || '';
+  document.getElementById('coverInput').value   = profile.cover_letter || '';
+  document.getElementById('coverCount').textContent = (profile.cover_letter||'').length;
+  document.getElementById('smtpPass').value     = profile.smtp_pass || '';
+  document.getElementById('groqKey').value      = profile.groq_key  || '';
+  document.getElementById('limitRange').value   = profile.daily_limit || 20;
+  document.getElementById('limitVal').textContent = profile.daily_limit || 20;
+  document.getElementById('avatarCircle').textContent = (profile.name||'Y')[0].toUpperCase();
+  document.getElementById('avatarName').textContent   = profile.name  || 'Your Name';
+  document.getElementById('avatarEmail').textContent  = profile.email || 'No email set';
+  const expSel = document.getElementById('expInput');
+  for (const opt of expSel.options) if (opt.value === profile.experience) opt.selected = true;
+  buildLocTags(profile.location ? profile.location.split(',') : []);
+  if (profile.resume) {
+    document.getElementById('existingFileWrap').style.display = 'flex';
+    document.getElementById('existingFileName').textContent   = profile.resume;
+    document.getElementById('resumeZoneLabel').textContent    = 'Upload new resume';
+  }
+} else {
+  buildLocTags([]);
+}
+
+// Load stats
+const today = new Date().toISOString().split('T')[0];
+const [{ count: todaySent }, { count: totalSent }, { count: opened }, { count: jobsCount }] = await Promise.all([
+  sb.from('companies').select('*', { count:'exact', head:true }).eq('status','sent').gte('sent_at', today),
+  sb.from('companies').select('*', { count:'exact', head:true }).eq('status','sent'),
+  sb.from('companies').select('*', { count:'exact', head:true }).eq('opened', true),
+  sb.from('jobs').select('*', { count:'exact', head:true }),
+]);
+document.getElementById('sTodaySent').textContent = todaySent ?? 0;
+document.getElementById('sTotalSent').textContent = totalSent ?? 0;
+document.getElementById('sOpened').textContent    = opened    ?? 0;
+document.getElementById('sJobs').textContent      = jobsCount ?? 0;
+
+// Save profile
+window.saveProfile = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  let resumeFileName = profile?.resume || null;
+
+  // Upload resume if selected
+  const file = document.getElementById('resumeFile').files[0];
+  if (file) {
+    const prog = document.getElementById('uploadProgress');
+    prog.style.display = 'block';
+    prog.textContent = 'Uploading resume...';
+    const ext      = file.name.split('.').pop();
+    const fileName = `${Date.now()}_${file.name}`;
+    const { error: upErr } = await sb.storage.from('resumes').upload(fileName, file, { upsert: true });
+    if (upErr) { prog.textContent = '❌ Upload failed: ' + upErr.message; btn.disabled=false; btn.textContent='💾 Save Profile'; return; }
+    resumeFileName = fileName;
+    prog.textContent = '✅ Resume uploaded!';
+  }
+
+  const f = new FormData(e.target);
+  const payload = {
+    id:           1,
+    name:         f.get('name'),
+    email:        f.get('email'),
+    mobile:       f.get('mobile'),
+    job_role:     f.get('job_role'),
+    skills:       f.get('skills'),
+    experience:   f.get('experience'),
+    daily_limit:  parseInt(f.get('daily_limit')),
+    smtp_pass:    f.get('smtp_pass'),
+    groq_key:     f.get('groq_key'),
+    cover_letter: f.get('cover_letter'),
+    location:     f.get('location'),
+    resume:       resumeFileName,
+  };
+
+  const { error } = await sb.from('user_profile').upsert(payload);
+  btn.disabled = false; btn.textContent = '💾 Save Profile';
+  if (error) { alert('Error: ' + error.message); return; }
+  document.getElementById('banner').classList.add('show');
+  setTimeout(() => document.getElementById('banner').classList.remove('show'), 3500);
+  document.getElementById('avatarCircle').textContent = payload.name[0].toUpperCase();
+  document.getElementById('avatarName').textContent   = payload.name;
+  document.getElementById('avatarEmail').textContent  = payload.email;
+};
+
+window.addSkill = (skill) => {
+  const inp = document.getElementById('skillsInput');
+  const cur = inp.value.trim();
+  if (!cur.toLowerCase().includes(skill.toLowerCase()))
+    inp.value = cur ? cur + ', ' + skill : skill;
+};
+
+window.toggleVis = (id, btn) => {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+};
+
+window.showFile = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  const el = document.getElementById('resumeName');
+  el.textContent = '📎 ' + file.name;
+  el.classList.add('show');
+  document.getElementById('resumeZone').style.borderColor = 'var(--accent)';
+};
+
+// Sidebar
+document.getElementById('menuBtn').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+});
+
+// Avatar live update
+document.getElementById('nameInput').addEventListener('input', function() {
+  document.getElementById('avatarCircle').textContent = (this.value[0]||'Y').toUpperCase();
+  document.getElementById('avatarName').textContent   = this.value || 'Your Name';
+});
+document.getElementById('emailInput').addEventListener('input', function() {
+  document.getElementById('avatarEmail').textContent = this.value || 'No email set';
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

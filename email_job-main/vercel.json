@@ -1,14 +1,15 @@
 {
-  "builds": [
-    { "src": "bulk-mailer/*.php", "use": "vercel-php@0.7.2" },
-    { "src": "bulk-mailer/**/*.php", "use": "vercel-php@0.7.2" }
-  ],
-  "routes": [
-    { "src": "/", "dest": "/bulk-mailer/index.php" },
-    { "src": "/login", "dest": "/bulk-mailer/login.html" },
-    { "src": "/pricing", "dest": "/bulk-mailer/pricing.html" },
-    { "src": "/([a-zA-Z0-9_-]+\\.php)(.*)", "dest": "/bulk-mailer/$1$2" },
-    { "src": "/([a-zA-Z0-9_-]+\\.html)", "dest": "/bulk-mailer/$1" },
-    { "src": "/(.*\\.(js|css|png|jpg|ico|json|svg|woff|woff2|ttf))", "dest": "/bulk-mailer/$1" }
+  "rewrites": [
+    { "source": "/",                "destination": "/bulk-mailer/index.html" },
+    { "source": "/login",           "destination": "/bulk-mailer/login.html" },
+    { "source": "/pricing",         "destination": "/bulk-mailer/pricing.html" },
+    { "source": "/send",            "destination": "/bulk-mailer/send.html" },
+    { "source": "/profile",         "destination": "/bulk-mailer/profile.html" },
+    { "source": "/template",        "destination": "/bulk-mailer/template.html" },
+    { "source": "/whatsapp",        "destination": "/bulk-mailer/whatsapp.html" },
+    { "source": "/whatsapp-logs",   "destination": "/bulk-mailer/whatsapp_logs.html" },
+    { "source": "/jobs",            "destination": "/bulk-mailer/jobs.html" },
+    { "source": "/(.*\\.html)",     "destination": "/bulk-mailer/$1" },
+    { "source": "/(.*\\.(js|css|png|jpg|ico|json|svg|woff|woff2|ttf|pdf|webmanifest))", "destination": "/bulk-mailer/$1" }
   ]
 }
