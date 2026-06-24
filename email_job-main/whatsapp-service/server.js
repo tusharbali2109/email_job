@@ -161,9 +161,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .qr-wrap img{width:200px;height:200px;border-radius:12px;border:3px solid var(--accent);background:#fff;padding:6px;}
 .qr-hint{font-size:12px;color:var(--muted);margin-top:10px;}
 /* endpoints */
-.ep-list{display:flex;flex-wrap:wrap;gap:8px;}
-.ep{font-size:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);text-decoration:none;transition:.15s;}
-.ep:hover{color:var(--accent);border-color:var(--accent);}
+.ep-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.ep{font-size:13px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);text-decoration:none;transition:.15s;display:flex;flex-direction:column;gap:2px;}
+.ep:hover{border-color:var(--accent);background:rgba(37,211,102,.05);}
 /* sending banner */
 .sending-banner{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:rgba(37,211,102,.07);border:1px solid rgba(37,211,102,.2);font-size:13px;color:var(--accent);margin-bottom:12px;}
 </style>
@@ -171,6 +171,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <body>
 <div class="container">
 
+  <div style="margin-bottom:20px;">
+    <a href="http://localhost:5500/email_job-main/bulk-mailer/whatsapp.html" style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);text-decoration:none;background:var(--surface);border:1px solid var(--border);padding:8px 16px;border-radius:8px;transition:.15s;" onmouseover="this.style.color='var(--text)';this.style.borderColor='var(--text)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">← Back to ReachOut App</a>
+  </div>
   <div class="logo">Reach<span>Out</span></div>
   <div class="tagline">WhatsApp Service · Port ${PORT}</div>
 
@@ -223,13 +226,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="card-header">
       <span style="font-size:16px;">🔗</span>
       <div class="card-title">API Endpoints</div>
+      <span style="margin-left:auto;font-size:11px;color:var(--muted);">Click to open in browser</span>
     </div>
     <div class="card-body">
       <div class="ep-list">
-        <a href="/status" class="ep">GET /status</a>
-        <a href="/qr" class="ep">GET /qr</a>
-        <a href="/progress" class="ep">GET /progress</a>
-        <a href="/logs" class="ep">GET /logs</a>
+        <a href="/status" target="_blank" class="ep">
+          <span style="color:var(--accent);font-family:monospace;font-size:11px;font-weight:700;">GET</span>
+          <span>/status</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">Connection state</span>
+        </a>
+        <a href="/qr" target="_blank" class="ep">
+          <span style="color:var(--accent);font-family:monospace;font-size:11px;font-weight:700;">GET</span>
+          <span>/qr</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">QR code image</span>
+        </a>
+        <a href="/progress" target="_blank" class="ep">
+          <span style="color:var(--accent);font-family:monospace;font-size:11px;font-weight:700;">GET</span>
+          <span>/progress</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">Sent / failed count</span>
+        </a>
+        <a href="/logs" target="_blank" class="ep">
+          <span style="color:var(--accent);font-family:monospace;font-size:11px;font-weight:700;">GET</span>
+          <span>/logs</span>
+          <span style="display:block;font-size:11px;color:var(--muted);margin-top:2px;">Full message log</span>
+        </a>
       </div>
     </div>
   </div>
