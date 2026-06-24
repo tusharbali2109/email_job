@@ -1,0 +1,6 @@
+# Ignore all PHP files — app is fully migrated to Supabase JS (no PHP needed)
+email_job-main/bulk-mailer/*.php
+email_job-main/bulk-mailer/vendor/
+email_job-main/bulk-mailer/config.php
+email_job-main/bulk-mailer/db.php
+email_job-main/whatsapp-service/

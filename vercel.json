@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    { "source": "/",               "destination": "/email_job-main/bulk-mailer/index.html" },
+    { "source": "/login",          "destination": "/email_job-main/bulk-mailer/login.html" },
+    { "source": "/send",           "destination": "/email_job-main/bulk-mailer/send.html" },
+    { "source": "/profile",        "destination": "/email_job-main/bulk-mailer/profile.html" },
+    { "source": "/template",       "destination": "/email_job-main/bulk-mailer/template.html" },
+    { "source": "/whatsapp",       "destination": "/email_job-main/bulk-mailer/whatsapp.html" },
+    { "source": "/whatsapp-logs",  "destination": "/email_job-main/bulk-mailer/whatsapp_logs.html" },
+    { "source": "/jobs",           "destination": "/email_job-main/bulk-mailer/jobs.html" },
+    { "source": "/pricing",        "destination": "/email_job-main/bulk-mailer/pricing.html" },
+    { "source": "/(.*\\.html)",    "destination": "/email_job-main/bulk-mailer/$1" },
+    { "source": "/(.*\\.(js|css|png|jpg|ico|json|svg|woff|woff2|ttf|pdf|webmanifest))", "destination": "/email_job-main/bulk-mailer/$1" }
+  ]
+}
