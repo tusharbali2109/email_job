@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#060b14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ReachOut"/>
+<link rel="manifest" href="manifest.json"/>
+<title>Login — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#060b14;--sur:#0d1626;--sur2:#111d35;
+  --bd:rgba(99,179,237,0.1);--a:#38bdf8;--a2:#818cf8;
+  --tx:#e2e8f0;--mu:#64748b;--ok:#34d399;--err:#f87171;--warn:#fbbf24;
+  --fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:var(--fb);
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:20px;overflow-x:hidden}
+body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(-50%);
+  width:700px;height:500px;
+  background:radial-gradient(ellipse,rgba(56,189,248,.07) 0%,transparent 70%);pointer-events:none}
+
+/* AUTH CARD */
+.card{width:100%;max-width:420px;background:var(--sur);border:1px solid var(--bd);
+  border-radius:22px;padding:36px 32px;
+  box-shadow:0 0 60px rgba(56,189,248,.05),0 20px 48px rgba(0,0,0,.4);
+  animation:up .45s ease;position:relative;z-index:1}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.logo{text-align:center;margin-bottom:24px}
+.logo-box{width:52px;height:52px;background:linear-gradient(135deg,var(--a),var(--a2));
+  border-radius:14px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:24px;margin-bottom:10px;box-shadow:0 0 22px rgba(56,189,248,.3)}
+.logo h1{font-family:var(--fd);font-size:1.4rem;font-weight:800;letter-spacing:-.5px}
+.logo p{color:var(--mu);font-size:.82rem;margin-top:4px}
+.logo p a{color:var(--a);text-decoration:none;font-weight:600}
+
+.tabs{display:flex;background:var(--sur2);border-radius:10px;padding:4px;margin-bottom:24px;gap:3px}
+.tab{flex:1;padding:8px;border:none;background:transparent;color:var(--mu);
+  font-family:var(--fd);font-weight:700;font-size:.88rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.tab.on{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;box-shadow:0 2px 12px rgba(56,189,248,.25)}
+
+.sec{display:none}
+.sec.on{display:block;animation:fi .25s ease}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+
+.fld{margin-bottom:14px}
+.fld label{display:block;font-size:.75rem;font-weight:500;color:var(--mu);
+  margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase}
+.fld input{width:100%;background:var(--sur2);border:1px solid var(--bd);
+  border-radius:9px;color:var(--tx);font-family:var(--fb);font-size:.92rem;
+  padding:10px 13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.fld input:focus{border-color:var(--a);box-shadow:0 0 0 3px rgba(56,189,248,.1)}
+.fld input::placeholder{color:#2d3d55}
+
+.btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--a),var(--a2));
+  border:none;border-radius:9px;color:#fff;font-family:var(--fd);font-weight:700;
+  font-size:.92rem;cursor:pointer;margin-top:6px;transition:opacity .2s,transform .15s;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{opacity:.9;transform:translateY(-1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+.or{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--mu);font-size:.78rem}
+.or::before,.or::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+.gbtn{width:100%;padding:10px;background:var(--sur2);border:1px solid var(--bd);
+  border-radius:9px;color:var(--tx);font-family:var(--fb);font-size:.88rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s}
+.gbtn:hover{border-color:var(--a);background:rgba(56,189,248,.05)}
+.gbtn svg{width:17px;height:17px;flex-shrink:0}
+
+.msg{margin-top:12px;padding:9px 13px;border-radius:8px;font-size:.82rem;display:none}
+.msg.on{display:block}
+.msg.err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--err)}
+.msg.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--ok)}
+
+.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:rot .65s linear infinite;display:inline-block}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+.foot{text-align:center;margin-top:18px;font-size:11px;color:var(--mu)}
+.foot a{color:var(--a);text-decoration:none}
+
+/* REDIRECT */
+#redir{display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#redir.on{display:flex}
+.rspin{width:38px;height:38px;border:3px solid rgba(56,189,248,.2);
+  border-top-color:var(--a);border-radius:50%;animation:rot .8s linear infinite}
+#redir p{color:var(--mu);font-size:.88rem}
+
+/* ════════════════════════════════
+   SUBSCRIPTION MODAL (full screen)
+   ════════════════════════════════ */
+#sub-modal{
+  display:none;
+  position:fixed;inset:0;z-index:9998;
+  background:rgba(6,11,20,.97);
+  backdrop-filter:blur(12px);
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+#sub-modal.on{ display:flex !important; animation:fi .3s ease; }
+
+.mbox{
+  width:100%;max-width:420px;
+  background:var(--sur);
+  border:1px solid var(--bd);
+  border-radius:22px;
+  overflow:hidden;
+  animation:up .35s cubic-bezier(.34,1.56,.64,1);
+  position:relative;z-index:9999;
+}
+.mband{height:4px}
+.mband.red{background:linear-gradient(90deg,var(--err),#ef4444)}
+.mband.warn{background:linear-gradient(90deg,var(--warn),#f59e0b)}
+
+.mbody{padding:32px 28px;text-align:center}
+.micon{font-size:54px;margin-bottom:14px;display:block;
+  animation:bounce 2s ease-in-out infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.mtitle{font-family:var(--fd);font-size:1.3rem;font-weight:800;
+  letter-spacing:-.5px;margin-bottom:8px;color:var(--tx)}
+.msub{font-size:.86rem;color:var(--mu);line-height:1.7;margin-bottom:20px}
+.msub strong{color:var(--tx)}
+.msub .red{color:var(--err);font-weight:600}
+
+.mmeta{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;text-align:left}
+.mrow{display:flex;align-items:center;justify-content:space-between;
+  background:var(--sur2);border:1px solid var(--bd);border-radius:9px;padding:9px 13px;gap:10px}
+.mlabel{font-size:.72rem;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.mval{font-size:.82rem;font-weight:600;color:var(--tx);text-align:right;word-break:break-all}
+.mval.red{color:var(--err)}
+.mval.warn{color:var(--warn)}
+.mval.ok{color:var(--ok)}
+
+.mcta{display:flex;flex-direction:column;gap:9px}
+.mcta-primary{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,var(--a),var(--a2));
+  border:none;border-radius:10px;color:#060b14;
+  font-family:var(--fd);font-weight:800;font-size:.95rem;
+  cursor:pointer;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .2s;box-shadow:0 4px 18px rgba(56,189,248,.25)
+}
+.mcta-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(56,189,248,.35)}
+.mcta-ghost{
+  width:100%;padding:10px;background:transparent;
+  border:1px solid var(--bd);border-radius:10px;color:var(--mu);
+  font-family:var(--fb);font-size:.84rem;cursor:pointer;transition:all .2s
+}
+.mcta-ghost:hover{border-color:rgba(248,113,113,.4);color:var(--err)}
+
+/* ════════════════════════════════
+   TOAST (fallback if modal fails)
+   ════════════════════════════════ */
+#toast{
+  display:none;
+  position:fixed;top:20px;left:50%;transform:translateX(-50%);
+  z-index:99999;
+  min-width:320px;max-width:90vw;
+  border-radius:14px;padding:16px 20px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  animation:slideDown .3s ease;
+}
+#toast.on{display:flex;align-items:flex-start;gap:12px}
+@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-10px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#toast.t-err{background:#1a0a0a;border:1px solid rgba(248,113,113,.4)}
+#toast.t-warn{background:#1a1400;border:1px solid rgba(251,191,36,.4)}
+#toast.t-ok{background:#0a1a10;border:1px solid rgba(52,211,153,.4)}
+.toast-icon{font-size:24px;flex-shrink:0;margin-top:2px}
+.toast-body{flex:1}
+.toast-title{font-family:var(--fd);font-weight:800;font-size:.95rem;margin-bottom:4px}
+.toast-err .toast-title{color:var(--err)}
+.toast-warn .toast-title{color:var(--warn)}
+.toast-ok .toast-title{color:var(--ok)}
+.toast-msg{font-size:.82rem;color:var(--mu);line-height:1.5}
+.toast-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.toast-btn{padding:6px 14px;border-radius:7px;font-family:var(--fd);font-weight:700;
+  font-size:.78rem;cursor:pointer;text-decoration:none;transition:opacity .2s;border:none;
+  display:inline-flex;align-items:center;gap:5px}
+.toast-btn.primary{background:linear-gradient(135deg,var(--a),var(--a2));color:#060b14}
+.toast-btn.ghost{background:transparent;border:1px solid var(--bd);color:var(--mu)}
+.toast-btn:hover{opacity:.85}
+.toast-close{background:none;border:none;color:var(--mu);cursor:pointer;
+  font-size:18px;line-height:1;padding:2px;flex-shrink:0;align-self:flex-start}
+.toast-close:hover{color:var(--tx)}
+
+/* REMINDER BANNER */
+#rem-banner{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:9990;
+  background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(251,191,36,.05));
+  border-bottom:1px solid rgba(251,191,36,.2);
+  padding:9px 20px;align-items:center;justify-content:space-between;
+  gap:12px;backdrop-filter:blur(8px)
+}
+#rem-banner.on{display:flex}
+.rem-txt{font-size:.82rem;color:var(--warn);flex:1;line-height:1.4}
+.rem-txt strong{color:#fff}
+.rem-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.rem-btn{background:var(--warn);color:#060b14;font-family:var(--fd);font-weight:700;
+  font-size:.75rem;padding:5px 12px;border-radius:7px;text-decoration:none}
+.rem-x{background:none;border:none;color:var(--mu);cursor:pointer;font-size:17px;padding:2px 5px}
+.rem-x:hover{color:var(--tx)}
+
+@media(max-width:480px){
+  .card{padding:26px 16px;border-radius:18px}
+  .mbody{padding:24px 18px}
+  .micon{font-size:44px}
+  .mtitle{font-size:1.1rem}
+  #toast{min-width:calc(100vw - 32px)}
+  #rem-banner{flex-direction:column;align-items:flex-start;gap:8px}
+  .rem-right{width:100%}
+  .rem-btn{flex:1;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SUBSCRIPTION MODAL ══ -->
+<div id="sub-modal">
+  <div class="mbox">
+    <div class="mband red" id="mband"></div>
+    <div class="mbody">
+      <span class="micon" id="micon">🔒</span>
+      <div class="mtitle" id="mtitle">No Active Subscription</div>
+      <div class="msub"   id="msub"></div>
+      <div class="mmeta"  id="mmeta"></div>
+      <div class="mcta">
+        <a href="pricing.html" class="mcta-primary" id="mcta-btn">🚀 View Plans & Subscribe</a>
+        <button class="mcta-ghost" onclick="closeModalFn()">← Use a different account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST (fallback) ══ -->
+<div id="toast">
+  <span class="toast-icon" id="t-icon">⚠️</span>
+  <div class="toast-body">
+    <div class="toast-title" id="t-title"></div>
+    <div class="toast-msg"   id="t-msg"></div>
+    <div class="toast-actions" id="t-actions"></div>
+  </div>
+  <button class="toast-close" onclick="document.getElementById('toast').classList.remove('on')">✕</button>
+</div>
+
+<!-- ══ REMINDER BANNER ══ -->
+<div id="rem-banner">
+  <div class="rem-txt" id="rem-txt">
+    ⚠️ <span><strong>Subscription expiring soon!</strong> Renew to keep access.</span>
+  </div>
+  <div class="rem-right">
+    <a href="pricing.html" class="rem-btn">Renew Now →</a>
+    <button class="rem-x" onclick="document.getElementById('rem-banner').classList.remove('on');sessionStorage.setItem('rd','1')">✕</button>
+  </div>
+</div>
+
+<!-- ══ AUTH CARD ══ -->
+<div class="card" id="auth-card">
+  <div class="logo">
+    <div class="logo-box">📧</div>
+    <h1>ReachOut</h1>
+    <p>Job Automation Portal &nbsp;·&nbsp; <a href="pricing.html">View Plans →</a></p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('in')">Sign In</button>
+    <button class="tab"    onclick="switchTab('up')">Sign Up</button>
+  </div>
+
+  <!-- SIGN IN -->
+  <div class="sec on" id="sec-in">
+    <div class="fld">
+      <label>Email Address</label>
+      <input type="email" id="si-e" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="fld">
+      <label>Password</label>
+      <input type="password" id="si-p" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn" id="si-btn" onclick="doIn()">Sign In</button>
+    <div class="or">or</div>
+    <button class="gbtn" onclick="doGoogle()">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+    <div class="msg" id="si-msg"></div>
+  </div>
+
+  <!-- SIGN UP -->
+  <div class="sec" id="sec-up">
+    <div class="fld">
+      <label>Full Name</label>
+      <input type="text" id="su-n" placeholder="Rahul Sharma" autocomplete="name"/>
+    </div>
+    <div class="fld">
+      <label>Email Address</label>
+      <input type="email" id="su-e" placeholder="you@example.com" autocomplete="email"/>
+    </div>
+    <div class="fld">
+      <label>Phone Number</label>
+      <input type="tel" id="su-ph" placeholder="+91 9876543210" autocomplete="tel"/>
+    </div>
+    <div class="fld">
+      <label>Password</label>
+      <input type="password" id="su-p" placeholder="Min 6 characters" autocomplete="new-password"/>
+    </div>
+    <button class="btn" id="su-btn" onclick="doUp()">Create Account</button>
+    <div class="or">or</div>
+    <button class="gbtn" onclick="doGoogle()">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+    <div class="msg" id="su-msg"></div>
+  </div>
+
+  <div class="foot">Plans from ₹499/month &nbsp;·&nbsp; <a href="pricing.html">See all plans</a></div>
+</div>
+
+<!-- REDIRECT -->
+<div id="redir">
+  <div class="rspin"></div>
+  <p id="redir-msg">Redirecting to Dashboard...</p>
+</div>
+
+<script type="module">
+import { initializeApp }        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth,
+         signInWithEmailAndPassword,
+         createUserWithEmailAndPassword,
+         GoogleAuthProvider, signInWithPopup,
+         signOut, onAuthStateChanged }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc,
+         updateDoc, getDoc,
+         serverTimestamp }             from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const ADMIN = 'tusharbali855@gmail.com';
+const REMINDER_DAYS = 3;
+
+const cfg = {
+  apiKey:"AIzaSyCSKtb-4fG9H8d0uPSaBi8bTAEGJ9nBcbc",
+  authDomain:"concise-8c322.firebaseapp.com",
+  projectId:"concise-8c322",
+  storageBucket:"concise-8c322.firebasestorage.app",
+  messagingSenderId:"450041646748",
+  appId:"1:450041646748:web:1e91c3fd5873233bb02759"
+};
+
+const app  = initializeApp(cfg);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const gp   = new GoogleAuthProvider();
+
+// ════════════════════════════
+// CHECK SUBSCRIPTION
+// ════════════════════════════
+async function checkSub(email) {
+  // ✅ Fix: null/undefined email guard
+  if (!email) return {status:'no_plan'};
+  if (email.toLowerCase() === ADMIN.toLowerCase()) return {status:'admin'};
+  try {
+    const r    = await fetch('check_subscription.php?email=' + encodeURIComponent(email));
+    const text = await r.text();
+    console.log('[checkSub] raw response:', text); // debug
+    return JSON.parse(text);
+  } catch(e) {
+    console.error('[checkSub] fetch error:', e);
+    return {status:'fetch_error'};
+  }
+}
+
+// ════════════════════════════
+// SHOW MODAL
+// ════════════════════════════
+function showModal(type, email, sub) {
+  // Hide auth card
+  document.getElementById('auth-card').style.display = 'none';
+
+  const modal = document.getElementById('sub-modal');
+  const band  = document.getElementById('mband');
+  const icon  = document.getElementById('micon');
+  const title = document.getElementById('mtitle');
+  const subEl = document.getElementById('msub');
+  const meta  = document.getElementById('mmeta');
+  const ctaBtn= document.getElementById('mcta-btn');
+
+  band.className = 'mband red';
+
+  if (type === 'no_plan') {
+    icon.textContent  = '🚀';
+    title.textContent = 'No Active Subscription';
+    subEl.innerHTML   = `To use <strong>ReachOut</strong>, you need an active subscription.
+      Automate job applications, send AI-personalized emails, and deliver your resume — all on autopilot.
+      <br/><br/>Choose a plan below to get started instantly.`;
+    meta.innerHTML = `
+      <div class="mrow"><span class="mlabel">Account</span><span class="mval">${email}</span></div>
+      <div class="mrow"><span class="mlabel">Status</span><span class="mval red">⛔ No subscription found</span></div>`;
+    ctaBtn.textContent = '🚀 View Plans & Subscribe';
+    ctaBtn.href = 'pricing.html';
+
+  } else if (type === 'expired') {
+    band.className = 'mband red';
+    icon.textContent  = '⏰';
+    title.textContent = 'Subscription Expired';
+    subEl.innerHTML   = `Your <strong>${cap(sub.plan)} Plan</strong> has
+      <span class="red">expired</span>. Renew now to continue automating your job search
+      with AI-personalized applications and resume delivery.`;
+    meta.innerHTML = `
+      <div class="mrow"><span class="mlabel">Plan</span><span class="mval">${cap(sub.plan)} · ${bilLabel(sub.billing)}</span></div>
+      <div class="mrow"><span class="mlabel">Expired On</span><span class="mval red">📅 ${sub.expiry}</span></div>
+      <div class="mrow"><span class="mlabel">Account</span><span class="mval">${email}</span></div>`;
+    ctaBtn.textContent = '🔄 Renew Subscription';
+    ctaBtn.href = 'pricing.html';
+
+  } else {
+    icon.textContent  = '⚠️';
+    title.textContent = 'Verification Failed';
+    subEl.innerHTML   = `We couldn't verify your subscription. Please try again or contact support.`;
+    meta.innerHTML    = `<div class="mrow"><span class="mlabel">Account</span><span class="mval">${email}</span></div>`;
+    ctaBtn.textContent = '🔄 Try Again';
+    ctaBtn.href = 'login.html';
+  }
+
+  // Force show modal
+  modal.style.display = 'flex';
+  modal.classList.add('on');
+
+  // Also show toast as fallback backup
+  showToast(type, email, sub);
+}
+
+// ════════════════════════════
+// SHOW TOAST (backup)
+// ════════════════════════════
+function showToast(type, email, sub) {
+  const toast   = document.getElementById('toast');
+  const tIcon   = document.getElementById('t-icon');
+  const tTitle  = document.getElementById('t-title');
+  const tMsg    = document.getElementById('t-msg');
+  const tAct    = document.getElementById('t-actions');
+
+  toast.className = 'on';
+
+  if (type === 'no_plan') {
+    toast.classList.add('t-err');
+    tIcon.textContent  = '🚫';
+    tTitle.textContent = 'No Active Subscription';
+    tMsg.textContent   = 'You need a plan to access ReachOut. Choose from ₹499/month.';
+    tAct.innerHTML     = `<a href="pricing.html" class="toast-btn primary">View Plans →</a>`;
+  } else if (type === 'expired') {
+    toast.classList.add('t-err');
+    tIcon.textContent  = '⏰';
+    tTitle.textContent = 'Subscription Expired';
+    tMsg.textContent   = `Your ${cap(sub.plan)} Plan expired on ${sub.expiry}. Renew to continue.`;
+    tAct.innerHTML     = `<a href="pricing.html" class="toast-btn primary">Renew Now →</a>`;
+  } else if (type === 'reminder') {
+    toast.classList.add('t-warn');
+    tIcon.textContent  = '⚠️';
+    tTitle.textContent = sub.daysLeft === 0 ? 'Expires Today!' : `Expires in ${sub.daysLeft} day${sub.daysLeft>1?'s':''}`;
+    tMsg.textContent   = `Your ${cap(sub.plan)} Plan expires on ${sub.expiry}. Renew to avoid interruption.`;
+    tAct.innerHTML     = `<a href="pricing.html" class="toast-btn primary">Renew Now →</a>
+      <button class="toast-btn ghost" onclick="this.closest('#toast').classList.remove('on');sessionStorage.setItem('rd','1')">Dismiss</button>`;
+    // Auto hide after 8 seconds
+    setTimeout(() => toast.classList.remove('on'), 8000);
+  }
+}
+
+window.closeModalFn = async function() {
+  await signOut(auth);
+  document.getElementById('sub-modal').style.display = 'none';
+  document.getElementById('sub-modal').classList.remove('on');
+  document.getElementById('toast').classList.remove('on');
+  document.getElementById('auth-card').style.display = 'block';
+};
+
+// ════════════════════════════
+// SHOW REMINDER BANNER
+// ════════════════════════════
+function showReminder(sub) {
+  if (sessionStorage.getItem('rd')) return;
+  const el = document.getElementById('rem-txt');
+  if (sub.daysLeft === 0) {
+    el.innerHTML = `⚠️ <span><strong>Your subscription expires TODAY (${sub.expiry})!</strong> Renew immediately to avoid losing access.</span>`;
+  } else if (sub.daysLeft === 1) {
+    el.innerHTML = `⚠️ <span><strong>Subscription expires TOMORROW (${sub.expiry}).</strong> Renew today to keep uninterrupted access.</span>`;
+  } else {
+    el.innerHTML = `⚠️ <span><strong>Subscription expires in ${sub.daysLeft} days</strong> on ${sub.expiry}. Renew to avoid interruption.</span>`;
+  }
+  document.getElementById('rem-banner').classList.add('on');
+  // Also show toast reminder
+  showToast('reminder', '', sub);
+}
+
+// ════════════════════════════
+// AUTH STATE
+// ════════════════════════════
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+
+  // ✅ Fix: wait for email to be available
+  const email = user.email || user.providerData?.[0]?.email || null;
+  if (!email) {
+    console.warn('[auth] No email found on user object:', user);
+    await signOut(auth);
+    showModal('error', 'Unknown', {});
+    return;
+  }
+
+  const sub = await checkSub(email);
+  console.log('[auth] email:', email, '| sub:', sub);
+
+  if (sub.status === 'admin') { go('Welcome back, Admin 👑'); return; }
+
+  if (sub.status === 'no_plan') {
+    await signOut(auth);
+    showModal('no_plan', email, sub);
+    return;
+  }
+
+  if (sub.status === 'expired') {
+    await signOut(auth);
+    showModal('expired', email, sub);
+    return;
+  }
+
+  if (sub.status === 'active') {
+    if (sub.daysLeft <= REMINDER_DAYS) showReminder(sub);
+    go();
+    return;
+  }
+
+  // fetch_error or unknown
+  await signOut(auth);
+  showModal('error', email, sub);
+});
+
+// ════════════════════════════
+// REDIRECT
+// ════════════════════════════
+function go(msg = 'Redirecting to Dashboard...') {
+  document.getElementById('redir-msg').textContent = msg;
+  document.getElementById('redir').classList.add('on');
+  setTimeout(() => { window.location.href = 'index.php'; }, 800);
+}
+
+// ════════════════════════════
+// FIRESTORE
+// ════════════════════════════
+async function logUser(user, isNew, extra={}) {
+  const ref = doc(db, 'users', user.uid);
+  if (isNew) {
+    await setDoc(ref, {
+      uid:user.uid, name:extra.name||user.displayName||'N/A',
+      email:user.email||'N/A', phone:extra.phone||'N/A',
+      action:'signup', createdAt:serverTimestamp(), lastLoginAt:serverTimestamp()
+    });
+  } else {
+    await updateDoc(ref, {lastLoginAt:serverTimestamp(), action:'login'});
+  }
+}
+
+function cap(s)  { return s ? s.charAt(0).toUpperCase()+s.slice(1) : ''; }
+function bilLabel(b){ return {monthly:'Monthly',semi:'6 Months',yearly:'Yearly'}[b]||b||''; }
+function setMsg(id,txt,t){ const e=document.getElementById(id); e.textContent=txt; e.className=`msg on ${t}`; }
+function setBtnLoad(id,on,lbl){ const b=document.getElementById(id); b.disabled=on; b.innerHTML=on?'<span class="spin"></span> Please wait...':lbl; }
+
+// SIGN IN
+window.doIn = async function() {
+  const e=document.getElementById('si-e').value.trim();
+  const p=document.getElementById('si-p').value;
+  if(!e||!p){setMsg('si-msg','⚠️ Please enter your email and password.','err');return;}
+  setBtnLoad('si-btn',true,'Sign In');
+  try {
+    const c=await signInWithEmailAndPassword(auth,e,p);
+    await logUser(c.user,false);
+    setMsg('si-msg','✅ Checking your subscription...','ok');
+  } catch(err) {
+    const m=err.code==='auth/invalid-credential'?'Incorrect email or password.'
+           :err.code==='auth/too-many-requests'?'Too many attempts. Try again later.'
+           :err.message;
+    setMsg('si-msg','❌ '+m,'err');
+    setBtnLoad('si-btn',false,'Sign In');
+  }
+};
+
+// SIGN UP
+window.doUp = async function() {
+  const n=document.getElementById('su-n').value.trim();
+  const e=document.getElementById('su-e').value.trim();
+  const ph=document.getElementById('su-ph').value.trim();
+  const p=document.getElementById('su-p').value;
+  if(!n||!e||!ph||!p){setMsg('su-msg','⚠️ Please fill in all fields.','err');return;}
+  if(p.length<6){setMsg('su-msg','⚠️ Password must be at least 6 characters.','err');return;}
+  setBtnLoad('su-btn',true,'Create Account');
+  try {
+    const c=await createUserWithEmailAndPassword(auth,e,p);
+    await logUser(c.user,true,{name:n,phone:ph});
+    setMsg('su-msg','🎉 Account created! Checking subscription...','ok');
+  } catch(err) {
+    const m=err.code==='auth/email-already-in-use'?'This email is already registered. Please sign in.'
+           :err.code==='auth/invalid-email'?'Please enter a valid email address.'
+           :err.code==='auth/weak-password'?'Please choose a stronger password.'
+           :err.message;
+    setMsg('su-msg','❌ '+m,'err');
+    setBtnLoad('su-btn',false,'Create Account');
+  }
+};
+
+// GOOGLE
+window.doGoogle = async function() {
+  try {
+    const c    = await signInWithPopup(auth, gp);
+    const user = c.user;
+    // ✅ Fix: reload user to ensure email is populated
+    await user.reload();
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    await logUser(user, !snap.exists());
+    // onAuthStateChanged will fire and handle subscription check
+  } catch(err) {
+    if(err.code !== 'auth/popup-closed-by-user') {
+      setMsg('si-msg', '❌ ' + err.message, 'err');
+      document.getElementById('si-msg').classList.add('on');
+    }
+  }
+};
+
+// TAB SWITCH
+window.switchTab = function(t) {
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('on',(i===0)===(t==='in')));
+  document.getElementById('sec-in').classList.toggle('on',t==='in');
+  document.getElementById('sec-up').classList.toggle('on',t==='up');
+  document.getElementById('si-msg').className='msg';
+  document.getElementById('su-msg').className='msg';
+};
+</script>
+
+<script>
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>

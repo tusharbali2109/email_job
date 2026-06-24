@@ -1,0 +1,4 @@
+bulk-mailer/uploads/*
+!bulk-mailer/uploads/.gitkeep
+bulk-mailer/temp_*.csv
+.env

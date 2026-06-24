@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="ReachOut Pricing — Choose your job automation plan"/>
+<meta name="theme-color" content="#4fffb0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ReachOut"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%234fffb0' width='180' height='180' rx='40'/><text x='50%' y='50%' font-size='90' fill='%230c0f14' text-anchor='middle' dy='.35em' font-family='Arial' font-weight='bold'>R</text></svg>">
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%234fffb0' width='100' height='100'/><text x='50%' y='50%' font-size='60' fill='%230c0f14' text-anchor='middle' dy='.35em' font-family='Arial' font-weight='bold'>R</text></svg>"/>
+<title>Pricing — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060a12;--s1:#0d1220;--s2:#121929;--s3:#1a2438;
+  --border:#1e2d45;--accent:#4fffb0;--accent2:#00c9ff;--accent3:#a78bfa;
+  --text:#e8edf5;--muted:#5a6a85;--muted2:#3a4a62;
+  --danger:#ff5f6d;--gold:#f59e0b;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+.bg-layer{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(79,255,176,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 100% 60%,rgba(0,201,255,.05) 0%,transparent 50%),
+    radial-gradient(ellipse 40% 30% at 0% 80%,rgba(167,139,250,.04) 0%,transparent 50%)}
+.grid-overlay{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(79,255,176,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(79,255,176,.025) 1px,transparent 1px);
+  background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)}
+
+nav{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;
+  padding:18px 48px;border-bottom:1px solid rgba(79,255,176,.06);backdrop-filter:blur(12px)}
+.nav-logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px}
+.nav-logo span{color:var(--accent)}
+.nav-back{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;
+  text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:8px 16px;transition:all .2s}
+.nav-back:hover{color:var(--text);border-color:var(--accent)}
+
+.hero{position:relative;z-index:1;text-align:center;padding:56px 20px 36px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(79,255,176,.08);
+  border:1px solid rgba(79,255,176,.2);border-radius:100px;padding:6px 16px;
+  font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;margin-bottom:20px}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-title{font-family:'Syne',sans-serif;font-size:clamp(26px,5vw,52px);font-weight:800;
+  letter-spacing:-2px;line-height:1.05;margin-bottom:14px}
+.hero-title .grad{background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:15px;color:var(--muted);max-width:460px;margin:0 auto 28px;line-height:1.7}
+
+.toggle-wrap{display:inline-flex;background:var(--s2);border:1px solid var(--border);
+  border-radius:100px;padding:4px;gap:4px;margin-bottom:44px}
+.toggle-btn{padding:9px 20px;border-radius:100px;border:none;font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:500;cursor:pointer;transition:all .25s;color:var(--muted);
+  background:transparent;position:relative;white-space:nowrap}
+.toggle-btn.active{background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#060a12;font-weight:700;box-shadow:0 4px 16px rgba(79,255,176,.25)}
+.toggle-btn .save-tag{position:absolute;top:-9px;right:-2px;background:var(--gold);
+  color:#060a12;font-size:9px;font-weight:700;padding:2px 6px;border-radius:100px;letter-spacing:.3px}
+
+.cards-wrap{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);
+  gap:20px;max-width:1060px;margin:0 auto;padding:0 24px 72px}
+
+.plan-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;
+  padding:28px 24px;display:flex;flex-direction:column;position:relative;overflow:hidden;
+  transition:transform .3s,border-color .3s,box-shadow .3s}
+.plan-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(79,255,176,.1),transparent)}
+.plan-card:hover{transform:translateY(-4px);border-color:rgba(79,255,176,.2);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.plan-card.popular{background:linear-gradient(160deg,#0d1a2e 0%,#0a1622 100%);
+  border-color:rgba(79,255,176,.35);
+  box-shadow:0 0 0 1px rgba(79,255,176,.1),0 20px 60px rgba(79,255,176,.08);transform:scale(1.03)}
+.plan-card.popular:hover{transform:scale(1.03) translateY(-4px)}
+.plan-card.popular::before{background:linear-gradient(90deg,transparent,rgba(79,255,176,.4),transparent)}
+.plan-card.popular::after{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:200px;height:200px;background:radial-gradient(circle,rgba(79,255,176,.08) 0%,transparent 70%);pointer-events:none}
+
+.popular-badge{position:absolute;top:14px;right:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#060a12;font-size:10px;font-weight:800;padding:4px 12px;border-radius:100px;letter-spacing:.5px;text-transform:uppercase}
+
+.plan-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;
+  justify-content:center;font-size:19px;margin-bottom:16px}
+.plan-icon.m{background:rgba(79,255,176,.1);border:1px solid rgba(79,255,176,.2)}
+.plan-icon.s{background:rgba(0,201,255,.1);border:1px solid rgba(0,201,255,.2)}
+.plan-icon.y{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2)}
+.plan-name{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--muted);margin-bottom:5px}
+.plan-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+
+.plan-original{font-size:12px;color:var(--muted);text-decoration:line-through;display:block;min-height:16px;margin-bottom:3px}
+.plan-price{display:flex;align-items:flex-end;gap:3px;margin-bottom:3px}
+.plan-currency{font-size:17px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.plan-amount{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;line-height:1;letter-spacing:-2px}
+.plan-amount.c-green{color:var(--accent)}.plan-amount.c-blue{color:var(--accent2)}.plan-amount.c-purple{color:var(--accent3)}
+.plan-period{font-size:12px;color:var(--muted);align-self:flex-end;padding-bottom:6px}
+.plan-save{display:inline-flex;align-items:center;background:rgba(245,158,11,.1);
+  border:1px solid rgba(245,158,11,.25);color:var(--gold);font-size:11px;font-weight:700;
+  padding:3px 10px;border-radius:100px;min-height:20px;margin-bottom:18px;visibility:hidden}
+
+.plan-divider{height:1px;background:var(--border);margin-bottom:16px}
+.plan-features{list-style:none;margin-bottom:22px;display:flex;flex-direction:column;gap:8px;flex:1}
+.plan-features li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--muted);line-height:1.5}
+.fi{width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;margin-top:1px}
+.fi-yes{background:rgba(79,255,176,.12);color:var(--accent)}.fi-no{background:rgba(90,106,133,.15);color:var(--muted2)}
+.plan-features li.af{color:var(--text)}
+.plan-btn{width:100%;padding:13px;border-radius:12px;border:none;font-family:'Syne',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.plan-btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#060a12;box-shadow:0 4px 20px rgba(79,255,176,.25)}
+.plan-btn.primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,255,176,.35)}
+.plan-btn.outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.plan-btn.outline:hover{border-color:rgba(79,255,176,.4);color:var(--accent)}
+
+.trust-strip{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
+  gap:24px;flex-wrap:wrap;padding:0 20px 60px;color:var(--muted);font-size:13px}
+.trust-item{display:flex;align-items:center;gap:7px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(6,10,18,.88);
+  backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex;animation:fdIn .2s ease}
+@keyframes fdIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:20px;
+  width:100%;max-width:420px;overflow:hidden;max-height:90vh;overflow-y:auto;
+  animation:slUp .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes slUp{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--s1);z-index:1}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}
+.modal-close{width:30px;height:30px;border-radius:8px;background:var(--s2);border:1px solid var(--border);
+  color:var(--muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-close:hover{color:var(--danger);border-color:var(--danger)}
+.modal-body{padding:20px 24px}
+.plan-summary{background:var(--s2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.ps-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+.ps-period{font-size:12px;color:var(--muted);margin-top:2px}
+.ps-price{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent);white-space:nowrap}
+.form-field{margin-bottom:12px}
+.form-field label{display:block;font-size:11px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.form-field input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 14px;outline:none;
+  transition:border-color .2s,box-shadow .2s}
+.form-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,255,176,.08)}
+.form-field input::placeholder{color:var(--muted2)}
+.pay-btn{width:100%;padding:14px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#060a12;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:15px;cursor:pointer;margin-top:8px;
+  transition:all .25s;display:flex;align-items:center;justify-content:center;gap:10px}
+.pay-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(79,255,176,.3)}
+.pay-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.secure-note{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:var(--muted);margin-top:10px}
+
+.result-panel{display:none;text-align:center;padding:32px 24px}
+.result-panel.show{display:block;animation:fdIn .3s ease}
+.result-icon{font-size:50px;margin-bottom:12px}
+.result-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:8px}
+.result-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+.result-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.result-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;
+  border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;
+  transition:all .2s;text-decoration:none}
+.result-btn.ok{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#060a12}
+.result-btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.result-btn:hover{transform:translateY(-2px)}
+
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(6,10,18,.3);
+  border-top-color:#060a12;border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px){
+  .cards-wrap{grid-template-columns:1fr 1fr;max-width:680px}
+  .plan-card.popular{transform:none;grid-column:1/-1;
+    display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+  .plan-card.popular .plan-btn{grid-column:1/-1}
+  .plan-card.popular .plan-features{grid-column:2;grid-row:1/6}
+  .plan-card.popular:hover{transform:translateY(-4px)}
+}
+@media(max-width:700px){
+  nav{padding:14px 16px}
+  .nav-logo{font-size:18px}
+  .nav-back{font-size:12px;padding:7px 12px}
+  .hero{padding:36px 16px 24px}
+  .hero-sub{font-size:14px}
+  .toggle-wrap{border-radius:12px}
+  .toggle-btn{padding:8px 14px;font-size:12px}
+  .cards-wrap{grid-template-columns:1fr;max-width:100%;padding:0 16px 52px}
+  .plan-card.popular{grid-column:auto;display:flex;flex-direction:column}
+  .plan-card.popular:hover{transform:translateY(-4px)}
+  .trust-strip{gap:12px;font-size:12px;padding:0 16px 44px}
+}
+@media(max-width:480px){
+  nav{padding:12px 14px}
+  .hero-title{letter-spacing:-1px}
+  .toggle-wrap{width:100%;border-radius:10px}
+  .toggle-btn{flex:1;padding:8px 10px;font-size:11px}
+  .plan-amount{font-size:36px}
+  .cards-wrap{gap:14px;padding:0 12px 44px}
+  .plan-card{padding:22px 18px;border-radius:16px}
+  .modal{border-radius:16px}
+  .modal-body,.modal-head{padding:16px}
+  .plan-summary{flex-direction:column;align-items:flex-start;gap:4px}
+  .result-btns{flex-direction:column;align-items:stretch}
+  .result-btn{justify-content:center}
+  .trust-strip{flex-direction:column;align-items:center;gap:8px}
+}
+@media(max-width:360px){
+  .hero{padding:28px 12px 20px}
+  .toggle-btn .save-tag{display:none}
+}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="grid-overlay"></div>
+
+<nav>
+  <div class="nav-logo">Reach<span>Out</span></div>
+  <a href="login.html" class="nav-back">← Login</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge"><span class="dot"></span>Simple Pricing</div>
+  <h1 class="hero-title">Invest in Your<br/><span class="grad">Dream Career</span></h1>
+  <p class="hero-sub">Automated job applications, AI-personalized emails, resume delivery — all on autopilot.</p>
+  <div class="toggle-wrap">
+    <button class="toggle-btn active" onclick="setBilling('monthly')">Monthly</button>
+    <button class="toggle-btn" onclick="setBilling('semi')">6 Months<span class="save-tag">20% OFF</span></button>
+    <button class="toggle-btn" onclick="setBilling('yearly')">Yearly<span class="save-tag">40% OFF</span></button>
+  </div>
+</div>
+
+<div class="cards-wrap">
+  <!-- STARTER -->
+  <div class="plan-card">
+    <div class="plan-icon m">🚀</div>
+    <div class="plan-name">Starter</div>
+    <div class="plan-desc">Perfect for freshers & first-time job seekers.</div>
+    <span class="plan-original" id="orig-starter"></span>
+    <div class="plan-price">
+      <span class="plan-currency">₹</span>
+      <span class="plan-amount c-green" id="amt-starter">499</span>
+      <span class="plan-period" id="per-starter">/month</span>
+    </div>
+    <div class="plan-save" id="save-starter">saving ₹0</div>
+    <div class="plan-divider"></div>
+    <ul class="plan-features">
+      <li class="af"><span class="fi fi-yes">✓</span>20 emails/day</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Resume attachment</li>
+      <li class="af"><span class="fi fi-yes">✓</span>CSV import</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Email tracking</li>
+      <li><span class="fi fi-no">✕</span>AI personalized emails</li>
+      <li><span class="fi fi-no">✕</span>Auto job fetch</li>
+      <li><span class="fi fi-no">✕</span>Priority support</li>
+    </ul>
+    <button class="plan-btn outline" onclick="openModal('starter')">Get Started</button>
+  </div>
+
+  <!-- PRO -->
+  <div class="plan-card popular">
+    <div class="popular-badge">Most Popular</div>
+    <div class="plan-icon s">⚡</div>
+    <div class="plan-name">Pro</div>
+    <div class="plan-desc">For serious job seekers who want full automation.</div>
+    <span class="plan-original" id="orig-pro"></span>
+    <div class="plan-price">
+      <span class="plan-currency">₹</span>
+      <span class="plan-amount c-blue" id="amt-pro">999</span>
+      <span class="plan-period" id="per-pro">/month</span>
+    </div>
+    <div class="plan-save" id="save-pro">saving ₹0</div>
+    <div class="plan-divider"></div>
+    <ul class="plan-features">
+      <li class="af"><span class="fi fi-yes">✓</span>50 emails/day</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Resume attachment</li>
+      <li class="af"><span class="fi fi-yes">✓</span>CSV import</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Email tracking</li>
+      <li class="af"><span class="fi fi-yes">✓</span>AI personalized emails</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Auto job fetch</li>
+      <li><span class="fi fi-no">✕</span>Priority support</li>
+    </ul>
+    <button class="plan-btn primary" onclick="openModal('pro')">Start Pro Plan →</button>
+  </div>
+
+  <!-- ELITE -->
+  <div class="plan-card">
+    <div class="plan-icon y">👑</div>
+    <div class="plan-name">Elite</div>
+    <div class="plan-desc">Maximum reach with white-glove support.</div>
+    <span class="plan-original" id="orig-elite"></span>
+    <div class="plan-price">
+      <span class="plan-currency">₹</span>
+      <span class="plan-amount c-purple" id="amt-elite">1999</span>
+      <span class="plan-period" id="per-elite">/month</span>
+    </div>
+    <div class="plan-save" id="save-elite">saving ₹0</div>
+    <div class="plan-divider"></div>
+    <ul class="plan-features">
+      <li class="af"><span class="fi fi-yes">✓</span>Unlimited emails/day</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Resume attachment</li>
+      <li class="af"><span class="fi fi-yes">✓</span>CSV import</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Email tracking</li>
+      <li class="af"><span class="fi fi-yes">✓</span>AI personalized emails</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Auto job fetch</li>
+      <li class="af"><span class="fi fi-yes">✓</span>Priority support</li>
+    </ul>
+    <button class="plan-btn outline" onclick="openModal('elite')">Go Elite</button>
+  </div>
+</div>
+
+<div class="trust-strip">
+  <div class="trust-item">🔒 Secure Payments</div>
+  <div class="trust-item">↩️ 7-Day Refund</div>
+  <div class="trust-item">⚡ Instant Activation</div>
+  <div class="trust-item">🇮🇳 Made in India</div>
+  <div class="trust-item">💳 UPI · Cards · NetBanking</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <div id="formState">
+      <div class="modal-head">
+        <div class="modal-title">Complete Payment</div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="plan-summary">
+          <div>
+            <div class="ps-name" id="ms-name">Pro Plan</div>
+            <div class="ps-period" id="ms-period">Monthly</div>
+          </div>
+          <div class="ps-price" id="ms-price">₹999</div>
+        </div>
+        <div class="form-field">
+          <label>Full Name</label>
+          <input type="text" id="pay-name" placeholder="Rahul Sharma" autocomplete="name"/>
+        </div>
+        <div class="form-field">
+          <label>Email Address</label>
+          <input type="email" id="pay-email" placeholder="rahul@gmail.com" autocomplete="email"/>
+        </div>
+        <div class="form-field">
+          <label>Phone Number</label>
+          <input type="tel" id="pay-phone" placeholder="+91 9876543210" autocomplete="tel"/>
+        </div>
+        <button class="pay-btn" id="payBtn" onclick="initiatePayment()">
+          🔒 Pay Securely with Razorpay
+        </button>
+        <div class="secure-note">🔐 256-bit SSL &nbsp;·&nbsp; Powered by Razorpay</div>
+      </div>
+    </div>
+
+    <div class="result-panel" id="successState">
+      <div class="result-icon">🎉</div>
+      <div class="result-title">Payment Successful!</div>
+      <div class="result-sub">Plan activated! 3 seconds mein login page pe redirect ho rahe hain...</div>
+      <div class="result-btns"><a href="login.html" class="result-btn ok">Go to Login →</a></div>
+    </div>
+
+    <div class="result-panel" id="failState">
+      <div class="result-icon">😞</div>
+      <div class="result-title">Payment Failed</div>
+      <div class="result-sub">Koi amount deduct nahi hua. Dobara try karo.</div>
+      <div class="result-btns">
+        <button class="result-btn ok" onclick="retryPayment()">Try Again</button>
+        <button class="result-btn ghost" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const RAZORPAY_KEY = 'rzp_test_SRUzhVlANxKJ0m'; // 🔧 Razorpay dashboard se apni key daalo
+
+const PLANS = {
+  starter:{ name:'Starter', monthly:499,  semi:1199,  yearly:2099  },
+  pro:    { name:'Pro',     monthly:999,  semi:2399,  yearly:4199  },
+  elite:  { name:'Elite',   monthly:1999, semi:4799,  yearly:8399  }
+};
+const B_LABEL = {monthly:'/month',semi:'/6 months',yearly:'/year'};
+const B_NAME  = {monthly:'Monthly',semi:'6 Months (20% off)',yearly:'Yearly (40% off)'};
+
+let billing='monthly', selPlan=null;
+
+function setBilling(t) {
+  billing=t;
+  document.querySelectorAll('.toggle-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['monthly','semi','yearly'][i]===t);
+  });
+  updatePrices();
+}
+
+function updatePrices() {
+  ['starter','pro','elite'].forEach(p=>{
+    const base=PLANS[p].monthly, price=PLANS[p][billing];
+    document.getElementById('amt-'+p).textContent=price.toLocaleString('en-IN');
+    document.getElementById('per-'+p).textContent=B_LABEL[billing];
+    const sv=document.getElementById('save-'+p);
+    const og=document.getElementById('orig-'+p);
+    if(billing!=='monthly'){
+      const months=billing==='semi'?6:12;
+      og.textContent='₹'+(base*months).toLocaleString('en-IN');
+      sv.style.visibility='visible';
+      sv.textContent='🎉 Save ₹'+((base*months)-price).toLocaleString('en-IN');
+    } else {
+      og.textContent='';sv.style.visibility='hidden';
+    }
+  });
+}
+
+function openModal(plan) {
+  selPlan=plan;
+  document.getElementById('formState').style.display='block';
+  document.getElementById('successState').classList.remove('show');
+  document.getElementById('failState').classList.remove('show');
+  const btn=document.getElementById('payBtn');
+  btn.disabled=false;btn.innerHTML='🔒 Pay Securely with Razorpay';
+  document.getElementById('ms-name').textContent=PLANS[plan].name+' Plan';
+  document.getElementById('ms-period').textContent=B_NAME[billing];
+  document.getElementById('ms-price').textContent='₹'+PLANS[plan][billing].toLocaleString('en-IN');
+  document.getElementById('payModal').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal() {
+  document.getElementById('payModal').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+document.getElementById('payModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// Close on Escape key
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+function initiatePayment() {
+  const name=document.getElementById('pay-name').value.trim();
+  const email=document.getElementById('pay-email').value.trim();
+  const phone=document.getElementById('pay-phone').value.trim();
+  if(!name){alert('Naam daalo');return;}
+  if(!email||!email.includes('@')){alert('Valid email daalo');return;}
+  if(!phone){alert('Phone number daalo');return;}
+
+  const price=PLANS[selPlan][billing];
+  const btn=document.getElementById('payBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> Opening...';
+
+  const options={
+    key:RAZORPAY_KEY,amount:price*100,currency:'INR',
+    name:'ReachOut',description:PLANS[selPlan].name+' — '+B_NAME[billing],
+    prefill:{name,email,contact:phone},
+    theme:{color:'#4fffb0'},
+    modal:{ondismiss:function(){btn.disabled=false;btn.innerHTML='🔒 Pay Securely with Razorpay';}},
+    handler:function(response){
+      savePayment({razorpay_payment_id:response.razorpay_payment_id,
+        plan:selPlan,billing,amount:price,name,email,phone,status:'success'});
+    }
+  };
+  try {
+    const rzp=new Razorpay(options);
+    rzp.on('payment.failed',function(r){
+      savePayment({razorpay_payment_id:r.error.metadata?.payment_id||'N/A',
+        plan:selPlan,billing,amount:price,name,email,phone,status:'failed',error:r.error.description});
+    });
+    rzp.open();
+  } catch(e) {
+    alert('Razorpay load nahi hua. Internet check karo.');
+    btn.disabled=false;btn.innerHTML='🔒 Pay Securely with Razorpay';
+  }
+}
+
+async function savePayment(data) {
+  try {
+    await fetch('save_payment.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  } catch(e){console.error('Save failed:',e);}
+  showResult(data.status);
+}
+
+function showResult(status) {
+  document.getElementById('formState').style.display='none';
+  if(status==='success'){
+    document.getElementById('successState').classList.add('show');
+    setTimeout(()=>{window.location.href='login.html';},3000);
+  } else {
+    document.getElementById('failState').classList.add('show');
+  }
+}
+
+function retryPayment(){
+  document.getElementById('failState').classList.remove('show');
+  document.getElementById('formState').style.display='block';
+  const btn=document.getElementById('payBtn');
+  btn.disabled=false;btn.innerHTML='🔒 Pay Securely with Razorpay';
+}
+
+// PWA Service Worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

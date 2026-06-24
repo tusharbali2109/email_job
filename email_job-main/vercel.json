@@ -1,0 +1,15 @@
+{
+  "functions": {
+    "bulk-mailer/*.php": {
+      "runtime": "vercel-php@0.7.2"
+    }
+  },
+  "routes": [
+    { "src": "/", "dest": "/bulk-mailer/index.php" },
+    { "src": "/login", "dest": "/bulk-mailer/login.html" },
+    { "src": "/pricing", "dest": "/bulk-mailer/pricing.html" },
+    { "src": "/([a-zA-Z0-9_-]+\\.php)(.*)", "dest": "/bulk-mailer/$1$2" },
+    { "src": "/([a-zA-Z0-9_-]+\\.html)", "dest": "/bulk-mailer/$1" },
+    { "src": "/(.*\\.(js|css|png|jpg|ico|json|svg|woff|woff2|ttf))", "dest": "/bulk-mailer/$1" }
+  ]
+}
