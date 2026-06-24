@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#4fffb0">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <title>Profile — ReachOut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -308,7 +308,7 @@
           <div class="form-group full">
             <label>Gmail App Password (SMTP)</label>
             <div class="key-field">
-              <input type="password" id="smtpPass" name="smtp_pass" placeholder="xxxx xxxx xxxx xxxx">
+              <input type="password" id="smtpPass" name="smtp_pass" placeholder="xxxx xxxx xxxx xxxx" autocomplete="new-password">
               <button type="button" class="key-toggle" onclick="toggleVis('smtpPass',this)">Show</button>
             </div>
             <div class="hint">Google Account → Security → 2-Step Verification → App Passwords → 16 digit code</div>
@@ -316,7 +316,7 @@
           <div class="form-group full">
             <label>Groq API Key (Free — console.groq.com)</label>
             <div class="key-field">
-              <input type="password" id="groqKey" name="groq_key" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx">
+              <input type="password" id="groqKey" name="groq_key" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" autocomplete="new-password">
               <button type="button" class="key-toggle" onclick="toggleVis('groqKey',this)">Show</button>
             </div>
             <div class="hint">AI email personalization ke liye</div>
@@ -448,15 +448,14 @@ if (profile) {
 
 // Load stats
 const today = new Date().toISOString().split('T')[0];
-const [{ count: todaySent }, { count: totalSent }, { count: opened }, { count: jobsCount }] = await Promise.all([
+const [{ count: todaySent }, { count: totalSent }, { count: jobsCount }] = await Promise.all([
   sb.from('companies').select('*', { count:'exact', head:true }).eq('status','sent').gte('sent_at', today),
   sb.from('companies').select('*', { count:'exact', head:true }).eq('status','sent'),
-  sb.from('companies').select('*', { count:'exact', head:true }).eq('opened', true),
   sb.from('jobs').select('*', { count:'exact', head:true }),
 ]);
 document.getElementById('sTodaySent').textContent = todaySent ?? 0;
 document.getElementById('sTotalSent').textContent = totalSent ?? 0;
-document.getElementById('sOpened').textContent    = opened    ?? 0;
+document.getElementById('sOpened').textContent    = '—';
 document.getElementById('sJobs').textContent      = jobsCount ?? 0;
 
 // Save profile
