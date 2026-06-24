@@ -361,7 +361,7 @@ if (profile) {
   CANDIDATE = { mobile: profile.mobile||'', email: profile.email||'' };
   // Build resume path (Supabase Storage public URL)
   if (profile.resume) {
-    const { data: urlData } = sb.storage.from('resumes').getPublicUrl(profile.resume);
+    const { data: urlData } = sb.storage.from('Resume').getPublicUrl(profile.resume);
     RESUME = urlData?.publicUrl || '';
     document.getElementById('resumeInfo').innerHTML =
       `<span style="color:var(--accent-wa)">📎 Resume will be attached: <strong>${profile.resume}</strong></span>`;
