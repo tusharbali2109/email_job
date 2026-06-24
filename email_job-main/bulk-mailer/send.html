@@ -331,7 +331,7 @@ if (canSendMore <= 0) {
 // Resume URL
 let resumeUrl = '';
 if (profile?.resume) {
-  const { data: urlData } = sb.storage.from('resumes').getPublicUrl(profile.resume);
+  const { data: urlData } = sb.storage.from('Resume').getPublicUrl(profile.resume);
   resumeUrl = urlData?.publicUrl || '';
 }
 
