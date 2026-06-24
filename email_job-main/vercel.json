@@ -1,9 +1,8 @@
 {
-  "functions": {
-    "bulk-mailer/*.php": {
-      "runtime": "vercel-php@0.7.2"
-    }
-  },
+  "builds": [
+    { "src": "bulk-mailer/*.php", "use": "vercel-php@0.7.2" },
+    { "src": "bulk-mailer/**/*.php", "use": "vercel-php@0.7.2" }
+  ],
   "routes": [
     { "src": "/", "dest": "/bulk-mailer/index.php" },
     { "src": "/login", "dest": "/bulk-mailer/login.html" },
