@@ -1,339 +1,124 @@
-const CACHE_NAME = 'reachout-v1';
-const urlsToCache = [
-  '/email_job/bulk-mailer/',
-  '/email_job/bulk-mailer/index.php',
-  '/email_job/bulk-mailer/send.php',
-  '/email_job/bulk-mailer/profile.php',
-  '/email_job/bulk-mailer/template.php',
-  '/email_job/bulk-mailer/manifest.json'
+/* ============================================================
+   ReachOut — Service Worker v3
+   Network-first for pages, cache-first for assets
+   ============================================================ */
+
+const CACHE   = 'reachout-v3';
+const OFFLINE  = '/index.html';
+
+const PRECACHE = [
+  '/index.html',
+  '/send.html',
+  '/jobs.html',
+  '/whatsapp.html',
+  '/whatsapp_logs.html',
+  '/template.html',
+  '/profile.html',
+  '/login.html',
+  '/app.css',
+  '/app.js',
+  '/manifest.json',
 ];
 
-// Install event - cache essential files
+/* ── Install ─────────────────────────────────────────────── */
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE)
+      .then(cache => cache.addAll(PRECACHE).catch(() => {}))
       .then(() => self.skipWaiting())
   );
 });
 
-// Activate event - clean up old caches
+/* ── Activate ────────────────────────────────────────────── */
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if(cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Fetch event - Network first, fallback to cache
+/* ── Fetch ───────────────────────────────────────────────── */
 self.addEventListener('fetch', event => {
-  // Skip cross-origin requests
-  if(!event.request.url.startsWith(self.location.origin)) {
+  const { request } = event;
+
+  // Skip non-GET, cross-origin, Supabase API, and WA service calls
+  if (request.method !== 'GET') return;
+  if (!request.url.startsWith(self.location.origin)) return;
+  if (request.url.includes('supabase.co')) return;
+  if (request.url.includes('localhost:3001')) return;
+  if (request.url.includes('fonts.googleapis.com')) return;
+  if (request.url.includes('fonts.gstatic.com')) return;
+  if (request.url.includes('cdn.jsdelivr.net')) return;
+
+  // HTML pages → network-first
+  if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE).then(c => c.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then(r => r || caches.match(OFFLINE)))
+    );
     return;
   }
 
-  // For navigation requests, use network-first strategy
-  if(event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          // Cache successful responses
-          if(response.ok) {
-            const cache = caches.open(CACHE_NAME);
-            cache.then(c => c.put(event.request, response.clone()));
-          }
-          return response;
-        })
-        .catch(() => {
-          // Fall back to cache if offline
-          return caches.match(event.request)
-            .then(response => response || new Response('Offline - Page not cached'));
-        })
-    );
-  } else {
-    // For other requests (API, assets), use cache-first strategy
-    event.respondWith(
-      caches.match(event.request)
-        .then(response => response || fetch(event.request)
-          .then(response => {
-            if(!response || response.status !== 200 || response.type === 'error') {
-              return response;
-            }
-            // Clone and cache the response
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-            return response;
-          })
-        )
-        .catch(() => new Response('Offline'))
-    );
-  }
+  // CSS / JS / other assets → cache-first
+  event.respondWith(
+    caches.match(request).then(cached => {
+      if (cached) return cached;
+      return fetch(request).then(response => {
+        if (!response || response.status !== 200) return response;
+        const clone = response.clone();
+        caches.open(CACHE).then(c => c.put(request, clone));
+        return response;
+      });
+    }).catch(() => new Response('Offline', { status: 503 }))
+  );
 });
 
-// Handle background sync for email sending
+/* ── Background Sync ─────────────────────────────────────── */
 self.addEventListener('sync', event => {
-  if(event.tag === 'sync-emails') {
+  if (event.tag === 'sync-emails') {
     event.waitUntil(
-      // Attempt to sync emails when connection is restored
-      fetch('/email_job/bulk-mailer/get_pending.php')
-        .catch(() => console.log('Background sync failed'))
+      fetch('/get_pending.php').catch(() => {})
     );
   }
 });
 
-// Handle push notifications
+/* ── Push Notifications ──────────────────────────────────── */
 self.addEventListener('push', event => {
   const data = event.data ? event.data.json() : {};
   const options = {
-    body: data.body || 'ReachOut notification',
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%234fffb0" width="192" height="192" rx="45"/><text x="50%" y="50%" font-size="100" fill="%230c0f14" text-anchor="middle" dy=".35em" font-family="Arial" font-weight="bold">📧</text></svg>',
-    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect fill="%234fffb0" width="96" height="96"/><text x="50%" y="50%" font-size="48" fill="%230c0f14" text-anchor="middle" dy=".35em">📧</text></svg>',
-    tag: 'reachout-notification',
-    requireInteraction: false
+    body:  data.body  || 'ReachOut notification',
+    icon:  data.icon  || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%230a0d12" width="192" height="192" rx="48"/><rect fill="%234fffb0" x="24" y="24" width="144" height="144" rx="36"/><text x="96" y="110" font-size="72" fill="%230a0d12" text-anchor="middle" font-family="Arial" font-weight="bold">R</text></svg>',
+    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect fill="%234fffb0" width="96" height="96" rx="22"/><text x="48" y="62" font-size="52" fill="%230a0d12" text-anchor="middle" font-family="Arial" font-weight="bold">R</text></svg>',
+    tag:   data.tag   || 'reachout',
+    data:  { url: data.url || '/index.html' },
+    actions: [
+      { action: 'open',    title: 'Open App' },
+      { action: 'dismiss', title: 'Dismiss'  },
+    ],
+    requireInteraction: false,
+    vibrate: [100, 50, 100],
   };
-
-  event.waitUntil(self.registration.showNotification('ReachOut', options));
+  event.waitUntil(self.registration.showNotification(data.title || 'ReachOut', options));
 });
 
-// Handle notification click
+/* ── Notification Click ──────────────────────────────────── */
 self.addEventListener('notificationclick', event => {
   event.notification.close();
+  if (event.action === 'dismiss') return;
+  const url = event.notification.data?.url || '/index.html';
   event.waitUntil(
-    clients.matchAll({type: 'window'}).then(clientList => {
-      for(let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if(client.url === '/email_job/bulk-mailer/index.php' && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if(clients.openWindow) {
-        return clients.openWindow('/email_job/bulk-mailer/index.php');
-      }
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      const existing = list.find(c => c.url.includes(url));
+      if (existing && 'focus' in existing) return existing.focus();
+      return clients.openWindow(url);
     })
   );
-});
-/* ================================
-   ReachOut / UserPortal Service Worker
-   ================================ */
-
-const CACHE_NAME = 'portal-cache-v1';
-
-const URLS_TO_CACHE = [
-  '/email_job/bulk-mailer/',
-  '/email_job/bulk-mailer/index.php',
-  '/email_job/bulk-mailer/send.php',
-  '/email_job/bulk-mailer/profile.php',
-  '/email_job/bulk-mailer/template.php',
-  '/email_job/bulk-mailer/manifest.json'
-];
-
-/* ================= INSTALL ================= */
-self.addEventListener('install', event => {
-
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(URLS_TO_CACHE);
-      })
-  );
-
-  self.skipWaiting();
-
-});
-
-
-/* ================= ACTIVATE ================= */
-self.addEventListener('activate', event => {
-
-  event.waitUntil(
-
-    caches.keys().then(cacheNames => {
-
-      return Promise.all(
-
-        cacheNames.map(cacheName => {
-
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-
-        })
-
-      );
-
-    })
-
-  );
-
-  self.clients.claim();
-
-});
-
-
-/* ================= FETCH ================= */
-self.addEventListener('fetch', event => {
-
-  const request = event.request;
-
-  /* Ignore non-GET requests */
-  if (request.method !== 'GET') return;
-
-  /* Ignore cross-origin requests */
-  if (!request.url.startsWith(self.location.origin)) return;
-
-  /* Navigation requests (pages) → network first */
-  if (request.mode === 'navigate') {
-
-    event.respondWith(
-
-      fetch(request)
-        .then(response => {
-
-          if (response && response.status === 200) {
-
-            const clone = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => cache.put(request, clone));
-
-          }
-
-          return response;
-
-        })
-        .catch(() => {
-
-          return caches.match(request)
-            .then(resp => resp || new Response('Offline - Page not cached'));
-
-        })
-
-    );
-
-  }
-
-  /* Assets → cache first */
-  else {
-
-    event.respondWith(
-
-      caches.match(request)
-        .then(cached => {
-
-          if (cached) return cached;
-
-          return fetch(request)
-            .then(response => {
-
-              if (!response || response.status !== 200) {
-                return response;
-              }
-
-              const clone = response.clone();
-
-              caches.open(CACHE_NAME)
-                .then(cache => cache.put(request, clone));
-
-              return response;
-
-            });
-
-        })
-        .catch(() => new Response('Offline'))
-
-    );
-
-  }
-
-});
-
-
-/* ================= BACKGROUND SYNC ================= */
-self.addEventListener('sync', event => {
-
-  if (event.tag === 'sync-emails') {
-
-    event.waitUntil(
-
-      fetch('/email_job/bulk-mailer/get_pending.php')
-        .catch(() => console.log('Background sync failed'))
-
-    );
-
-  }
-
-});
-
-
-/* ================= PUSH NOTIFICATION ================= */
-self.addEventListener('push', event => {
-
-  let data = {};
-
-  if (event.data) {
-    data = event.data.json();
-  }
-
-  const options = {
-
-    body: data.body || 'ReachOut notification',
-
-    icon:
-      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect fill="%234fffb0" width="192" height="192" rx="45"/><text x="50%" y="50%" font-size="100" fill="%230c0f14" text-anchor="middle" dy=".35em">📧</text></svg>',
-
-    badge:
-      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect fill="%234fffb0" width="96" height="96"/><text x="50%" y="50%" font-size="48" fill="%230c0f14" text-anchor="middle" dy=".35em">📧</text></svg>',
-
-    tag: 'reachout-notification',
-    requireInteraction: false
-
-  };
-
-  event.waitUntil(
-
-    self.registration.showNotification('ReachOut', options)
-
-  );
-
-});
-
-
-/* ================= NOTIFICATION CLICK ================= */
-self.addEventListener('notificationclick', event => {
-
-  event.notification.close();
-
-  event.waitUntil(
-
-    clients.matchAll({ type: 'window' })
-      .then(clientList => {
-
-        for (let client of clientList) {
-
-          if (
-            client.url.includes('/email_job/bulk-mailer/index.php') &&
-            'focus' in client
-          ) {
-            return client.focus();
-          }
-
-        }
-
-        if (clients.openWindow) {
-          return clients.openWindow('/email_job/bulk-mailer/index.php');
-        }
-
-      })
-
-  );
-
 });

@@ -2,358 +2,314 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#4fffb0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ReachOut">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2325d366' width='100' height='100'/><text x='50%' y='50%' font-size='60' fill='white' text-anchor='middle' dy='.35em'>💬</text></svg>">
-<title>Send WhatsApp — ReachOut</title>
+<title>WhatsApp — ReachOut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0c0f14; --surface: #141820; --surface2: #1c2230;
-  --border: #252d3d; --accent: #25d366; --accent2: #128c7e;
-  --accent-wa: #25d366; --text: #e8edf5; --muted: #6b7a99;
-  --danger: #ff5f6d; --warning: #ffd166; --radius: 12px;
+:root { --accent: #25d366; --accent2: #128c7e; }
+.contacts-list { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface2); }
+.connect-status { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius-sm); background: var(--surface2); border: 1px solid var(--border); }
+.status-info .status-label { font-size: 14px; font-weight: 600; }
+.status-info .status-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.queue-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.queue-item:last-child { border-bottom: none; }
+.queue-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.qs-queued    { background: var(--muted); }
+.qs-processing{ background: var(--warning); animation: blink 1s infinite; }
+.qs-sent      { background: var(--accent); }
+.qs-delivered { background: var(--accent2); }
+.qs-read      { background: var(--accent2); }
+.qs-failed    { background: var(--danger); }
+.qs-retrying  { background: var(--warning); animation: blink .5s infinite; }
+
+/* QR Modal */
+.qr-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
 }
-body {
-  font-family: 'DM Sans', sans-serif; background: var(--bg);
-  color: var(--text); min-height: 100vh;
-  background-image:
-    radial-gradient(ellipse 70% 50% at 50% -20%, rgba(37,211,102,0.07) 0%, transparent 65%),
-    radial-gradient(ellipse 40% 40% at 90% 90%, rgba(18,140,126,0.05) 0%, transparent 50%);
+.qr-modal-overlay.open { display: flex; }
+.qr-modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 28px 24px;
+  width: 100%; max-width: 360px; text-align: center;
+  animation: slideUp .25s ease;
 }
-.layout { display: flex; min-height: 100vh; }
-.sidebar {
-  width: 240px; flex-shrink: 0; background: var(--surface);
-  border-right: 1px solid var(--border); display: flex;
-  flex-direction: column; padding: 28px 0;
-  position: sticky; top: 0; height: 100vh;
+.qr-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.qr-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+.qr-img-wrap {
+  width: 220px; height: 220px; margin: 0 auto 20px;
+  background: #fff; border-radius: 14px; padding: 10px;
+  border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center;
 }
-.logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; padding: 0 24px 32px; letter-spacing: -0.5px; }
-.logo span { color: #4fffb0; }
-.nav-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); padding: 0 24px 10px; }
-.nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 24px; font-size: 14px; color: var(--muted); text-decoration: none; transition: all 0.15s; border-left: 3px solid transparent; }
-.nav-item:hover { color: var(--text); background: var(--surface2); }
-.nav-item.active { color: var(--accent-wa); border-left-color: var(--accent-wa); background: rgba(37,211,102,0.06); }
-.nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
-.sidebar-bottom { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
-#logout-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; background: rgba(255,95,109,0.1); border: 1px solid rgba(255,95,109,0.35); border-radius: 9px; color: #ff8f97; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-#logout-btn:hover { background: rgba(255,95,109,0.2); color: var(--danger); }
-.version-text { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
-.main { flex: 1; padding: 40px 48px; overflow-x: hidden; }
-.page-header { margin-bottom: 32px; }
-.page-title { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -1px; }
-.page-subtitle { font-size: 14px; color: var(--muted); margin-top: 5px; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
-.card-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.card-body { padding: 24px; }
-.connect-section { display: flex; align-items: flex-start; gap: 32px; flex-wrap: wrap; }
-.connect-left { flex: 1; min-width: 240px; }
-.connect-status { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); margin-bottom: 16px; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.dot-green  { background: var(--accent-wa); box-shadow: 0 0 6px rgba(37,211,102,0.5); }
-.dot-yellow { background: var(--warning); animation: blink 1s infinite; }
-.dot-red    { background: var(--danger); }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.status-label { font-size: 14px; font-weight: 500; }
-.status-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.qr-wrap { text-align: center; }
-.qr-wrap img { width: 220px; height: 220px; border-radius: 12px; border: 3px solid var(--accent-wa); background: white; padding: 6px; }
-.qr-label { font-size: 12px; color: var(--muted); margin-top: 10px; }
-.stat-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
-.stat-chip { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; min-width: 130px; }
-.stat-chip-icon { font-size: 20px; }
-.stat-chip-label { font-size: 11px; color: var(--muted); }
-.stat-chip-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
-.val-total  { color: var(--accent2); } .val-sent { color: var(--accent-wa); }
-.val-fail   { color: var(--danger); }  .val-remain { color: var(--warning); }
-.contacts-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-.contact-search { flex: 1; min-width: 180px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 9px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.15s; }
-.contact-search:focus { border-color: var(--accent-wa); }
-.contact-search::placeholder { color: var(--muted); }
-.contacts-list { max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface2); }
-.contacts-list::-webkit-scrollbar { width: 4px; }
-.contacts-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.contact-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
-.contact-item:last-child { border-bottom: none; }
-.contact-item:hover { background: rgba(37,211,102,0.04); }
-.contact-item input[type=checkbox] { accent-color: var(--accent-wa); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
-.contact-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-wa), var(--accent2)); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: #0c0f14; flex-shrink: 0; }
-.contact-main { flex: 1; min-width: 0; }
-.contact-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.contact-meta { font-size: 12px; color: var(--muted); }
-.contact-phone { font-size: 12px; color: var(--muted); flex-shrink: 0; font-family: monospace; }
-.badge-wa-sent { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; background: rgba(37,211,102,0.15); color: var(--accent-wa); flex-shrink: 0; }
-.no-contacts { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
-.tmpl-preview { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.7; color: var(--text); white-space: pre-wrap; max-height: 200px; overflow-y: auto; font-family: 'DM Sans', monospace; }
-.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: all 0.15s; }
-.btn-wa { background: var(--accent-wa); color: #0c0f14; font-weight: 700; }
-.btn-wa:hover { background: #34eb7a; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,211,102,0.3); }
-.btn-wa:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
-.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-.btn-ghost:hover { color: var(--text); border-color: var(--text); }
-.btn-danger { background: rgba(255,95,109,0.1); color: var(--danger); border: 1px solid rgba(255,95,109,0.3); }
-.btn-danger:hover { background: rgba(255,95,109,0.18); }
-.btn-sm { padding: 7px 14px; font-size: 12px; }
-.progress-wrap { padding: 20px 0; }
-.progress-labels { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-.progress-labels strong { color: var(--text); font-size: 15px; }
-.progress-track { width: 100%; height: 10px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
-.progress-fill { height: 100%; width: 0%; border-radius: 99px; background: linear-gradient(90deg, var(--accent-wa), var(--accent2)); transition: width 0.4s ease; }
-.current-status { display: flex; align-items: center; gap: 14px; padding: 14px 0; min-height: 56px; }
-.pulse-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-wa); flex-shrink: 0; animation: pulse 1.2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);box-shadow:0 0 0 0 rgba(37,211,102,0.4)} 50%{opacity:0.8;transform:scale(1.1);box-shadow:0 0 0 6px rgba(37,211,102,0)} }
-.pulse-dot.idle { background: var(--muted); animation: none; }
-.status-text .name { font-weight: 600; color: var(--text); font-size: 15px; }
-.status-text .sub  { font-size: 13px; color: var(--muted); margin-top: 2px; }
-.log-wrap { max-height: 340px; overflow-y: auto; margin-top: 8px; }
-.log-wrap::-webkit-scrollbar { width: 4px; }
-.log-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.log-entry { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; animation: fadeSlide 0.2s ease; }
-@keyframes fadeSlide { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
-.log-entry:last-child { border-bottom: none; }
-.log-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; margin-top: 2px; }
-.log-main { flex: 1; min-width: 0; }
-.log-name    { font-weight: 500; color: var(--text); }
-.log-meta    { font-size: 12px; color: var(--muted); }
-.log-error   { font-size: 11px; color: var(--danger); margin-top: 3px; word-break: break-word; }
-.log-badge   { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
-.badge-sent  { background: rgba(37,211,102,0.12); color: var(--accent-wa); }
-.badge-failed{ background: rgba(255,95,109,0.12); color: var(--danger); }
-.send-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.done-panel { text-align: center; padding: 40px 20px; }
-.done-icon  { font-size: 52px; margin-bottom: 14px; }
-.done-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; margin-bottom: 6px; }
-.done-sub   { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
-.done-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 28px; }
-.done-stat-val   { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 700; }
-.done-stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.info-banner { background: rgba(255,209,102,0.08); border: 1px solid rgba(255,209,102,0.3); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: var(--warning); margin-bottom: 20px; }
-.select-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.select-bar label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.select-bar label input { accent-color: var(--accent-wa); }
-.selected-count { font-size: 13px; color: var(--accent-wa); font-weight: 600; }
-.menu-toggle { display: none; position: fixed; top: 16px; left: 16px; width: 44px; height: 44px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
-.menu-toggle .line { width: 20px; height: 2px; background: var(--text); border-radius: 1px; }
-.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
-.sidebar-overlay.open { display: block; }
-@media (max-width: 800px) {
-  .sidebar { position: fixed; left: 0; top: 0; height: 100vh; z-index: 100; transform: translateX(-100%); transition: transform 0.3s ease; }
-  .sidebar.open { transform: translateX(0); }
-  .menu-toggle { display: flex; }
-  .main { padding: 20px 16px; padding-top: 76px; }
-  .page-title { font-size: 22px; }
+.qr-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
+.qr-state-msg { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.qr-steps { font-size: 12px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; text-align: left; }
+.qr-steps span { display: block; padding: 3px 0; }
+.qr-connected-banner {
+  display: none; background: rgba(37,211,102,.1); border: 1px solid rgba(37,211,102,.3);
+  border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;
+  color: var(--accent); font-weight: 600; font-size: 14px;
+}
+@keyframes spinQR { to { transform: rotate(360deg); } }
+.qr-spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spinQR .8s linear infinite; margin: 0 auto 12px;
 }
 </style>
 </head>
 <body>
-<div class="layout">
-<button class="menu-toggle" id="menuBtn"><span class="line"></span><span class="line"></span><span class="line"></span></button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app-layout">
 
+<!-- Desktop Sidebar -->
 <aside class="sidebar" id="sidebar">
-  <div class="logo">Reach<span>Out</span></div>
-  <div class="nav-label">Menu</div>
-  <a class="nav-item" href="index.html"><span class="icon">📋</span> Dashboard</a>
-  <a class="nav-item" href="send.html"><span class="icon">📤</span> Send Emails</a>
-  <a class="nav-item active" href="whatsapp.html"><span class="icon">💬</span> Send WhatsApp</a>
-  <a class="nav-item" href="whatsapp_logs.html"><span class="icon">📝</span> WA Logs</a>
-  <a class="nav-item" href="profile.html"><span class="icon">👤</span> My Profile</a>
-  <a class="nav-item" href="template.html"><span class="icon">✏️</span> Template</a>
-  <a class="nav-item" href="jobs.html"><span class="icon">🔍</span> Job Hunt</a>
-  <a class="nav-item" href="http://localhost:3001" target="_blank"><span class="icon">📡</span> WA Dashboard</a>
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Menu</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item active" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
   <div class="sidebar-bottom">
-    <button id="logout-btn">Logout</button>
-    <div class="version-text">ReachOut v2.0 · WhatsApp Module</div>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name"  id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
   </div>
 </aside>
 
-<main class="main">
-  <div class="page-header">
-    <div class="page-title">Send WhatsApp Messages</div>
-    <div class="page-subtitle">Bulk send resumes via WhatsApp using your existing email template</div>
+<!-- Mobile Header -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="header-title">💬 WhatsApp</div>
+    <div class="header-action" id="waStatusChip" style="font-size:12px;color:var(--muted);">Checking…</div>
+  </div>
+</header>
+
+<main class="page-content">
+
+  <!-- Desktop title -->
+  <div style="margin-bottom:20px;" class="hide-mobile">
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">Send WhatsApp</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px;">Bulk send messages to your contacts via WhatsApp</div>
   </div>
 
-  <div class="info-banner">
+  <!-- Local service warning -->
+  <div class="banner banner-warning" id="localWarning">
     ⚡ <strong>Local Service Required:</strong>
-    Run: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">cd whatsapp-service &amp;&amp; node server.js</code>
-    in your terminal before using this feature.
+    Run <code style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;">cd whatsapp-service &amp;&amp; node server.js</code> before using.
   </div>
 
-  <div class="stat-row">
-    <div class="stat-chip"><div class="stat-chip-icon">📱</div><div><div class="stat-chip-label">Selected</div><div class="stat-chip-val val-total" id="statTotal">0</div></div></div>
-    <div class="stat-chip"><div class="stat-chip-icon">✅</div><div><div class="stat-chip-label">Sent</div><div class="stat-chip-val val-sent" id="statSent">0</div></div></div>
-    <div class="stat-chip"><div class="stat-chip-icon">❌</div><div><div class="stat-chip-label">Failed</div><div class="stat-chip-val val-fail" id="statFail">0</div></div></div>
-    <div class="stat-chip"><div class="stat-chip-icon">⏳</div><div><div class="stat-chip-label">Remaining</div><div class="stat-chip-val val-remain" id="statRemain">0</div></div></div>
+  <!-- Stats -->
+  <div class="stats-grid" style="margin-bottom:16px;">
+    <div class="stat-card"><div class="stat-label">Selected</div><div class="stat-value blue" id="statTotal">0</div></div>
+    <div class="stat-card"><div class="stat-label">Sent</div><div class="stat-value green" id="statSent">0</div></div>
+    <div class="stat-card"><div class="stat-label">Failed</div><div class="stat-value red" id="statFail">0</div></div>
+    <div class="stat-card"><div class="stat-label">Remaining</div><div class="stat-value yellow" id="statRemain">0</div></div>
   </div>
 
-  <!-- STEP 1: CONNECTION -->
+  <!-- Step 1: Connection -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">💬 WhatsApp Connection</div>
-      <div style="display:flex;gap:10px;">
+      <div class="card-title">📡 WhatsApp Connection</div>
+      <div style="display:flex;gap:8px;">
         <button class="btn btn-wa btn-sm" id="btnConnect" onclick="connectWA()">Connect</button>
-        <button class="btn btn-ghost btn-sm" id="btnDisconnect" onclick="disconnectWA()" style="display:none">Disconnect</button>
+        <button class="btn btn-ghost btn-sm" id="btnDisconnect" onclick="disconnectWA()" style="display:none;">Disconnect</button>
       </div>
     </div>
     <div class="card-body">
-      <div class="connect-section">
-        <div class="connect-left">
-          <div class="connect-status" id="connectStatus">
-            <div class="status-dot dot-red" id="statusDot"></div>
-            <div>
-              <div class="status-label" id="statusLabel">Not Connected</div>
-              <div class="status-sub"   id="statusSub">Click "Connect" to start</div>
-            </div>
-          </div>
-          <p style="font-size:13px;color:var(--muted);line-height:1.6;">
-            1. Make sure <code style="color:var(--text)">node server.js</code> is running in <code style="color:var(--text)">whatsapp-service/</code><br>
-            2. Scan the QR code with WhatsApp on your phone<br>
-            3. Session is saved — QR scan only needed once
-          </p>
-        </div>
-        <div id="qrContainer" style="display:none" class="qr-wrap">
-          <img id="qrImage" src="" alt="QR Code">
-          <div class="qr-label">Scan with WhatsApp → Linked Devices</div>
+      <div class="connect-status" id="connectStatus">
+        <div class="status-dot dot-red" id="statusDot"></div>
+        <div class="status-info">
+          <div class="status-label" id="statusLabel">Not Connected</div>
+          <div class="status-sub"   id="statusSub">Click Connect to link your WhatsApp</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- STEP 2: CONTACTS -->
+  <!-- Step 2: Select Contacts -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">📋 Select Contacts</div>
-      <span id="contactsLoading" style="font-size:13px;color:var(--muted)">Loading...</span>
+      <span id="contactsCount" style="font-size:12px;color:var(--muted);">Loading…</span>
     </div>
     <div class="card-body" style="padding-bottom:0;">
-      <div class="contacts-toolbar">
-        <input type="text" class="contact-search" id="contactSearch" placeholder="Search by name or company..." oninput="filterContacts()">
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <input type="text" class="form-input" id="contactSearch" placeholder="Search name or company…" oninput="filterContacts()" style="flex:1;min-width:160px;margin:0;">
         <button class="btn btn-ghost btn-sm" onclick="filterSentToggle()" id="filterSentBtn">Hide Sent</button>
       </div>
-      <div class="select-bar">
-        <label><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"> Select All</label>
-        <span class="selected-count" id="selectedCount">0 selected</span>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" class="check-input wa" id="selectAll" onchange="toggleSelectAll(this)">
+          Select all
+        </label>
+        <span class="badge badge-wa" id="selectedCount">0 selected</span>
       </div>
-      <div class="contacts-list" id="contactsList"><div class="no-contacts">Loading contacts...</div></div>
-      <div style="padding:16px 0;font-size:12px;color:var(--muted)">
-        Only contacts with a phone number are shown.
-      </div>
+      <div class="contacts-list" id="contactsList"><div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Loading contacts…</div></div>
+      <div style="padding:10px 0;font-size:11px;color:var(--muted);">Only contacts with a phone number are shown.</div>
     </div>
   </div>
 
-  <!-- STEP 3: TEMPLATE -->
+  <!-- Step 3: Template Preview -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">✏️ Message Template</div>
-      <a href="template.html" class="btn btn-ghost btn-sm">Edit Template</a>
+      <a href="template.html" class="btn btn-ghost btn-sm">Edit →</a>
     </div>
     <div class="card-body">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">
-        Variables: <code>{{name}}</code> = HR name, <code>{{company}}</code> = company,
-        <code>{{mobile}}</code> = your mobile, <code>{{email}}</code> = your email
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">
+        Variables: <code>{{name}}</code> <code>{{company}}</code> <code>{{mobile}}</code> <code>{{email}}</code>
       </div>
-      <div class="tmpl-preview" id="tmplPreview">Loading template...</div>
-      <div id="resumeInfo" style="margin-top:10px;font-size:13px;"></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-size:13px;line-height:1.7;color:var(--text);white-space:pre-wrap;max-height:160px;overflow-y:auto;" id="tmplPreview">Loading template…</div>
+      <div id="resumeInfo" style="margin-top:8px;font-size:12px;"></div>
     </div>
   </div>
 
-  <!-- STEP 4: SEND -->
+  <!-- Step 4: Queue & Send -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">🚀 Bulk Send</div>
-      <div class="send-controls">
-        <button class="btn btn-wa" id="startBtn" onclick="startSending()" disabled>📱 Send WhatsApp</button>
-        <button class="btn btn-ghost" id="pauseBtn" onclick="pauseResume()" style="display:none">⏸ Pause</button>
-        <button class="btn btn-danger btn-sm" id="stopBtn" onclick="stopSending()" style="display:none">■ Stop</button>
-        <button class="btn btn-wa btn-sm" id="retryBtn" onclick="retrySending()" style="display:none">🔄 Retry Failed</button>
+      <div class="card-title">🚀 Bulk Send Queue</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-wa" id="startBtn" onclick="startSending()" disabled>📱 Send</button>
+        <button class="btn btn-ghost btn-sm" id="pauseBtn" onclick="pauseResume()" style="display:none;">⏸ Pause</button>
+        <button class="btn btn-danger btn-sm" id="stopBtn"  onclick="stopSending()"  style="display:none;">■ Stop</button>
+        <button class="btn btn-wa btn-sm"    id="retryBtn" onclick="retrySending()" style="display:none;">🔄 Retry</button>
       </div>
     </div>
     <div class="card-body">
+
+      <!-- Idle -->
       <div id="idleState">
-        <div style="text-align:center;padding:32px;color:var(--muted);">
-          <div style="font-size:36px;margin-bottom:10px;">💬</div>
-          <div style="font-size:15px;">Select contacts above, then click <strong style="color:var(--text)">Send WhatsApp</strong></div>
+        <div class="empty-state" style="padding:28px 20px;">
+          <div class="empty-icon">💬</div>
+          <div class="empty-sub">Select contacts above, then tap <strong style="color:var(--text);">Send</strong></div>
         </div>
       </div>
+
+      <!-- Sending -->
       <div id="sendingState" style="display:none;">
-        <div class="progress-wrap">
+        <div style="margin-bottom:14px;">
           <div class="progress-labels">
             <span><strong id="progressNum">0</strong> / <span id="progressTotal">0</span> messages</span>
             <span id="progressPct">0%</span>
           </div>
-          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-track"><div class="progress-fill wa" id="progressFill"></div></div>
         </div>
-        <div class="current-status">
-          <div class="pulse-dot" id="pulseDot"></div>
-          <div class="status-text">
-            <div class="name" id="currentName">Starting...</div>
-            <div class="sub"  id="currentSub">Preparing messages</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;min-height:44px;">
+          <div class="pulse-dot wa" id="pulseDot"></div>
+          <div>
+            <div style="font-size:14px;font-weight:600;" id="currentName">Starting…</div>
+            <div style="font-size:12px;color:var(--muted);" id="currentSub">Preparing queue</div>
           </div>
         </div>
-        <div class="log-wrap" id="logWrap"></div>
+        <!-- Queue items -->
+        <div id="queueItems" style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);">
+        </div>
       </div>
+
+      <!-- Done -->
       <div class="done-panel" id="donePanel" style="display:none;">
         <div class="done-icon" id="doneIcon">🎉</div>
         <div class="done-title" id="doneTitle">All Done!</div>
-        <div class="done-sub"   id="doneSub">Messages have been sent.</div>
+        <div class="done-sub"   id="doneSub">Messages sent successfully.</div>
         <div class="done-stats">
-          <div class="done-stat"><div class="done-stat-val val-sent" id="doneSent">0</div><div class="done-stat-label">Sent</div></div>
-          <div class="done-stat"><div class="done-stat-val val-fail" id="doneFail">0</div><div class="done-stat-label">Failed</div></div>
+          <div class="done-stat"><div class="done-stat-val green" id="doneSent">0</div><div class="done-stat-label">Sent</div></div>
+          <div class="done-stat"><div class="done-stat-val red"   id="doneFail">0</div><div class="done-stat-label">Failed</div></div>
         </div>
-        <a href="whatsapp.html" class="btn btn-ghost" style="margin-right:10px">🔄 Send More</a>
-        <a href="whatsapp_logs.html" class="btn btn-wa">📝 View Logs</a>
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <a href="whatsapp.html" class="btn btn-ghost">🔄 Send More</a>
+          <a href="whatsapp_logs.html" class="btn btn-wa">📝 View Logs</a>
+        </div>
       </div>
+
     </div>
   </div>
+
 </main>
 </div>
 
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <a class="bn-item" href="index.html"><div class="bn-icon-wrap">📋</div><span class="bn-label">Home</span></a>
+  <a class="bn-item" href="send.html"><div class="bn-icon-wrap">📤</div><span class="bn-label">Send</span></a>
+  <a class="bn-item" href="jobs.html"><div class="bn-icon-wrap">🔍</div><span class="bn-label">Jobs</span></a>
+  <a class="bn-item active" href="whatsapp.html"><div class="bn-icon-wrap">💬</div><span class="bn-label">WhatsApp</span></a>
+  <a class="bn-item" href="profile.html"><div class="bn-icon-wrap">👤</div><span class="bn-label">Profile</span></a>
+</nav>
 
-const sb = createClient(
-  'https://wcsckcyxbixcgjrrjoyo.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjc2NrY3l4Yml4Y2dqcnJqb3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNzA4MTgsImV4cCI6MjA5Nzg0NjgxOH0.YQ_iaVv0HwE1jdQFPN1uYXeqan36TsIs7AY11CPmjTM'
-);
+<!-- QR Connection Modal -->
+<div class="qr-modal-overlay" id="qrModal">
+  <div class="qr-modal">
+    <div class="qr-title">💬 Connect WhatsApp</div>
+    <div class="qr-subtitle" id="qrModalSub">Starting WhatsApp Web…</div>
+
+    <!-- Connected banner -->
+    <div class="qr-connected-banner" id="qrConnectedBanner">
+      ✅ WhatsApp Connected! Closing…
+    </div>
+
+    <!-- QR image area -->
+    <div class="qr-img-wrap" id="qrImgWrap">
+      <div class="qr-spinner" id="qrSpinner"></div>
+      <img id="qrImage" src="" alt="QR Code" style="display:none;width:100%;height:100%;object-fit:contain;">
+    </div>
+
+    <!-- Steps -->
+    <div class="qr-steps" id="qrSteps">
+      <span>1. Open <strong>WhatsApp</strong> on your phone</span>
+      <span>2. Tap <strong>⋮ Menu → Linked Devices</strong></span>
+      <span>3. Tap <strong>"Link a Device"</strong></span>
+      <span>4. Point your camera at this QR code</span>
+    </div>
+
+    <div class="qr-state-msg" id="qrStateMsg" style="color:var(--muted);">Waiting for QR code…</div>
+
+    <button class="btn btn-ghost btn-full" style="margin-top:12px;" onclick="closeQRModal()">Cancel</button>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { sb, setupPage, toast, esc } from './app.js';
+
+const session = await setupPage('whatsapp.html');
+if (!session) throw new Error('No session');
+
+document.getElementById('logout-btn')?.addEventListener('click', async () => {
+  await sb.auth.signOut(); location.href = 'login.html';
+});
 
 const WA_HOST = 'http://localhost:3001';
 
-// Auth guard
-const { data: { session } } = await sb.auth.getSession();
-if (!session) { window.location.href = 'login.html'; }
+let allContacts   = [];
+let selectedIds   = new Set();
+let hideSent      = false;
+let waState       = 'disconnected';
+let qrPollTimer   = null;
+let progressTimer = null;
+let isPaused      = false;
+let TEMPLATE      = '';
+let RESUME        = '';
+let CANDIDATE     = { mobile:'', email:'' };
+let queueLog      = [];  // [{name, company, phone, status}]
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await sb.auth.signOut(); window.location.href = 'login.html';
-});
-
-// Sidebar
-document.getElementById('menuBtn').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('open');
-});
-document.getElementById('sidebarOverlay').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('open');
-});
-
-let allContacts  = [];
-let selectedIds  = new Set();
-let hideSent     = false;
-let waState      = 'disconnected';
-let qrPollTimer  = null;
-let progressTimer= null;
-let isPaused     = false;
-let TEMPLATE     = '';
-let RESUME       = '';
-let CANDIDATE    = { mobile:'', email:'' };
-
-// Load profile + template from Supabase
+/* ── Load profile + template ── */
 const [{ data: profile }, { data: tmpl }] = await Promise.all([
   sb.from('user_profile').select('*').eq('id', 1).maybeSingle(),
   sb.from('email_template').select('*').eq('id', 1).maybeSingle(),
@@ -361,15 +317,14 @@ const [{ data: profile }, { data: tmpl }] = await Promise.all([
 
 if (profile) {
   CANDIDATE = { mobile: profile.mobile||'', email: profile.email||'' };
-  // Build resume path (Supabase Storage public URL)
   if (profile.resume) {
     const { data: urlData } = sb.storage.from('Resume').getPublicUrl(profile.resume);
     RESUME = urlData?.publicUrl || '';
     document.getElementById('resumeInfo').innerHTML =
-      `<span style="color:var(--accent-wa)">📎 Resume will be attached: <strong>${profile.resume}</strong></span>`;
+      `<span style="color:var(--accent);">📎 ${profile.resume} will be attached</span>`;
   } else {
     document.getElementById('resumeInfo').innerHTML =
-      `<span style="color:var(--warning)">⚠️ No resume found. Upload in <a href="profile.html" style="color:var(--warning)">Profile</a>.</span>`;
+      `<span style="color:var(--warning);">⚠️ No resume — <a href="profile.html" style="color:var(--warning);">upload in Profile</a></span>`;
   }
 }
 
@@ -378,14 +333,14 @@ if (tmpl) {
   const plain = TEMPLATE.replace(/<br\s*\/?>/gi,'\n').replace(/<\/p>/gi,'\n\n').replace(/<[^>]+>/g,'').trim();
   document.getElementById('tmplPreview').textContent = plain;
 } else {
-  document.getElementById('tmplPreview').textContent = 'No template found. Please create one in Template page.';
+  document.getElementById('tmplPreview').textContent = 'No template found. Create one in Template page.';
 }
 
-// Load contacts
+/* ── Load contacts ── */
 async function loadContacts() {
-  const { data } = await sb.from('companies').select('*').not('phone', 'is', null).neq('phone', '').order('name');
+  const { data } = await sb.from('companies').select('*').not('phone','is',null).neq('phone','').order('name');
   allContacts = data || [];
-  document.getElementById('contactsLoading').textContent = allContacts.length + ' contacts with phone';
+  document.getElementById('contactsCount').textContent = `${allContacts.length} with phone`;
   renderContacts();
 }
 
@@ -401,33 +356,32 @@ function getFiltered() {
 function renderContacts() {
   const list = document.getElementById('contactsList');
   const data = getFiltered();
-  if (!data.length) { list.innerHTML = '<div class="no-contacts">No contacts found.</div>'; updateCount(); return; }
+  if (!data.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No contacts found.</div>'; updateCount(); return; }
   list.innerHTML = data.map(c => `
     <div class="contact-item" onclick="toggleContact(${c.id},this)">
-      <input type="checkbox" id="chk_${c.id}" ${selectedIds.has(c.id)?'checked':''} onclick="event.stopPropagation();toggleContact(${c.id},this.closest('.contact-item'))">
-      <div class="contact-avatar">${(c.name||'?')[0].toUpperCase()}</div>
+      <input type="checkbox" class="check-input wa" id="chk_${c.id}" ${selectedIds.has(c.id)?'checked':''} onclick="event.stopPropagation();toggleContact(${c.id},this.closest('.contact-item'))">
+      <div class="contact-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">${(c.name||'?')[0].toUpperCase()}</div>
       <div class="contact-main">
         <div class="contact-name">${esc(c.name)}</div>
-        <div class="contact-meta">${esc(c.company)}</div>
+        <div class="contact-meta">${esc(c.company)} · ${esc(c.phone||c.contact||'')}</div>
       </div>
-      <div class="contact-phone">${esc(c.phone||c.contact||'')}</div>
-      ${c.wa_sent ? '<span class="badge-wa-sent">✓ Sent</span>' : ''}
+      ${c.wa_sent ? '<span class="badge badge-wa" style="font-size:10px;">✓ Sent</span>' : ''}
     </div>`).join('');
   updateCount();
 }
 
 window.toggleContact = (id, row) => {
   const cb = document.getElementById('chk_' + id);
-  if (selectedIds.has(id)) { selectedIds.delete(id); if(cb) cb.checked=false; row.style.background=''; }
-  else { selectedIds.add(id); if(cb) cb.checked=true; row.style.background='rgba(37,211,102,0.06)'; }
+  if (selectedIds.has(id)) { selectedIds.delete(id); if(cb) cb.checked=false; if(row) row.style.background=''; }
+  else { selectedIds.add(id); if(cb) cb.checked=true; if(row) row.style.background='rgba(37,211,102,.06)'; }
   updateCount();
 };
+
 window.toggleSelectAll = (el) => {
-  const data = getFiltered();
-  if (el.checked) data.forEach(c => selectedIds.add(c.id));
-  else            data.forEach(c => selectedIds.delete(c.id));
+  getFiltered().forEach(c => el.checked ? selectedIds.add(c.id) : selectedIds.delete(c.id));
   renderContacts();
 };
+
 window.filterContacts   = renderContacts;
 window.filterSentToggle = () => {
   hideSent = !hideSent;
@@ -437,85 +391,227 @@ window.filterSentToggle = () => {
 
 function updateCount() {
   const n = selectedIds.size;
-  document.getElementById('selectedCount').textContent = n + ' selected';
-  document.getElementById('statTotal').textContent     = n;
-  document.getElementById('statRemain').textContent    = n;
+  document.getElementById('selectedCount').textContent = `${n} selected`;
+  document.getElementById('selectedCount').style.display = n > 0 ? 'inline-flex' : 'none';
+  document.getElementById('statTotal').textContent   = n;
+  document.getElementById('statRemain').textContent  = n;
   document.getElementById('startBtn').disabled = (n === 0 || waState !== 'ready');
 }
 
-/* ─── WhatsApp status ─── */
+/* ── WhatsApp Status ── */
 async function checkStatus() {
   try {
     const r = await fetch(WA_HOST + '/status');
     const d = await r.json();
     waState = d.state;
-    updateStatusUI(d.state, d.hasQR);
-  } catch (_) { waState = 'disconnected'; updateStatusUI('disconnected', false); }
+    updateStatusUI(d.state);
+    document.getElementById('localWarning').style.display = 'none';
+  } catch {
+    waState = 'disconnected';
+    updateStatusUI('disconnected');
+  }
 }
 
-function updateStatusUI(state, hasQR) {
+function updateStatusUI(state) {
   const dot   = document.getElementById('statusDot');
   const label = document.getElementById('statusLabel');
   const sub   = document.getElementById('statusSub');
-  const qrBox = document.getElementById('qrContainer');
   const btnC  = document.getElementById('btnConnect');
   const btnD  = document.getElementById('btnDisconnect');
+  const chip  = document.getElementById('waStatusChip');
 
-  dot.className = 'status-dot ' + ({disconnected:'dot-red',initializing:'dot-yellow',qr:'dot-yellow',ready:'dot-green'}[state]||'dot-red');
+  const dotMap = { disconnected:'dot-red', initializing:'dot-yellow', qr:'dot-yellow', ready:'dot-green' };
+  dot.className = 'status-dot ' + (dotMap[state] || 'dot-red');
 
   if (state === 'disconnected') {
-    label.textContent='Not Connected'; sub.textContent='Click Connect to start WhatsApp session';
-    qrBox.style.display='none'; btnC.style.display='inline-flex'; btnD.style.display='none';
-    clearInterval(qrPollTimer);
+    label.textContent = 'Not Connected';
+    sub.textContent   = 'Click Connect to link your WhatsApp';
+    btnC.style.display = 'inline-flex'; btnD.style.display = 'none';
+    chip.textContent = '🔴 Offline'; chip.style.color = 'var(--danger)';
   } else if (state === 'initializing') {
-    label.textContent='Initializing...'; sub.textContent='Starting WhatsApp Web, please wait';
-    btnC.style.display='none'; btnD.style.display='inline-flex';
+    label.textContent = 'Initializing…';
+    sub.textContent   = 'Starting WhatsApp Web, please wait…';
+    btnC.style.display = 'none'; btnD.style.display = 'inline-flex';
+    chip.textContent = '🟡 Starting…'; chip.style.color = 'var(--warning)';
   } else if (state === 'qr') {
-    label.textContent='Scan QR Code'; sub.textContent='Open WhatsApp → Linked Devices → Link a Device';
-    qrBox.style.display='block'; btnC.style.display='none'; btnD.style.display='inline-flex';
-    if (!qrPollTimer) qrPollTimer = setInterval(loadQR, 3000);
-    loadQR();
+    label.textContent = 'Scan QR Code';
+    sub.textContent   = 'Check the popup — scan with your phone';
+    btnC.style.display = 'none'; btnD.style.display = 'inline-flex';
+    chip.textContent = '🟡 Scan QR'; chip.style.color = 'var(--warning)';
   } else if (state === 'ready') {
-    label.textContent='Connected ✓'; sub.textContent='WhatsApp is ready to send messages';
-    qrBox.style.display='none'; btnC.style.display='none'; btnD.style.display='inline-flex';
-    clearInterval(qrPollTimer); qrPollTimer = null;
+    label.textContent = 'Connected ✓';
+    sub.textContent   = 'WhatsApp is ready to send messages';
+    btnC.style.display = 'none'; btnD.style.display = 'inline-flex';
+    chip.textContent = '🟢 Connected'; chip.style.color = 'var(--accent)';
     if (selectedIds.size > 0) document.getElementById('startBtn').disabled = false;
   }
 }
 
 async function loadQR() {
-  try { const r=await fetch(WA_HOST+'/qr'); const d=await r.json(); if(d.qr) document.getElementById('qrImage').src=d.qr; } catch(_){}
+  try {
+    const r = await fetch(WA_HOST + '/qr');
+    const d = await r.json();
+    if (d.qr) {
+      const img = document.getElementById('qrImage');
+      img.src = d.qr;
+      img.style.display = 'block';
+      document.getElementById('qrSpinner').style.display = 'none';
+      document.getElementById('qrStateMsg').textContent = 'Scan this QR with your phone';
+      document.getElementById('qrStateMsg').style.color = 'var(--accent)';
+    }
+  } catch {}
 }
+
+let qrModalPollTimer = null;
+
 window.connectWA = async () => {
-  document.getElementById('statusLabel').textContent = 'Connecting...';
-  document.getElementById('btnConnect').disabled = true;
-  try { await fetch(WA_HOST+'/init',{method:'POST'}); setTimeout(checkStatus,1500); }
-  catch(_) { alert('Cannot reach WhatsApp service.\nMake sure node server.js is running in whatsapp-service/'); document.getElementById('btnConnect').disabled=false; }
+  const btn = document.getElementById('btnConnect');
+  btn.disabled = true;
+
+  // Check service is reachable first
+  try {
+    await fetch(WA_HOST + '/status');
+  } catch {
+    toast('⚠️ Node service not running. Start it with: cd whatsapp-service && node server.js', 'error', 6000);
+    btn.disabled = false;
+    return;
+  }
+
+  // Open QR modal
+  openQRModal();
+
+  // Tell server to init WhatsApp
+  try {
+    await fetch(WA_HOST + '/init', { method: 'POST' });
+  } catch {
+    closeQRModal();
+    toast('Failed to start WhatsApp service.', 'error');
+    btn.disabled = false;
+    return;
+  }
+
+  // Animated status messages while waiting
+  const initMsgs = [
+    'Launching WhatsApp Web…',
+    'Starting browser engine…',
+    'Loading WhatsApp…',
+    'Almost there, generating QR…',
+    'Waiting for QR code…',
+  ];
+  let msgIdx = 0;
+  const msgTimer = setInterval(() => {
+    msgIdx = (msgIdx + 1) % initMsgs.length;
+    const sub = document.getElementById('qrModalSub');
+    if (sub && sub.textContent !== 'Scan the QR code with WhatsApp') {
+      sub.textContent = initMsgs[msgIdx];
+    }
+  }, 4000);
+
+  // Show "taking longer than expected" hint after 35s
+  const slowTimer = setTimeout(() => {
+    const msg = document.getElementById('qrStateMsg');
+    if (msg && msg.textContent === 'Waiting for QR code…') {
+      msg.textContent = 'Taking longer than usual… Chrome is still loading.';
+      msg.style.color = 'var(--warning)';
+    }
+  }, 35000);
+
+  // Poll until QR appears or connected
+  qrModalPollTimer = setInterval(async () => {
+    try {
+      const r = await fetch(WA_HOST + '/status');
+      const d = await r.json();
+
+      if (d.state === 'qr') {
+        clearInterval(msgTimer);
+        document.getElementById('qrModalSub').textContent = 'Scan the QR code with WhatsApp';
+        loadQR();
+      } else if (d.state === 'initializing') {
+        // messages handled by msgTimer above
+      } else if (d.state === 'ready') {
+        // Connected!
+        clearInterval(qrModalPollTimer); qrModalPollTimer = null;
+        document.getElementById('qrImgWrap').style.display = 'none';
+        document.getElementById('qrSteps').style.display = 'none';
+        document.getElementById('qrStateMsg').style.display = 'none';
+        document.getElementById('qrModalSub').textContent = 'WhatsApp linked successfully';
+        document.getElementById('qrConnectedBanner').style.display = 'block';
+        updateStatusUI('ready', false);
+        checkStatus();
+        setTimeout(closeQRModal, 2000);
+      }
+    } catch {}
+  }, 2000);
 };
+
+window.openQRModal = () => {
+  // Reset modal state
+  document.getElementById('qrImage').style.display = 'none';
+  document.getElementById('qrImage').src = '';
+  document.getElementById('qrSpinner').style.display = 'block';
+  document.getElementById('qrImgWrap').style.display = 'flex';
+  document.getElementById('qrSteps').style.display = 'block';
+  document.getElementById('qrStateMsg').style.display = 'block';
+  document.getElementById('qrStateMsg').textContent = 'Waiting for QR code…';
+  document.getElementById('qrStateMsg').style.color = 'var(--muted)';
+  document.getElementById('qrConnectedBanner').style.display = 'none';
+  document.getElementById('qrModalSub').textContent = 'Starting WhatsApp Web…';
+  document.getElementById('qrModal').classList.add('open');
+};
+
+window.closeQRModal = () => {
+  clearInterval(qrModalPollTimer); qrModalPollTimer = null;
+  document.getElementById('qrModal').classList.remove('open');
+  document.getElementById('btnConnect').disabled = false;
+};
+
 window.disconnectWA = async () => {
   if (!confirm('Disconnect WhatsApp?')) return;
-  await fetch(WA_HOST+'/disconnect',{method:'POST'}).catch(()=>{});
+  await fetch(WA_HOST + '/disconnect', { method: 'POST' }).catch(() => {});
   checkStatus();
 };
 
-/* ─── Send ─── */
+/* ── Send ── */
 window.startSending = async () => {
-  if (waState !== 'ready') { alert('Connect WhatsApp first.'); return; }
+  if (waState !== 'ready') { toast('Connect WhatsApp first.', 'warning'); return; }
   const contacts = allContacts.filter(c => selectedIds.has(c.id));
-  document.getElementById('startBtn').style.display   = 'none';
-  document.getElementById('pauseBtn').style.display   = 'inline-flex';
-  document.getElementById('stopBtn').style.display    = 'inline-flex';
-  document.getElementById('idleState').style.display  = 'none';
+  if (!contacts.length) return;
+
+  document.getElementById('startBtn').style.display  = 'none';
+  document.getElementById('pauseBtn').style.display  = 'inline-flex';
+  document.getElementById('stopBtn').style.display   = 'inline-flex';
+  document.getElementById('idleState').style.display = 'none';
   document.getElementById('sendingState').style.display = 'block';
   document.getElementById('progressTotal').textContent  = contacts.length;
+
+  // Init queue log display
+  queueLog = contacts.map(c => ({ id: c.id, name: c.name, company: c.company, phone: c.phone||c.contact||'', status: 'queued' }));
+  renderQueueItems();
 
   const res = await fetch(WA_HOST+'/send', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ contacts, template:TEMPLATE, resume:RESUME, candidateMobile:CANDIDATE.mobile, candidateEmail:CANDIDATE.email }),
   });
-  if (!res.ok) { const e=await res.json(); alert('Error: '+(e.error||'Unknown')); resetControls(); return; }
+  if (!res.ok) { const e=await res.json(); toast('Error: '+(e.error||'Unknown'), 'error'); resetControls(); return; }
+
+  toast(`Queue created — sending ${contacts.length} messages`, 'info', 4000);
   progressTimer = setInterval(pollProgress, 1500);
 };
+
+function renderQueueItems() {
+  const statusLabel = { queued:'Queued', processing:'Sending…', sent:'Sent', delivered:'Delivered', read:'Read', failed:'Failed', retrying:'Retrying' };
+  document.getElementById('queueItems').innerHTML = queueLog.map(item => `
+    <div class="queue-item">
+      <div class="queue-status-dot qs-${item.status}"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.name)}</div>
+        <div style="font-size:11px;color:var(--muted);">${esc(item.company)}</div>
+      </div>
+      <span style="font-size:11px;color:var(--muted);flex-shrink:0;">${statusLabel[item.status]||item.status}</span>
+    </div>`).join('');
+}
+
+let lastLogCount = 0;
 
 async function pollProgress() {
   try {
@@ -529,96 +625,119 @@ async function pollProgress() {
     document.getElementById('statSent').textContent     = d.sent;
     document.getElementById('statFail').textContent     = d.failed;
     document.getElementById('statRemain').textContent   = d.remaining;
-    if (d.current) { document.getElementById('currentName').textContent=d.current; document.getElementById('currentSub').textContent='Sending message...'; document.getElementById('pulseDot').className='pulse-dot'; }
-    if (d.isPaused) { document.getElementById('currentName').textContent='Paused'; document.getElementById('currentSub').textContent='Click Resume to continue'; document.getElementById('pulseDot').className='pulse-dot idle'; }
+
+    if (d.current) {
+      document.getElementById('currentName').textContent = d.current;
+      document.getElementById('currentSub').textContent  = `Sending ${done+1}/${d.total}`;
+      document.getElementById('pulseDot').classList.remove('idle');
+    }
+    if (d.isPaused) {
+      document.getElementById('currentName').textContent = 'Paused';
+      document.getElementById('currentSub').textContent  = 'Tap Resume to continue';
+      document.getElementById('pulseDot').classList.add('idle');
+    }
+
+    // Update queue log from server logs
     fetchLogs();
-    if (!d.isSending && !d.isPaused) { clearInterval(progressTimer); fetchLogs(()=>showDone(d)); if(d.failed>0) document.getElementById('retryBtn').style.display='inline-flex'; }
-  } catch(_) {}
+
+    if (!d.isSending && !d.isPaused) {
+      clearInterval(progressTimer);
+      fetchLogs(() => showDone(d));
+      if (d.failed > 0) document.getElementById('retryBtn').style.display = 'inline-flex';
+    }
+  } catch {}
 }
 
-let lastLogCount = 0;
 async function fetchLogs(cb) {
   try {
     const r = await fetch(WA_HOST+'/logs');
     const logs = await r.json();
     if (logs.length !== lastLogCount) {
       lastLogCount = logs.length;
-      document.getElementById('logWrap').innerHTML = logs.map(l=>`
-        <div class="log-entry">
-          <div class="log-icon">${l.status==='sent'?'✅':'❌'}</div>
-          <div class="log-main">
-            <div class="log-name">${esc(l.name)}</div>
-            <div class="log-meta">${esc(l.company)} · ${esc(l.phone)}</div>
-            ${l.error?`<div class="log-error">⚠️ ${esc(l.error)}</div>`:''}
-          </div>
-          <div class="log-badge ${l.status==='sent'?'badge-sent':'badge-failed'}">${l.status}</div>
-        </div>`).join('');
+      // Update queueLog statuses
+      logs.forEach(l => {
+        const item = queueLog.find(q => q.phone === l.phone);
+        if (item) item.status = l.status === 'sent' ? 'sent' : 'failed';
+      });
+      renderQueueItems();
     }
     if (cb) cb();
-  } catch(_) { if(cb) cb(); }
+  } catch { if(cb) cb(); }
 }
 
 function showDone(d) {
-  document.getElementById('sendingState').style.display='none';
-  document.getElementById('donePanel').style.display='block';
-  document.getElementById('doneSent').textContent=d.sent;
-  document.getElementById('doneFail').textContent=d.failed;
-  document.getElementById('pauseBtn').style.display='none';
-  document.getElementById('stopBtn').style.display='none';
-  if (d.failed>0&&d.sent===0) { document.getElementById('doneIcon').textContent='😞'; document.getElementById('doneTitle').textContent='All messages failed'; }
-  else if (d.failed>0) { document.getElementById('doneIcon').textContent='⚠️'; document.getElementById('doneTitle').textContent='Mostly done!'; document.getElementById('doneSub').textContent=d.failed+' failed. Use Retry.'; }
+  document.getElementById('sendingState').style.display = 'none';
+  document.getElementById('donePanel').style.display    = 'block';
+  document.getElementById('doneSent').textContent = d.sent;
+  document.getElementById('doneFail').textContent = d.failed;
+  document.getElementById('pauseBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display  = 'none';
 
-  // Save logs to Supabase
+  if (d.failed > 0 && d.sent === 0) {
+    document.getElementById('doneIcon').textContent  = '😞';
+    document.getElementById('doneTitle').textContent = 'All messages failed';
+    document.getElementById('doneSub').textContent   = 'Check WhatsApp connection.';
+    toast(`${d.failed} messages failed`, 'error');
+  } else if (d.failed > 0) {
+    document.getElementById('doneIcon').textContent  = '⚠️';
+    document.getElementById('doneTitle').textContent = 'Mostly done!';
+    document.getElementById('doneSub').textContent   = `${d.failed} failed — use Retry.`;
+    toast(`${d.sent} sent, ${d.failed} failed`, 'warning');
+  } else {
+    toast(`🎉 ${d.sent} messages sent successfully!`, 'success', 5000);
+  }
+
+  // Save to Supabase
   fetch(WA_HOST+'/logs').then(r=>r.json()).then(async logs => {
     if (!logs.length) return;
-    const rows = logs.map(l => ({ name:l.name, phone:l.phone, company:l.company, status:l.status, error:l.error||null, sent_at: new Date().toISOString() }));
+    const rows = logs.map(l => ({ name:l.name, phone:l.phone, company:l.company, status:l.status, error:l.error||null, sent_at:new Date().toISOString() }));
     await sb.from('whatsapp_logs').insert(rows);
-    // Mark wa_sent on sent contacts
     const sentPhones = logs.filter(l=>l.status==='sent').map(l=>l.phone);
     if (sentPhones.length) await sb.from('companies').update({ wa_sent:true }).in('phone', sentPhones);
   });
 }
 
 window.pauseResume = async () => {
-  const btn = document.getElementById('pauseBtn');
   const action = isPaused ? 'resume' : 'pause';
   await fetch(WA_HOST+'/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action})});
   isPaused = !isPaused;
-  btn.textContent = isPaused ? '▶ Resume' : '⏸ Pause';
+  document.getElementById('pauseBtn').textContent = isPaused ? '▶ Resume' : '⏸ Pause';
+  toast(isPaused ? 'Queue paused' : 'Queue resumed', 'info');
 };
 
 window.stopSending = async () => {
   if (!confirm('Stop sending?')) return;
   await fetch(WA_HOST+'/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'stop'})});
   clearInterval(progressTimer);
-  fetchLogs(()=>{ showDone({sent:parseInt(document.getElementById('statSent').textContent),failed:parseInt(document.getElementById('statFail').textContent)}); document.getElementById('doneTitle').textContent='Stopped'; document.getElementById('doneIcon').textContent='⏹️'; });
+  const sent = parseInt(document.getElementById('statSent').textContent) || 0;
+  const fail = parseInt(document.getElementById('statFail').textContent) || 0;
+  fetchLogs(() => showDone({sent, failed:fail, isSending:false, isPaused:false}));
+  document.getElementById('doneTitle').textContent = 'Stopped';
+  document.getElementById('doneIcon').textContent  = '⏹️';
+  toast('Queue stopped', 'warning');
 };
 
 window.retrySending = async () => {
-  document.getElementById('retryBtn').style.display='none';
-  document.getElementById('donePanel').style.display='none';
-  document.getElementById('sendingState').style.display='block';
-  document.getElementById('stopBtn').style.display='inline-flex';
-  lastLogCount=0;
+  document.getElementById('retryBtn').style.display    = 'none';
+  document.getElementById('donePanel').style.display   = 'none';
+  document.getElementById('sendingState').style.display= 'block';
+  document.getElementById('stopBtn').style.display     = 'inline-flex';
+  lastLogCount = 0;
   await fetch(WA_HOST+'/retry',{method:'POST'});
-  progressTimer=setInterval(pollProgress,1500);
+  progressTimer = setInterval(pollProgress, 1500);
+  toast('Retrying failed messages…', 'info');
 };
 
 function resetControls() {
-  document.getElementById('startBtn').style.display='inline-flex';
-  document.getElementById('pauseBtn').style.display='none';
-  document.getElementById('stopBtn').style.display='none';
-  document.getElementById('startBtn').disabled=false;
+  document.getElementById('startBtn').style.display = 'inline-flex';
+  document.getElementById('pauseBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display  = 'none';
+  document.getElementById('startBtn').disabled = false;
 }
 
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// Init
 loadContacts();
 checkStatus();
 setInterval(checkStatus, 8000);
-
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>

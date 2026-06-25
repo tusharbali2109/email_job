@@ -2,258 +2,189 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#4fffb0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ReachOut">
 <link rel="manifest" href="manifest.json">
 <title>Job Hunt — ReachOut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0c0f14;--surface:#141820;--surface2:#1c2230;
-  --border:#252d3d;--accent:#4fffb0;--accent2:#00c9ff;
-  --text:#e8edf5;--muted:#6b7a99;--danger:#ff5f6d;--warning:#ffd166;--radius:12px;
+.extract-bar {
+  display: none; align-items: center; gap: 10px;
+  padding: 12px 16px; background: rgba(79,255,176,.08);
+  border: 1px solid rgba(79,255,176,.25); border-radius: var(--radius);
+  margin-bottom: 14px; flex-wrap: wrap;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
-  background-image:radial-gradient(ellipse 60% 40% at 80% -10%,rgba(79,255,176,.07) 0%,transparent 60%)}
-.layout{display:flex;min-height:100vh}
-.sidebar{width:240px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;padding:28px 0;position:sticky;top:0;height:100vh}
-.logo{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;padding:0 24px 32px;letter-spacing:-.5px}
-.logo span{color:var(--accent)}
-.nav-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:0 24px 10px}
-.nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;font-size:14px;color:var(--muted);
-  text-decoration:none;transition:all .15s;border-left:3px solid transparent}
-.nav-item:hover{color:var(--text);background:var(--surface2)}
-.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(79,255,176,.06)}
-.nav-item .icon{font-size:17px;width:22px;text-align:center}
-.sidebar-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
-#logout-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;
-  background:rgba(255,95,109,.1);border:1px solid rgba(255,95,109,.35);border-radius:9px;
-  color:#ff8f97;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
-#logout-btn:hover{background:rgba(255,95,109,.2);color:var(--danger)}
-.main{flex:1;padding:36px 40px;overflow-x:hidden}
-.page-header{margin-bottom:28px}
-.page-title{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;letter-spacing:-1px}
-.page-subtitle{font-size:14px;color:var(--muted);margin-top:4px}
-
-/* Stats */
-.stat-row{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap}
-.stat-chip{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;min-width:130px}
-.stat-label{font-size:11px;color:var(--muted);margin-bottom:4px}
-.stat-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:700}
-
-/* Search bar */
-.search-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px}
-.search-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.search-row{display:flex;gap:10px;flex-wrap:wrap}
-.search-input{flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;
-  outline:none;transition:border-color .15s}
-.search-input:focus{border-color:var(--accent)}
-.search-input::placeholder{color:var(--muted)}
-.source-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
-.src-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;
-  color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .15s}
-.src-tab.on{background:rgba(79,255,176,.1);border-color:var(--accent);color:var(--accent)}
-
-/* Cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden}
-.card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap}
-.card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
-.card-body{padding:20px 24px}
-
-/* Job grid */
-.job-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-.job-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;
-  transition:border-color .15s;position:relative}
-.job-card:hover{border-color:rgba(79,255,176,.3)}
-.job-card.queued{border-color:rgba(79,255,176,.5);background:rgba(79,255,176,.03)}
-.job-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px;line-height:1.3}
-.job-company{font-size:13px;color:var(--accent);margin-bottom:6px;font-weight:500}
-.job-meta{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.job-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
-.tag{padding:2px 8px;border-radius:20px;font-size:11px;background:rgba(79,255,176,.08);
-  border:1px solid rgba(79,255,176,.2);color:var(--accent)}
-.queued-badge{position:absolute;top:10px;right:10px;background:rgba(79,255,176,.15);
-  border:1px solid rgba(79,255,176,.3);color:var(--accent);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
-.job-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:4px}
-
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;
-  text-decoration:none;transition:all .15s;white-space:nowrap}
-.btn-primary{background:var(--accent);color:#0c0f14;font-weight:700}
-.btn-primary:hover{background:#6bffc0;transform:translateY(-1px)}
-.btn-wa{background:#25d366;color:#fff;font-weight:700}
-.btn-wa:hover{background:#1db954;transform:translateY(-1px)}
-.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
-.btn-ghost:hover{color:var(--text);border-color:var(--text)}
-.btn-outline{background:transparent;color:var(--accent);border:1px solid rgba(79,255,176,.3)}
-.btn-outline:hover{background:rgba(79,255,176,.08)}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn-danger-sm{padding:6px 12px;font-size:12px;background:rgba(255,95,109,.1);color:var(--danger);border:1px solid rgba(255,95,109,.3)}
-
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);
-  z-index:100;align-items:center;justify-content:center;padding:20px}
-.modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;
-  width:100%;max-width:440px;animation:slideUp .2s ease}
-@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:20px;
-  display:flex;justify-content:space-between;align-items:center}
-.modal-close{cursor:pointer;font-size:22px;background:none;border:none;color:var(--muted)}
-.modal-close:hover{color:var(--text)}
-.form-group{margin-bottom:14px}
-.form-label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}
-.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;
-  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 13px;outline:none;transition:border-color .15s}
-.form-input:focus{border-color:var(--accent)}
-.form-input::placeholder{color:var(--muted)}
-.modal-btns{display:flex;gap:10px;margin-top:20px}
-
-/* Toast */
-.toast{position:fixed;bottom:28px;right:28px;background:var(--surface2);border:1px solid var(--accent);
-  color:var(--accent);padding:14px 20px;border-radius:10px;font-size:14px;display:none;
-  align-items:center;gap:10px;z-index:200;animation:fadeIn .2s ease;max-width:360px}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* Empty */
-.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
-.empty-icon{font-size:48px;margin-bottom:14px}
-.empty-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px}
-.empty-sub{font-size:14px;line-height:1.6;max-width:400px;margin:0 auto 20px}
-
-/* Loading spinner */
-.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);
-  border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* Leads table */
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:13px}
-thead th{text-align:left;padding:11px 14px;font-size:10px;font-weight:600;letter-spacing:1px;
-  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface2)}
-tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
-tbody tr:hover{background:rgba(255,255,255,.02)}
-tbody td{padding:11px 14px;vertical-align:middle}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
-.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}
-.badge-pending{background:rgba(255,209,102,.12);color:var(--warning)}
-.badge-sent{background:rgba(79,255,176,.12);color:var(--accent)}
-.badge-queued-wa{background:rgba(37,211,102,.12);color:#25d366}
-
-/* Mobile sidebar */
-.menu-toggle{display:none;position:fixed;top:16px;left:16px;width:44px;height:44px;
-  background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;z-index:999;
-  flex-direction:column;align-items:center;justify-content:center;gap:5px}
-.menu-toggle .line{width:20px;height:2px;background:var(--text);border-radius:1px}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
-.sidebar-overlay.open{display:block}
-@media(max-width:900px){
-  .sidebar{position:fixed;left:0;top:0;height:100vh;z-index:100;transform:translateX(-100%);transition:transform .3s ease}
-  .sidebar.open{transform:translateX(0)}
-  .menu-toggle{display:flex}
-  .main{padding:24px 16px;padding-top:76px}
-  .job-grid{grid-template-columns:1fr}
-}
+.extract-bar.visible { display: flex; }
 </style>
 </head>
 <body>
-<div class="layout">
-<button class="menu-toggle" id="menuBtn"><span class="line"></span><span class="line"></span><span class="line"></span></button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="app-layout">
 
+<!-- Desktop Sidebar -->
 <aside class="sidebar" id="sidebar">
-  <div class="logo">Reach<span>Out</span></div>
-  <div class="nav-label">Menu</div>
-  <a class="nav-item" href="index.html"><span class="icon">📋</span> Dashboard</a>
-  <a class="nav-item" href="send.html"><span class="icon">📤</span> Send Emails</a>
-  <a class="nav-item" href="whatsapp.html"><span class="icon">💬</span> Send WhatsApp</a>
-  <a class="nav-item" href="whatsapp_logs.html"><span class="icon">📝</span> WA Logs</a>
-  <a class="nav-item" href="profile.html"><span class="icon">👤</span> My Profile</a>
-  <a class="nav-item" href="template.html"><span class="icon">✏️</span> Template</a>
-  <a class="nav-item active" href="jobs.html"><span class="icon">🔍</span> Job Hunt</a>
-  <a class="nav-item" href="http://localhost:3001" target="_blank"><span class="icon">📡</span> WA Dashboard</a>
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Menu</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <a class="sidebar-item active" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
   <div class="sidebar-bottom">
-    <button id="logout-btn">Logout</button>
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name"  id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
   </div>
 </aside>
 
-<main class="main">
-  <div class="page-header">
-    <div class="page-title">Job Hunt</div>
-    <div class="page-subtitle">Jobs search karo → HR email add karo → Email/WhatsApp bhejo</div>
+<!-- Mobile Header -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="header-title">🔍 Job Hunt</div>
+    <div class="header-action">
+      <button class="btn btn-secondary btn-sm" onclick="openAddModal(null)">+ Manual</button>
+    </div>
+  </div>
+</header>
+
+<main class="page-content">
+
+  <!-- Desktop title -->
+  <div style="margin-bottom:20px;" class="hide-mobile">
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">Job Hunt</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px;">Search jobs → Extract companies → Send emails/WhatsApp</div>
   </div>
 
   <!-- Stats -->
-  <div class="stat-row">
-    <div class="stat-chip"><div class="stat-label">Jobs Fetched</div><div class="stat-val" style="color:var(--accent2)" id="statFetched">0</div></div>
-    <div class="stat-chip"><div class="stat-label">Email Queue</div><div class="stat-val" style="color:var(--accent)" id="statEmail">0</div></div>
-    <div class="stat-chip"><div class="stat-label">WA Queue</div><div class="stat-val" style="color:#25d366" id="statWA">0</div></div>
-    <div class="stat-chip"><div class="stat-label">Emails Sent</div><div class="stat-val" style="color:var(--warning)" id="statSent">0</div></div>
+  <div class="stats-grid" style="margin-bottom:16px;">
+    <div class="stat-card"><div class="stat-label">Fetched</div><div class="stat-value blue" id="statFetched">0</div></div>
+    <div class="stat-card"><div class="stat-label">Email Queue</div><div class="stat-value green" id="statEmail">0</div></div>
+    <div class="stat-card"><div class="stat-label">WA Queue</div><div class="stat-value" style="color:var(--accent-wa)" id="statWA">0</div></div>
+    <div class="stat-card"><div class="stat-label">Sent</div><div class="stat-value yellow" id="statSent">0</div></div>
   </div>
 
   <!-- Search Section -->
-  <div class="search-section">
-    <div class="search-title">🔍 Search Job Vacancies</div>
-    <div class="source-tabs">
-      <button class="src-tab on" onclick="setSource('remotive',this)">🌐 Remote Jobs (Remotive)</button>
-      <button class="src-tab" onclick="setSource('arbeitnow',this)">💼 Global Jobs (Arbeitnow)</button>
-      <button class="src-tab" onclick="setSource('manual',this)">✏️ Add Manually</button>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🔍 Search Jobs</div>
     </div>
-    <div class="search-row" id="searchRow">
-      <input type="text" class="search-input" id="roleInput" placeholder="Job role e.g. PHP Developer, React, Node.js" style="flex:2">
-      <button class="btn btn-primary" onclick="fetchJobs()">🔍 Search Jobs</button>
-    </div>
-    <div id="manualRow" style="display:none">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Manually add a company lead to your email/WA queue</p>
-      <button class="btn btn-outline" onclick="openAddModal(null)">➕ Add Lead Manually</button>
+    <div class="card-body">
+      <div class="source-chips" id="sourceTabs">
+        <button class="source-chip active" data-src="remotive" onclick="setSource('remotive',this)">🌐 Remote</button>
+        <button class="source-chip" data-src="arbeitnow" onclick="setSource('arbeitnow',this)">💼 Global</button>
+        <button class="source-chip" data-src="manual" onclick="setSource('manual',this)">✏️ Manual</button>
+      </div>
+      <div id="searchRow" style="display:flex;gap:8px;">
+        <input type="text" class="form-input" id="roleInput" placeholder="e.g. PHP Developer, React, Node.js" style="flex:1;margin:0;">
+        <button class="btn btn-primary" onclick="fetchJobs()" id="fetchBtn">Search</button>
+      </div>
+      <div id="manualRow" style="display:none;margin-top:4px;">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">Manually add a company lead to your queue.</p>
+        <button class="btn btn-secondary btn-full" onclick="openAddModal(null)">➕ Add Lead Manually</button>
+      </div>
     </div>
   </div>
 
-  <!-- Fetched Jobs -->
-  <div class="card" id="jobsCard" style="display:none">
-    <div class="card-header">
-      <div class="card-title">📋 Found Jobs <span id="jobCountBadge" style="font-size:12px;font-weight:400;color:var(--muted)"></span></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="addAllToQueue()">📧 Add All to Email Queue</button>
-      </div>
+  <!-- Extract Bar (appears after fetch) -->
+  <div class="extract-bar" id="extractBar">
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:600;color:var(--accent);" id="extractBarTitle">Jobs fetched!</div>
+      <div style="font-size:12px;color:var(--muted);" id="extractBarSub">Click Extract to add companies to your queue</div>
     </div>
-    <div class="card-body">
+    <button class="btn btn-primary btn-sm" onclick="extractCompanies()" id="extractBtn">⚡ Extract Companies</button>
+  </div>
+
+  <!-- Fetched Jobs List -->
+  <div class="card" id="jobsCard" style="display:none;">
+    <div class="card-header">
+      <div class="card-title">📋 Found Jobs <span id="jobCount" style="font-size:12px;font-weight:400;color:var(--muted);"></span></div>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('jobsCard').style.display='none'">Hide</button>
+    </div>
+    <div class="card-body" style="padding:0;">
       <div id="jobsContainer"><div class="spinner"></div></div>
     </div>
   </div>
 
-  <!-- My Leads (companies table) -->
-  <div class="card">
+  <!-- Extraction Result -->
+  <div class="card" id="extractResult" style="display:none;">
     <div class="card-header">
-      <div class="card-title">📧 My Leads — Email Queue</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input type="text" id="leadsSearch" class="search-input" placeholder="Search leads..." style="width:180px;padding:7px 12px;font-size:12px" oninput="filterLeads()">
-        <a href="send.html" class="btn btn-primary btn-sm">📤 Send All Emails</a>
-        <a href="whatsapp.html" class="btn btn-wa btn-sm">💬 Send WhatsApp</a>
+      <div class="card-title">✅ Extraction Summary</div>
+    </div>
+    <div class="card-body">
+      <div class="extract-summary">
+        <div class="extract-stat">
+          <div class="extract-stat-val green" id="exTotal">0</div>
+          <div class="extract-stat-label">Jobs Fetched</div>
+        </div>
+        <div class="extract-stat">
+          <div class="extract-stat-val blue" id="exExtracted">0</div>
+          <div class="extract-stat-label">Companies Added</div>
+        </div>
+        <div class="extract-stat">
+          <div class="extract-stat-val yellow" id="exSkipped">0</div>
+          <div class="extract-stat-label">Duplicates Skipped</div>
+        </div>
+        <div class="extract-stat">
+          <div class="extract-stat-val red" id="exFailed">0</div>
+          <div class="extract-stat-label">Failed</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <a href="send.html" class="btn btn-primary" style="flex:1;">📤 Send Emails</a>
+        <a href="whatsapp.html" class="btn btn-wa" style="flex:1;">💬 WhatsApp</a>
       </div>
     </div>
-    <div class="table-wrap">
-      <div id="leadsContainer"><div class="spinner"></div></div>
-    </div>
   </div>
+
+  <!-- My Leads Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📧 My Leads</div>
+      <div style="display:flex;gap:6px;">
+        <a href="send.html" class="btn btn-primary btn-sm">📤 Send</a>
+        <a href="whatsapp.html" class="btn btn-wa btn-sm">💬 WA</a>
+      </div>
+    </div>
+    <div style="padding:10px 16px;border-bottom:1px solid var(--border);">
+      <input type="text" class="form-input" id="leadsSearch" placeholder="Search leads…" oninput="filterLeads()" style="margin:0;">
+    </div>
+    <div id="leadsContainer"><div class="spinner"></div></div>
+  </div>
+
 </main>
 </div>
+
+<!-- Bottom Nav -->
+<nav class="bottom-nav">
+  <a class="bn-item" href="index.html"><div class="bn-icon-wrap">📋</div><span class="bn-label">Home</span></a>
+  <a class="bn-item" href="send.html"><div class="bn-icon-wrap">📤</div><span class="bn-label">Send</span></a>
+  <a class="bn-item active" href="jobs.html"><div class="bn-icon-wrap">🔍</div><span class="bn-label">Jobs</span></a>
+  <a class="bn-item" href="whatsapp.html"><div class="bn-icon-wrap">💬</div><span class="bn-label">WhatsApp</span></a>
+  <a class="bn-item" href="profile.html"><div class="bn-icon-wrap">👤</div><span class="bn-label">Profile</span></a>
+</nav>
+
+<!-- FAB -->
+<button class="fab hide-desktop" onclick="openAddModal(null)" title="Add Lead">＋</button>
 
 <!-- Add Lead Modal -->
 <div class="modal-overlay" id="addModal">
   <div class="modal">
-    <div class="modal-title">
-      Add to Lead Queue
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Lead
       <button class="modal-close" onclick="closeAddModal()">×</button>
     </div>
     <input type="hidden" id="modalJobTitle">
-    <input type="hidden" id="modalJobUrl">
     <div class="form-group">
       <label class="form-label">HR / Contact Name *</label>
       <input type="text" class="form-input" id="mName" placeholder="Riya Sharma (HR)" required>
@@ -267,143 +198,234 @@ tbody td{padding:11px 14px;vertical-align:middle}
       <input type="text" class="form-input" id="mCompany" placeholder="TechCorp Pvt Ltd" required>
     </div>
     <div class="form-group">
-      <label class="form-label">Phone (for WhatsApp) <span style="color:var(--muted)">optional</span></label>
-      <input type="text" class="form-input" id="mPhone" placeholder="+91 98765 43210">
+      <label class="form-label">Phone (WhatsApp) <span style="color:var(--muted)">optional</span></label>
+      <input type="tel" class="form-input" id="mPhone" placeholder="+91 98765 43210">
     </div>
     <div class="form-group">
       <label class="form-label">Job Title / Role</label>
       <input type="text" class="form-input" id="mJobTitle" placeholder="Backend Developer">
     </div>
-    <div style="background:rgba(79,255,176,.06);border:1px solid rgba(79,255,176,.2);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--muted);margin-bottom:4px">
-      💡 Email template mein <strong style="color:var(--accent)">{{name}}</strong>, <strong style="color:var(--accent)">{{company}}</strong> automatically replace honge.
-      Phone add karo toh WhatsApp queue mein bhi jaayega.
+    <div class="banner banner-info" style="margin-bottom:12px;font-size:12px;">
+      💡 <code>{{name}}</code> and <code>{{company}}</code> auto-replace in your email template.
     </div>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeAddModal()" style="flex:1;justify-content:center">Cancel</button>
-      <button class="btn btn-primary" onclick="saveLead()" style="flex:1;justify-content:center" id="saveLeadBtn">💾 Add to Queue</button>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn btn-ghost btn-full" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary btn-full" onclick="saveLead()" id="saveLeadBtn">💾 Add to Queue</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- Email Modal -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📧 Edit Email
+      <button class="modal-close" onclick="closeEmailModal()">×</button>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;" id="emailModalName"></div>
+    <input type="hidden" id="emailLeadId">
+    <div class="form-group">
+      <label class="form-label">HR Email Address</label>
+      <input type="email" class="form-input" id="emailInput" placeholder="hr@company.com">
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-full" onclick="closeEmailModal()">Cancel</button>
+      <button class="btn btn-primary btn-full" onclick="saveEmail()" id="saveEmailBtn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Phone Modal -->
+<div class="modal-overlay" id="phoneModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📱 Add Phone Number
+      <button class="modal-close" onclick="closePhoneModal()">×</button>
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px;" id="phoneModalName"></div>
+    <input type="hidden" id="phoneLeadId">
+    <div class="form-group">
+      <label class="form-label">WhatsApp Phone Number</label>
+      <input type="tel" class="form-input" id="phoneInput" placeholder="+91 98765 43210">
+    </div>
+    <div class="banner banner-info" style="font-size:12px;margin-bottom:12px;">
+      💡 Include country code (e.g. +91 for India). Used for WhatsApp bulk send.
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-full" onclick="closePhoneModal()">Cancel</button>
+      <button class="btn btn-wa btn-full" onclick="savePhone()" id="savePhoneBtn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-const sb = createClient(
-  'https://wcsckcyxbixcgjrrjoyo.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indjc2NrY3l4Yml4Y2dqcnJqb3lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNzA4MTgsImV4cCI6MjA5Nzg0NjgxOH0.YQ_iaVv0HwE1jdQFPN1uYXeqan36TsIs7AY11CPmjTM'
-);
+import { sb, setupPage, toast, esc } from './app.js';
 
-// Auth guard
-const { data: { session } } = await sb.auth.getSession();
-if (!session) { window.location.href = 'login.html'; }
+const session = await setupPage('jobs.html');
+if (!session) throw new Error('No session');
 
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await sb.auth.signOut(); window.location.href = 'login.html';
+document.getElementById('logout-btn')?.addEventListener('click', async () => {
+  await sb.auth.signOut(); location.href = 'login.html';
 });
 
-document.getElementById('menuBtn').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('open');
-});
-document.getElementById('sidebarOverlay').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('open');
-});
-
-// ── State ──────────────────────────────────────────────
 let currentSource = 'remotive';
 let fetchedJobs   = [];
 let allLeads      = [];
 
-// ── Source switching ───────────────────────────────────
+/* ── Source switching ── */
 window.setSource = (src, el) => {
   currentSource = src;
-  document.querySelectorAll('.src-tab').forEach(b => b.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('searchRow').style.display  = src === 'manual' ? 'none' : 'flex';
-  document.getElementById('manualRow').style.display  = src === 'manual' ? 'block' : 'none';
+  document.querySelectorAll('.source-chip').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('searchRow').style.display = src === 'manual' ? 'none' : 'flex';
+  document.getElementById('manualRow').style.display = src === 'manual' ? 'block' : 'none';
 };
 
-// ── Fetch Jobs ─────────────────────────────────────────
+/* ── Fetch Jobs ── */
 window.fetchJobs = async () => {
   const role = document.getElementById('roleInput').value.trim();
-  if (!role) { showToast('⚠️ Job role likhho pehle!', 'var(--warning)'); return; }
+  if (!role) { toast('Enter a job role first!', 'warning'); return; }
+
+  const btn = document.getElementById('fetchBtn');
+  btn.disabled = true; btn.textContent = '…';
 
   document.getElementById('jobsCard').style.display = 'block';
   document.getElementById('jobsContainer').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('extractBar').classList.remove('visible');
+  document.getElementById('extractResult').style.display = 'none';
   fetchedJobs = [];
 
   try {
     if (currentSource === 'remotive') {
-      const res  = await fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(role)}&limit=40`);
+      const res  = await fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(role)}&limit=50`);
       const json = await res.json();
       fetchedJobs = (json.jobs || []).map(j => ({
-        title:    j.title,
-        company:  j.company_name,
+        title: j.title, company: j.company_name,
         location: j.candidate_required_location || 'Remote',
-        type:     j.job_type || 'Full-time',
-        tags:     (j.tags || []).slice(0, 4),
-        url:      j.url,
-        source:   'remotive',
+        type: j.job_type || 'Full-time',
+        tags: (j.tags || []).slice(0, 4), url: j.url, source: 'remotive',
       }));
     } else {
-      const res  = await fetch(`https://arbeitnow.com/api/job-board-api?search=${encodeURIComponent(role)}`);
+      const apiUrl = `https://www.arbeitnow.com/api/job-board-api?search=${encodeURIComponent(role)}`;
+      const res  = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`);
       const json = await res.json();
-      fetchedJobs = (json.data || []).slice(0, 40).map(j => ({
-        title:    j.title,
-        company:  j.company_name,
+      fetchedJobs = (json.data || []).slice(0, 50).map(j => ({
+        title: j.title, company: j.company_name,
         location: j.location || 'Remote',
-        type:     j.job_types?.[0] || 'Full-time',
-        tags:     (j.tags || []).slice(0, 4),
-        url:      j.url,
-        source:   'arbeitnow',
+        type: j.job_types?.[0] || 'Full-time',
+        tags: (j.tags || []).slice(0, 4), url: j.url, source: 'arbeitnow',
       }));
     }
 
-    document.getElementById('jobCountBadge').textContent = `— ${fetchedJobs.length} jobs found`;
-    document.getElementById('statFetched').textContent   = fetchedJobs.length;
+    document.getElementById('jobCount').textContent = `— ${fetchedJobs.length} found`;
+    document.getElementById('statFetched').textContent = fetchedJobs.length;
+
+    if (fetchedJobs.length > 0) {
+      document.getElementById('extractBar').classList.add('visible');
+      document.getElementById('extractBarTitle').textContent = `${fetchedJobs.length} jobs found!`;
+      document.getElementById('extractBarSub').textContent = 'Click Extract to auto-add company records to your queue';
+    }
+
     renderFetchedJobs();
   } catch (e) {
     document.getElementById('jobsContainer').innerHTML =
-      `<div class="empty-state"><div class="empty-icon">⚠️</div>
-      <div class="empty-title">Fetch failed</div>
-      <div class="empty-sub">${e.message || 'Network error. Try again.'}</div></div>`;
+      `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Fetch failed</div><div class="empty-sub">${e.message || 'Network error. Try again.'}</div></div>`;
   }
+
+  btn.disabled = false; btn.textContent = 'Search';
 };
 
 function renderFetchedJobs() {
+  const c = document.getElementById('jobsContainer');
   if (!fetchedJobs.length) {
-    document.getElementById('jobsContainer').innerHTML =
-      `<div class="empty-state"><div class="empty-icon">🔍</div>
-      <div class="empty-title">No jobs found</div>
-      <div class="empty-sub">Dusra role try karo.</div></div>`;
+    c.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No jobs found</div><div class="empty-sub">Try a different role keyword.</div></div>';
     return;
   }
-  document.getElementById('jobsContainer').innerHTML =
-    `<div class="job-grid">${fetchedJobs.map((j, i) => `
-      <div class="job-card" id="jcard-${i}">
-        <div class="job-title">${esc(j.title)}</div>
-        <div class="job-company">🏢 ${esc(j.company)}</div>
-        <div class="job-meta">
-          <span>📍 ${esc(j.location)}</span>
-          <span>💼 ${esc(j.type)}</span>
-        </div>
-        ${j.tags.length ? `<div class="job-tags">${j.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
-        <div class="job-actions">
-          <button class="btn btn-primary btn-sm" onclick="openAddModal(${i})">📧 Add to Email Queue</button>
-          ${j.url ? `<a href="${esc(j.url)}" target="_blank" class="btn btn-ghost btn-sm">View →</a>` : ''}
-        </div>
-      </div>`).join('')}</div>`;
+  c.innerHTML = `<div style="padding:12px 16px;">${fetchedJobs.map((j, i) => `
+    <div class="job-card" id="jcard-${i}">
+      <div class="job-title">${esc(j.title)}</div>
+      <div class="job-company">🏢 ${esc(j.company)}</div>
+      <div class="job-meta">
+        <span>📍 ${esc(j.location)}</span>
+        <span>💼 ${esc(j.type)}</span>
+      </div>
+      ${j.tags.length ? `<div class="job-tags">${j.tags.map(t=>`<span class="job-tag">${esc(t)}</span>`).join('')}</div>` : ''}
+      <div class="job-actions">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal(${i})">📧 Add to Queue</button>
+        ${j.url ? `<a href="${esc(j.url)}" target="_blank" class="btn btn-ghost btn-sm">View →</a>` : ''}
+      </div>
+    </div>`).join('')}</div>`;
 }
 
-// Add ALL fetched jobs to queue (user fills emails one by one via prompts)
-window.addAllToQueue = () => {
-  if (!fetchedJobs.length) { showToast('⚠️ Pehle jobs search karo!', 'var(--warning)'); return; }
-  showToast(`💡 Har job pe "Add to Email Queue" click karo — HR email daalo.`, 'var(--accent2)');
+/* ── Extract Companies (NEW WORKFLOW) ── */
+window.extractCompanies = async () => {
+  if (!fetchedJobs.length) { toast('Fetch jobs first!', 'warning'); return; }
+
+  const btn = document.getElementById('extractBtn');
+  btn.disabled = true; btn.textContent = '⏳ Extracting…';
+
+  // Deduplicate by company name
+  const seen = new Set();
+  const unique = fetchedJobs.filter(j => {
+    const key = (j.company || '').toLowerCase().trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+
+  let extracted = 0, skipped = 0, failed = 0;
+
+  // Load existing company names to skip DB duplicates
+  const { data: existing } = await sb.from('companies').select('company');
+  const existingNames = new Set((existing || []).map(r => (r.company||'').toLowerCase().trim()));
+
+  for (const job of unique) {
+    const companyKey = (job.company||'').toLowerCase().trim();
+    if (existingNames.has(companyKey)) { skipped++; continue; }
+
+    try {
+      const record = {
+        name:    'HR Team',
+        email:   `hr@${(job.company||'unknown').toLowerCase().replace(/[^a-z0-9]/g,'-')}.com`,
+        company: job.company,
+        phone:   null,
+        status:  'pending',
+      };
+
+      const { error } = await sb.from('companies').insert([record]);
+
+      if (error) {
+        if (error.code === '23505') skipped++;
+        else {
+          failed++;
+          // Show first error to help debug
+          if (failed === 1) toast(`❌ Insert failed: ${error.message}`, 'error', 8000);
+        }
+      } else {
+        extracted++;
+        existingNames.add(companyKey); // prevent re-insert within same batch
+      }
+    } catch (e) { failed++; }
+  }
+
+  // Also count within-batch name duplicates
+  skipped += fetchedJobs.length - unique.length;
+
+  // Show summary
+  document.getElementById('exTotal').textContent     = fetchedJobs.length;
+  document.getElementById('exExtracted').textContent = extracted;
+  document.getElementById('exSkipped').textContent   = skipped;
+  document.getElementById('exFailed').textContent    = failed;
+  document.getElementById('extractResult').style.display = 'block';
+
+  toast(`⚡ ${extracted} companies added to queue!`, 'success');
+  btn.disabled = false; btn.textContent = '⚡ Extract Companies';
+
+  loadLeads();
 };
 
-// ── Modal ──────────────────────────────────────────────
+/* ── Modal ── */
 let activeJobIdx = null;
 
 window.openAddModal = (idx) => {
@@ -411,7 +433,6 @@ window.openAddModal = (idx) => {
   const job = idx !== null ? fetchedJobs[idx] : null;
   document.getElementById('mCompany').value  = job ? job.company : '';
   document.getElementById('mJobTitle').value = job ? job.title   : '';
-  document.getElementById('modalJobUrl').value = job ? (job.url || '') : '';
   document.getElementById('mName').value     = '';
   document.getElementById('mEmail').value    = '';
   document.getElementById('mPhone').value    = '';
@@ -419,83 +440,53 @@ window.openAddModal = (idx) => {
   setTimeout(() => document.getElementById('mName').focus(), 100);
 };
 
-window.closeAddModal = () => {
-  document.getElementById('addModal').classList.remove('open');
-  activeJobIdx = null;
-};
-
-// Close modal on backdrop click
-document.getElementById('addModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('addModal')) closeAddModal();
-});
+window.closeAddModal = () => { document.getElementById('addModal').classList.remove('open'); activeJobIdx = null; };
+document.getElementById('addModal').addEventListener('click', e => { if(e.target===document.getElementById('addModal')) closeAddModal(); });
 
 window.saveLead = async () => {
-  const name     = document.getElementById('mName').value.trim();
-  const email    = document.getElementById('mEmail').value.trim();
-  const company  = document.getElementById('mCompany').value.trim();
-  const phone    = document.getElementById('mPhone').value.trim();
-  const jobTitle = document.getElementById('mJobTitle').value.trim();
+  const name    = document.getElementById('mName').value.trim();
+  const email   = document.getElementById('mEmail').value.trim();
+  const company = document.getElementById('mCompany').value.trim();
+  const phone   = document.getElementById('mPhone').value.trim();
+  const jobTitle= document.getElementById('mJobTitle').value.trim();
 
-  if (!name || !email || !company) {
-    showToast('⚠️ Name, Email aur Company required hai!', 'var(--warning)');
-    return;
-  }
+  if (!name || !email || !company) { toast('Name, Email & Company required!', 'warning'); return; }
 
   const btn = document.getElementById('saveLeadBtn');
-  btn.disabled = true; btn.textContent = 'Saving...';
+  btn.disabled = true; btn.textContent = 'Saving…';
 
-  // Check for duplicate email
   const { data: existing } = await sb.from('companies').select('id').eq('email', email).maybeSingle();
-  if (existing) {
-    showToast('⚠️ Yeh email pehle se hai leads mein!', 'var(--warning)');
-    btn.disabled = false; btn.textContent = '💾 Add to Queue';
-    return;
-  }
+  if (existing) { toast('This email is already in your leads!', 'warning'); btn.disabled=false; btn.textContent='💾 Add to Queue'; return; }
 
   const { error } = await sb.from('companies').insert([{
-    name:      name,
-    email:     email,
-    company:   company,
-    phone:     phone || null,
-    contact:   phone || null,
-    status:    'pending',
-    job_title: jobTitle || null,
+    name, email, company, phone: phone||null, contact: phone||null, status:'pending', job_title: jobTitle||null,
   }]);
 
   btn.disabled = false; btn.textContent = '💾 Add to Queue';
 
-  if (error) {
-    showToast('❌ Error: ' + error.message, 'var(--danger)');
-    return;
-  }
+  if (error) { toast('❌ ' + error.message, 'error'); return; }
 
-  // Mark job card as queued
   if (activeJobIdx !== null) {
     const card = document.getElementById(`jcard-${activeJobIdx}`);
     if (card) {
       card.classList.add('queued');
-      const queued = document.createElement('div');
-      queued.className = 'queued-badge';
-      queued.textContent = '✅ Queued';
-      card.appendChild(queued);
-      // Replace add button
+      const qb = document.createElement('div'); qb.className='job-queued-badge'; qb.textContent='✅ Queued';
+      card.appendChild(qb);
       const addBtn = card.querySelector('.btn-primary');
-      if (addBtn) { addBtn.disabled = true; addBtn.textContent = '✅ Added'; addBtn.style.opacity = '.5'; }
+      if (addBtn) { addBtn.disabled=true; addBtn.textContent='✅ Added'; addBtn.style.opacity='.5'; }
     }
   }
 
   closeAddModal();
-  showToast(`✅ ${name} (${company}) queue mein add ho gaya!`);
+  toast(`✅ ${name} (${company}) added to queue!`, 'success');
   loadLeads();
 };
 
-// ── Leads Table ────────────────────────────────────────
+/* ── Leads ── */
 async function loadLeads() {
   const { data } = await sb.from('companies').select('*').order('id', { ascending: false });
   allLeads = data || [];
   renderLeads(allLeads);
-
-  // Update stats
   const pending = allLeads.filter(l => l.status === 'pending').length;
   const sent    = allLeads.filter(l => l.status === 'sent').length;
   const withWA  = allLeads.filter(l => l.phone).length;
@@ -510,77 +501,129 @@ function renderLeads(leads) {
     c.innerHTML = `<div class="empty-state">
       <div class="empty-icon">📭</div>
       <div class="empty-title">No leads yet</div>
-      <div class="empty-sub">Job search karo aur "Add to Email Queue" click karo. Ya manually add karo.</div>
-      <button class="btn btn-outline" onclick="openAddModal(null)">➕ Add Lead Manually</button>
-    </div>`;
-    return;
+      <div class="empty-sub">Search jobs and click Extract, or add manually.</div>
+      <button class="btn btn-secondary" onclick="openAddModal(null)">➕ Add Manually</button>
+    </div>`; return;
   }
-  c.innerHTML = `<table>
-    <thead><tr>
-      <th>Name</th><th>Email</th><th>Company</th><th>Phone</th><th>Job Role</th><th>Status</th><th>Actions</th>
-    </tr></thead>
-    <tbody>${leads.map(l => {
-      const s = l.status || 'pending';
-      return `<tr>
-        <td><strong>${esc(l.name)}</strong></td>
-        <td style="color:var(--muted);font-size:12px">${esc(l.email)}</td>
-        <td>${esc(l.company)}</td>
-        <td style="font-size:12px;color:var(--muted)">${l.phone ? `<a href="https://wa.me/${l.phone.replace(/\D/g,'')}" target="_blank" style="color:#25d366">${esc(l.phone)}</a>` : '—'}</td>
-        <td style="font-size:12px;color:var(--accent)">${esc(l.job_title || '—')}</td>
-        <td><span class="badge ${s==='sent'?'badge-sent':'badge-pending'}">${s==='sent'?'Sent':'Pending'}</span></td>
-        <td style="display:flex;gap:6px;flex-wrap:wrap">
-          ${s==='sent'
-            ? `<button class="btn btn-ghost btn-sm" onclick="resetLead(${l.id})">🔄 Reset</button>`
-            : `<button class="btn btn-ghost btn-sm" onclick="markSent(${l.id})">✅ Mark Sent</button>`}
-          <button class="btn btn-danger-sm" onclick="deleteLead(${l.id})">🗑</button>
-        </td>
-      </tr>`;
-    }).join('')}</tbody>
-  </table>`;
+  c.innerHTML = `<div>${leads.map(l => {
+    const s     = l.status || 'pending';
+    const phone = l.phone || l.contact || '';
+    const email = l.email || '';
+    return `<div class="contact-item" style="border-radius:0;flex-wrap:wrap;gap:8px;">
+      <div class="contact-avatar">${(l.name||'?')[0].toUpperCase()}</div>
+      <div class="contact-main" style="min-width:0;">
+        <div class="contact-name">${esc(l.name)}</div>
+        <div class="contact-meta" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px;">
+          <span style="color:${email?'var(--accent2)':'var(--warning)'};font-size:11px;">
+            📧 ${email || 'No email'}
+          </span>
+          <span style="color:${phone?'var(--accent-wa)':'var(--warning)'};font-size:11px;">
+            📱 ${phone || 'No phone'}
+          </span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">${esc(l.company)}</div>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;flex-wrap:wrap;">
+        <button class="btn btn-sm" style="font-size:11px;padding:4px 8px;background:rgba(0,201,255,.1);border:1px solid rgba(0,201,255,.25);color:#00c9ff;" onclick="openEmailModal(${l.id},'${esc(l.name)}','${esc(l.company)}')">📧 ${email?'Edit':'Add'}</button>
+        <button class="btn btn-sm" style="font-size:11px;padding:4px 8px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.25);color:var(--accent-wa);" onclick="openPhoneModal(${l.id},'${esc(l.name)}','${esc(l.company)}')">📱 ${phone?'Edit':'Add'}</button>
+        <span class="badge ${s==='sent'?'badge-sent':'badge-pending'}">${s==='sent'?'Sent':'Pending'}</span>
+        <button onclick="deleteLead(${l.id})" style="background:none;border:none;cursor:pointer;font-size:15px;padding:4px;">🗑</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
 }
 
 window.filterLeads = () => {
   const q = document.getElementById('leadsSearch').value.toLowerCase();
   renderLeads(q ? allLeads.filter(l =>
-    (l.name||'').toLowerCase().includes(q) ||
-    (l.email||'').toLowerCase().includes(q) ||
-    (l.company||'').toLowerCase().includes(q)
+    (l.name||'').toLowerCase().includes(q) || (l.email||'').toLowerCase().includes(q) || (l.company||'').toLowerCase().includes(q)
   ) : allLeads);
 };
 
 window.deleteLead = async (id) => {
   if (!confirm('Delete this lead?')) return;
   await sb.from('companies').delete().eq('id', id);
-  showToast('🗑 Lead deleted');
-  loadLeads();
+  toast('🗑 Lead deleted', 'success'); loadLeads();
 };
 
-window.markSent = async (id) => {
-  await sb.from('companies').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', id);
-  loadLeads();
-};
-
-window.resetLead = async (id) => {
-  await sb.from('companies').update({ status: 'pending', sent_at: null }).eq('id', id);
-  showToast('🔄 Reset to pending');
-  loadLeads();
-};
-
-// ── Helpers ────────────────────────────────────────────
-function showToast(msg, color) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.style.display = 'flex';
-  t.style.borderColor = color || 'var(--accent)';
-  t.style.color       = color || 'var(--accent)';
-  setTimeout(() => t.style.display = 'none', 3500);
-}
-
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// Init
 loadLeads();
+
+/* ── Email Modal ── */
+window.openEmailModal = (id, name, company) => {
+  document.getElementById('emailLeadId').value = id;
+  document.getElementById('emailModalName').textContent = `${name} · ${company}`;
+  const lead = allLeads.find(l => l.id === id);
+  document.getElementById('emailInput').value = lead?.email || '';
+  document.getElementById('emailModal').classList.add('open');
+  setTimeout(() => document.getElementById('emailInput').focus(), 100);
+};
+
+window.closeEmailModal = () => document.getElementById('emailModal').classList.remove('open');
+
+document.getElementById('emailModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('emailModal')) closeEmailModal();
+});
+
+document.getElementById('emailInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveEmail();
+});
+
+window.saveEmail = async () => {
+  const id    = parseInt(document.getElementById('emailLeadId').value);
+  const email = document.getElementById('emailInput').value.trim();
+  if (!email) { toast('Enter an email address', 'warning'); return; }
+
+  const btn = document.getElementById('saveEmailBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const { error } = await sb.from('companies').update({ email }).eq('id', id);
+
+  btn.disabled = false; btn.textContent = '💾 Save';
+  if (error) { toast('❌ ' + error.message, 'error'); return; }
+  toast('📧 Email saved!', 'success');
+  closeEmailModal();
+  loadLeads();
+};
+
+/* ── Phone Modal ── */
+window.openPhoneModal = (id, name, company) => {
+  document.getElementById('phoneLeadId').value = id;
+  document.getElementById('phoneModalName').textContent = `${name} · ${company}`;
+  const lead = allLeads.find(l => l.id === id);
+  document.getElementById('phoneInput').value = lead?.phone || lead?.contact || '';
+  document.getElementById('phoneModal').classList.add('open');
+  setTimeout(() => document.getElementById('phoneInput').focus(), 100);
+};
+
+window.closePhoneModal = () => {
+  document.getElementById('phoneModal').classList.remove('open');
+};
+
+document.getElementById('phoneModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('phoneModal')) closePhoneModal();
+});
+
+document.getElementById('phoneInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') savePhone();
+});
+
+window.savePhone = async () => {
+  const id    = parseInt(document.getElementById('phoneLeadId').value);
+  const phone = document.getElementById('phoneInput').value.trim();
+  if (!phone) { toast('Enter a phone number', 'warning'); return; }
+
+  const btn = document.getElementById('savePhoneBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const { error } = await sb.from('companies').update({ phone, contact: phone }).eq('id', id);
+
+  btn.disabled = false; btn.textContent = '💾 Save';
+
+  if (error) { toast('❌ ' + error.message, 'error'); return; }
+  toast('📱 Phone saved!', 'success');
+  closePhoneModal();
+  loadLeads();
+};
 </script>
 </body>
 </html>

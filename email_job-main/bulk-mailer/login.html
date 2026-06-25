@@ -1,110 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="theme-color" content="#060b14"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-title" content="ReachOut"/>
-<link rel="manifest" href="manifest.json"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ReachOut">
+<link rel="manifest" href="manifest.json">
 <title>Login — ReachOut</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#060b14;--sur:#0d1626;--sur2:#111d35;
-  --bd:rgba(99,179,237,0.1);--a:#38bdf8;--a2:#818cf8;
-  --tx:#e2e8f0;--mu:#64748b;--ok:#34d399;--err:#f87171;--warn:#fbbf24;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0d12; --surface: #111520; --surface2: #181e2e;
+  --border: rgba(100,180,255,.1); --accent: #38bdf8; --accent2: #818cf8;
+  --text: #e2e8f0; --muted: #64748b; --ok: #34d399; --err: #f87171; --warn: #fbbf24;
+  --safe-top: env(safe-area-inset-top, 0px); --safe-bot: env(safe-area-inset-bottom, 0px);
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;
-  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(-50%);
-  width:700px;height:500px;
-  background:radial-gradient(ellipse,rgba(56,189,248,.07) 0%,transparent 70%);pointer-events:none}
-.card{width:100%;max-width:420px;background:var(--sur);border:1px solid var(--bd);
-  border-radius:22px;padding:36px 32px;
-  box-shadow:0 0 60px rgba(56,189,248,.05),0 20px 48px rgba(0,0,0,.4);
-  animation:up .45s ease;position:relative;z-index:1}
-@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.logo{text-align:center;margin-bottom:24px}
-.logo-box{width:52px;height:52px;background:linear-gradient(135deg,var(--a),var(--a2));
-  border-radius:14px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:24px;margin-bottom:10px;box-shadow:0 0 22px rgba(56,189,248,.3)}
-.logo h1{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.5px}
-.logo p{color:var(--mu);font-size:.82rem;margin-top:4px}
-.logo p a{color:var(--a);text-decoration:none;font-weight:600}
-.tabs{display:flex;background:var(--sur2);border-radius:10px;padding:4px;margin-bottom:24px;gap:3px}
-.tab{flex:1;padding:8px;border:none;background:transparent;color:var(--mu);
-  font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;border-radius:8px;cursor:pointer;transition:all .2s}
-.tab.on{background:linear-gradient(135deg,var(--a),var(--a2));color:#fff;box-shadow:0 2px 12px rgba(56,189,248,.25)}
-.sec{display:none}.sec.on{display:block;animation:fi .25s ease}
-@keyframes fi{from{opacity:0}to{opacity:1}}
-.fld{margin-bottom:14px}
-.fld label{display:block;font-size:.75rem;font-weight:500;color:var(--mu);
-  margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase}
-.fld input{width:100%;background:var(--sur2);border:1px solid var(--bd);
-  border-radius:9px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.92rem;
-  padding:10px 13px;outline:none;transition:border-color .2s,box-shadow .2s}
-.fld input:focus{border-color:var(--a);box-shadow:0 0 0 3px rgba(56,189,248,.1)}
-.fld input::placeholder{color:#2d3d55}
-.btn{width:100%;padding:12px;background:linear-gradient(135deg,var(--a),var(--a2));
-  border:none;border-radius:9px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;
-  font-size:.92rem;cursor:pointer;margin-top:6px;transition:opacity .2s,transform .15s;
-  display:flex;align-items:center;justify-content:center;gap:8px}
-.btn:hover{opacity:.9;transform:translateY(-1px)}
-.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-.or{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--mu);font-size:.78rem}
-.or::before,.or::after{content:'';flex:1;height:1px;background:var(--bd)}
-.gbtn{width:100%;padding:10px;background:var(--sur2);border:1px solid var(--bd);
-  border-radius:9px;color:var(--tx);font-family:'DM Sans',sans-serif;font-size:.88rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s}
-.gbtn:hover{border-color:var(--a);background:rgba(56,189,248,.05)}
-.gbtn svg{width:17px;height:17px;flex-shrink:0}
-.msg{margin-top:12px;padding:9px 13px;border-radius:8px;font-size:.82rem;display:none}
-.msg.on{display:block}
-.msg.err{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--err)}
-.msg.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--ok)}
-.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;animation:rot .65s linear infinite;display:inline-block}
-@keyframes rot{to{transform:rotate(360deg)}}
-.forgot{text-align:right;margin-top:-8px;margin-bottom:10px}
-.forgot a{font-size:.78rem;color:var(--mu);text-decoration:none}
-.forgot a:hover{color:var(--a)}
-.foot{text-align:center;margin-top:18px;font-size:11px;color:var(--mu)}
-.foot a{color:var(--a);text-decoration:none}
-#redir{display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;
-  flex-direction:column;align-items:center;justify-content:center;gap:14px}
-#redir.on{display:flex}
-.rspin{width:38px;height:38px;border:3px solid rgba(56,189,248,.2);
-  border-top-color:var(--a);border-radius:50%;animation:rot .8s linear infinite}
-#redir p{color:var(--mu);font-size:.88rem}
-/* Sub modal */
-#sub-modal{display:none;position:fixed;inset:0;z-index:9998;background:rgba(6,11,20,.97);
-  backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:20px}
-#sub-modal.on{display:flex;animation:fi .3s ease}
-.mbox{width:100%;max-width:420px;background:var(--sur);border:1px solid var(--bd);
-  border-radius:22px;overflow:hidden;animation:up .35s ease;position:relative;z-index:9999}
-.mband{height:4px;background:linear-gradient(90deg,var(--err),#ef4444)}
-.mbody{padding:32px 28px;text-align:center}
-.micon{font-size:54px;margin-bottom:14px;display:block;animation:bounce 2s ease-in-out infinite}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.mtitle{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
-.msub{font-size:.86rem;color:var(--mu);line-height:1.7;margin-bottom:20px}
-.mmeta{display:flex;flex-direction:column;gap:8px;margin-bottom:22px;text-align:left}
-.mrow{display:flex;align-items:center;justify-content:space-between;
-  background:var(--sur2);border:1px solid var(--bd);border-radius:9px;padding:9px 13px;gap:10px}
-.mlabel{font-size:.72rem;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
-.mval{font-size:.82rem;font-weight:600;color:var(--tx);text-align:right;word-break:break-all}
-.mval.red{color:var(--err)}
-.mcta{display:flex;flex-direction:column;gap:9px}
-.mcta-primary{width:100%;padding:13px;background:linear-gradient(135deg,var(--a),var(--a2));
-  border:none;border-radius:10px;color:#060b14;font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;
-  cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s}
-.mcta-primary:hover{transform:translateY(-2px)}
-.mcta-ghost{width:100%;padding:10px;background:transparent;border:1px solid var(--bd);
-  border-radius:10px;color:var(--mu);font-family:'DM Sans',sans-serif;font-size:.84rem;cursor:pointer;transition:all .2s}
-@media(max-width:480px){.card{padding:26px 16px}.mbody{padding:24px 18px}}
+html { -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bot));
+}
+body::before {
+  content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+  width: 600px; height: 500px;
+  background: radial-gradient(ellipse, rgba(56,189,248,.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Card */
+.card {
+  width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 22px; padding: 32px 28px calc(32px + var(--safe-bot));
+  box-shadow: 0 20px 60px rgba(0,0,0,.5); animation: cardUp .4s ease; position: relative; z-index: 1;
+}
+@media (max-width: 480px) { .card { padding: 28px 20px calc(28px + var(--safe-bot)); border-radius: 24px; } }
+@keyframes cardUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* Logo */
+.logo { text-align: center; margin-bottom: 24px; }
+.logo-box {
+  width: 56px; height: 56px; margin: 0 auto 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 16px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; box-shadow: 0 0 28px rgba(56,189,248,.25);
+}
+.logo h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
+.logo p  { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.logo p a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+/* Tabs */
+.tabs { display: flex; background: var(--surface2); border-radius: 10px; padding: 4px; margin-bottom: 20px; gap: 4px; }
+.tab {
+  flex: 1; padding: 9px; border: none; background: transparent; color: var(--muted);
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+  border-radius: 8px; cursor: pointer; transition: all .2s;
+}
+.tab.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 2px 12px rgba(56,189,248,.2); }
+
+/* Sections */
+.sec { display: none; }
+.sec.on { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+/* Fields */
+.fld { margin-bottom: 14px; }
+.fld label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; letter-spacing: .5px; text-transform: uppercase; }
+.fld input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 15px; padding: 12px 14px; outline: none; transition: border-color .2s, box-shadow .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.fld input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,.1); }
+.fld input::placeholder { color: #2d3d55; }
+
+/* Forgot */
+.forgot { text-align: right; margin: -8px 0 12px; }
+.forgot a { font-size: 12px; color: var(--muted); text-decoration: none; }
+.forgot a:hover { color: var(--accent); }
+
+/* Primary button */
+.btn-main {
+  width: 100%; padding: 13px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #060b14; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px;
+  cursor: pointer; margin-top: 4px; transition: opacity .2s, transform .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px;
+}
+.btn-main:hover   { opacity: .9; transform: translateY(-1px); }
+.btn-main:active  { transform: translateY(0) scale(.98); }
+.btn-main:disabled{ opacity: .45; cursor: not-allowed; transform: none; }
+
+/* Divider */
+.or { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--muted); font-size: 12px; }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* Google button */
+.gbtn {
+  width: 100%; padding: 11px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all .2s; min-height: 48px;
+}
+.gbtn:hover { border-color: var(--accent); background: rgba(56,189,248,.05); }
+.gbtn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* Message */
+.msg { margin-top: 12px; padding: 10px 13px; border-radius: 8px; font-size: 13px; display: none; }
+.msg.on  { display: block; }
+.msg.err { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: var(--err); }
+.msg.ok  { background: rgba(52,211,153,.1);  border: 1px solid rgba(52,211,153,.3);  color: var(--ok); }
+
+/* Spinner */
+.spin { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,.3); border-top-color: #060b14; border-radius: 50%; animation: rot .65s linear infinite; display: inline-block; }
+@keyframes rot { to { transform: rotate(360deg); } }
+
+/* Footer */
+.foot { text-align: center; margin-top: 16px; font-size: 11px; color: var(--muted); }
+.foot a { color: var(--accent); text-decoration: none; }
+
+/* Redirect overlay */
+#redir { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+#redir.on { display: flex; }
+.rspin { width: 40px; height: 40px; border: 3px solid rgba(56,189,248,.2); border-top-color: var(--accent); border-radius: 50%; animation: rot .8s linear infinite; }
+#redir p { color: var(--muted); font-size: 14px; }
+
+/* Subscription modal */
+#sub-modal { display: none; position: fixed; inset: 0; z-index: 9998; background: rgba(10,13,18,.97); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 20px; }
+#sub-modal.on { display: flex; animation: fadeIn .3s ease; }
+.mbox { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; animation: cardUp .3s ease; }
+.mband { height: 4px; background: linear-gradient(90deg, var(--err), #ef4444); }
+.mbody { padding: 28px 24px; text-align: center; }
+.micon { font-size: 48px; margin-bottom: 12px; display: block; animation: bounce 2s ease-in-out infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.mtitle { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.msub   { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
+.mmeta  { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; text-align: left; }
+.mrow   { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; gap: 8px; }
+.mlabel { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; flex-shrink: 0; }
+.mval   { font-size: 13px; font-weight: 600; text-align: right; word-break: break-all; }
+.mval.red { color: var(--err); }
+.mcta { display: flex; flex-direction: column; gap: 8px; }
+.mcta-primary { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 10px; color: #060b14; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; transition: all .2s; min-height: 46px; }
+.mcta-primary:hover { opacity: .9; }
+.mcta-ghost { width: 100%; padding: 10px; background: transparent; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 13px; cursor: pointer; transition: all .2s; min-height: 42px; }
 </style>
 </head>
 <body>
@@ -119,7 +166,7 @@ body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(
       <div class="msub" id="msub"></div>
       <div class="mmeta" id="mmeta"></div>
       <div class="mcta">
-        <a href="pricing.html" class="mcta-primary">🚀 View Plans & Subscribe</a>
+        <a href="pricing.html" class="mcta-primary">🚀 View Plans &amp; Subscribe</a>
         <button class="mcta-ghost" onclick="closeSubModal()">← Use a different account</button>
       </div>
     </div>
@@ -131,7 +178,7 @@ body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(
   <div class="logo">
     <div class="logo-box">📧</div>
     <h1>ReachOut</h1>
-    <p>Job Automation Portal &nbsp;·&nbsp; <a href="pricing.html">View Plans →</a></p>
+    <p>Job Automation &nbsp;·&nbsp; <a href="pricing.html">View Plans →</a></p>
   </div>
 
   <div class="tabs">
@@ -141,21 +188,15 @@ body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(
 
   <!-- Sign In -->
   <div class="sec on" id="sec-in">
-    <div class="fld"><label>Email Address</label>
-      <input type="email" id="si-e" placeholder="you@example.com" autocomplete="email"/></div>
+    <div class="fld"><label>Email</label>
+      <input type="email" id="si-e" placeholder="you@example.com" autocomplete="email" inputmode="email"></div>
     <div class="fld"><label>Password</label>
-      <input type="password" id="si-p" placeholder="••••••••" autocomplete="current-password"
-             onkeydown="if(event.key==='Enter')doIn()"/></div>
+      <input type="password" id="si-p" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doIn()"></div>
     <div class="forgot"><a href="#" onclick="doReset()">Forgot password?</a></div>
-    <button class="btn" id="si-btn" onclick="doIn()">Sign In</button>
+    <button class="btn-main" id="si-btn" onclick="doIn()">Sign In</button>
     <div class="or">or</div>
     <button class="gbtn" onclick="doGoogle()">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
       Continue with Google
     </button>
     <div class="msg" id="si-msg"></div>
@@ -164,20 +205,15 @@ body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(
   <!-- Sign Up -->
   <div class="sec" id="sec-up">
     <div class="fld"><label>Full Name</label>
-      <input type="text" id="su-n" placeholder="Rahul Sharma" autocomplete="name"/></div>
-    <div class="fld"><label>Email Address</label>
-      <input type="email" id="su-e" placeholder="you@example.com" autocomplete="email"/></div>
+      <input type="text" id="su-n" placeholder="Rahul Sharma" autocomplete="name"></div>
+    <div class="fld"><label>Email</label>
+      <input type="email" id="su-e" placeholder="you@example.com" autocomplete="email" inputmode="email"></div>
     <div class="fld"><label>Password</label>
-      <input type="password" id="su-p" placeholder="Min 6 characters" autocomplete="new-password"/></div>
-    <button class="btn" id="su-btn" onclick="doUp()">Create Account</button>
+      <input type="password" id="su-p" placeholder="Min 6 characters" autocomplete="new-password"></div>
+    <button class="btn-main" id="su-btn" onclick="doUp()">Create Account</button>
     <div class="or">or</div>
     <button class="gbtn" onclick="doGoogle()">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
       Continue with Google
     </button>
     <div class="msg" id="su-msg"></div>
@@ -186,9 +222,10 @@ body::before{content:'';position:fixed;top:-180px;left:50%;transform:translateX(
   <div class="foot">Plans from ₹499/month &nbsp;·&nbsp; <a href="pricing.html">See all plans</a></div>
 </div>
 
+<!-- Redirect overlay -->
 <div id="redir">
   <div class="rspin"></div>
-  <p id="redir-msg">Redirecting to Dashboard...</p>
+  <p id="redir-msg">Redirecting…</p>
 </div>
 
 <script type="module">
@@ -208,72 +245,44 @@ async function checkSub(email) {
   if (!data) return { status: 'no_plan' };
   const expiry = new Date(data.expiry);
   if (expiry < new Date()) return { status: 'expired', plan: data.plan, expiry: data.expiry };
-  const daysLeft = Math.ceil((expiry - new Date()) / 86400000);
-  return { status: 'active', plan: data.plan, expiry: data.expiry, daysLeft };
+  return { status: 'active', plan: data.plan, expiry: data.expiry };
 }
 
 async function afterAuth(user) {
   const sub = await checkSub(user.email);
-  if (sub.status === 'admin' || sub.status === 'active') {
-    go();
-  } else {
-    await sb.auth.signOut();
-    showSubModal(sub.status, user.email, sub);
-  }
+  if (sub.status === 'admin' || sub.status === 'active') { go(); }
+  else { await sb.auth.signOut(); showSubModal(sub.status, user.email, sub); }
 }
 
-// Check if already logged in
-sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) go();
-});
+sb.auth.getSession().then(({ data: { session } }) => { if (session) go(); });
 
-// Sign In
 window.doIn = async () => {
   const e = document.getElementById('si-e').value.trim();
   const p = document.getElementById('si-p').value;
-  if (!e || !p) { setMsg('si-msg', '⚠️ Please enter email and password.', 'err'); return; }
+  if (!e || !p) { setMsg('si-msg', '⚠️ Enter email and password.', 'err'); return; }
   setBtn('si-btn', true, 'Sign In');
   const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
-  if (error) {
-    const m = error.message.includes('Invalid') ? 'Incorrect email or password.' : error.message;
-    setMsg('si-msg', '❌ ' + m, 'err');
-    setBtn('si-btn', false, 'Sign In');
-  } else {
-    setMsg('si-msg', '✅ Checking subscription...', 'ok');
-    await afterAuth(data.user);
-  }
+  if (error) { setMsg('si-msg', '❌ ' + (error.message.includes('Invalid') ? 'Incorrect email or password.' : error.message), 'err'); setBtn('si-btn', false, 'Sign In'); }
+  else { setMsg('si-msg', '✅ Checking subscription…', 'ok'); await afterAuth(data.user); }
 };
 
-// Sign Up
 window.doUp = async () => {
   const n = document.getElementById('su-n').value.trim();
   const e = document.getElementById('su-e').value.trim();
   const p = document.getElementById('su-p').value;
-  if (!n || !e || !p) { setMsg('su-msg', '⚠️ Please fill all fields.', 'err'); return; }
-  if (p.length < 6) { setMsg('su-msg', '⚠️ Password must be at least 6 characters.', 'err'); return; }
+  if (!n || !e || !p) { setMsg('su-msg', '⚠️ Fill all fields.', 'err'); return; }
+  if (p.length < 6) { setMsg('su-msg', '⚠️ Password must be 6+ characters.', 'err'); return; }
   setBtn('su-btn', true, 'Create Account');
   const { data, error } = await sb.auth.signUp({ email: e, password: p, options: { data: { name: n } } });
-  if (error) {
-    setMsg('su-msg', '❌ ' + error.message, 'err');
-    setBtn('su-btn', false, 'Create Account');
-  } else if (data.user && !data.session) {
-    setMsg('su-msg', '✅ Check your email to confirm your account!', 'ok');
-    setBtn('su-btn', false, 'Create Account');
-  } else if (data.session) {
-    setMsg('su-msg', '🎉 Account created!', 'ok');
-    await afterAuth(data.user);
-  }
+  if (error) { setMsg('su-msg', '❌ ' + error.message, 'err'); setBtn('su-btn', false, 'Create Account'); }
+  else if (data.user && !data.session) { setMsg('su-msg', '✅ Check your email to confirm!', 'ok'); setBtn('su-btn', false, 'Create Account'); }
+  else if (data.session) { setMsg('su-msg', '🎉 Account created!', 'ok'); await afterAuth(data.user); }
 };
 
-// Google OAuth
 window.doGoogle = async () => {
-  await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin + '/index.html' }
-  });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/index.html' } });
 };
 
-// Password reset
 window.doReset = async () => {
   const e = document.getElementById('si-e').value.trim();
   if (!e) { setMsg('si-msg', '⚠️ Enter your email first.', 'err'); return; }
@@ -282,24 +291,21 @@ window.doReset = async () => {
   else setMsg('si-msg', '✅ Reset link sent! Check your email.', 'ok');
 };
 
-// Subscription modal
 function showSubModal(type, email, sub) {
   document.getElementById('auth-card').style.display = 'none';
   const map = {
     no_plan: { icon:'🚀', title:'No Active Subscription',
-      sub:`To use <strong>ReachOut</strong>, you need an active subscription. Choose a plan to get started.`,
-      meta:`<div class="mrow"><span class="mlabel">Account</span><span class="mval">${email}</span></div>
-            <div class="mrow"><span class="mlabel">Status</span><span class="mval red">⛔ No subscription</span></div>` },
+      sub:'To use <strong>ReachOut</strong>, you need an active subscription.',
+      meta:`<div class="mrow"><span class="mlabel">Account</span><span class="mval">${email}</span></div><div class="mrow"><span class="mlabel">Status</span><span class="mval red">⛔ No subscription</span></div>` },
     expired: { icon:'⏰', title:'Subscription Expired',
-      sub:`Your plan has <span style="color:var(--err)">expired</span>. Renew to continue.`,
-      meta:`<div class="mrow"><span class="mlabel">Expired</span><span class="mval red">📅 ${sub?.expiry||''}</span></div>
-            <div class="mrow"><span class="mlabel">Account</span><span class="mval">${email}</span></div>` },
+      sub:'Your plan has <span style="color:var(--err)">expired</span>. Renew to continue.',
+      meta:`<div class="mrow"><span class="mlabel">Expired</span><span class="mval red">📅 ${sub?.expiry||''}</span></div><div class="mrow"><span class="mlabel">Account</span><span class="mval">${email}</span></div>` },
   };
   const d = map[type] || map.no_plan;
-  document.getElementById('micon').textContent     = d.icon;
-  document.getElementById('mtitle').textContent    = d.title;
-  document.getElementById('msub').innerHTML        = d.sub;
-  document.getElementById('mmeta').innerHTML       = d.meta;
+  document.getElementById('micon').textContent  = d.icon;
+  document.getElementById('mtitle').textContent = d.title;
+  document.getElementById('msub').innerHTML     = d.sub;
+  document.getElementById('mmeta').innerHTML    = d.meta;
   document.getElementById('sub-modal').classList.add('on');
 }
 
@@ -309,30 +315,23 @@ window.closeSubModal = async () => {
   document.getElementById('auth-card').style.display = 'block';
 };
 
-function go(msg = 'Redirecting to Dashboard...') {
-  document.getElementById('redir-msg').textContent = msg;
+function go() {
   document.getElementById('redir').classList.add('on');
-  setTimeout(() => window.location.href = 'index.html', 800);
+  setTimeout(() => window.location.href = 'index.html', 700);
 }
 
 window.switchTab = (t) => {
-  document.querySelectorAll('.tab').forEach((b, i) => b.classList.toggle('on', (i===0)===(t==='in')));
-  document.getElementById('sec-in').classList.toggle('on', t === 'in');
-  document.getElementById('sec-up').classList.toggle('on', t === 'up');
+  document.querySelectorAll('.tab').forEach((b,i) => b.classList.toggle('on', (i===0)===(t==='in')));
+  document.getElementById('sec-in').classList.toggle('on', t==='in');
+  document.getElementById('sec-up').classList.toggle('on', t==='up');
   document.getElementById('si-msg').className = 'msg';
   document.getElementById('su-msg').className = 'msg';
 };
 
-function setMsg(id, txt, t) {
-  const e = document.getElementById(id);
-  e.innerHTML = txt; e.className = `msg on ${t}`;
-}
-function setBtn(id, on, lbl) {
-  const b = document.getElementById(id);
-  b.disabled = on;
-  b.innerHTML = on ? '<span class="spin"></span> Please wait...' : lbl;
-}
+function setMsg(id, txt, t) { const e=document.getElementById(id); e.innerHTML=txt; e.className=`msg on ${t}`; }
+function setBtn(id, on, lbl) { const b=document.getElementById(id); b.disabled=on; b.innerHTML=on?'<span class="spin"></span> Please wait…':lbl; }
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
-<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});</script>
 </body>
 </html>

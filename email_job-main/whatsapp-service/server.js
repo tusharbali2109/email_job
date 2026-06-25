@@ -21,6 +21,9 @@ const PORT = 3001;
 app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '100mb' }));
 
+// Serve the bulk-mailer frontend from the same server
+app.use(express.static(path.join(__dirname, '..', 'bulk-mailer')));
+
 /* ─── state ─── */
 let waClient    = null;
 let clientState = 'disconnected'; // disconnected | initializing | qr | ready
@@ -87,11 +90,8 @@ function createClient() {
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-gpu',
+                '--disable-extensions',
             ],
-        },
-        webVersionCache: {
-            type: 'remote',
-            remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html',
         },
     });
 }
@@ -562,6 +562,9 @@ function pushLog(item) {
 
 /* ─── start ─── */
 app.listen(PORT, () => {
-    console.log(`\n🟢 WhatsApp Service running at http://localhost:${PORT}`);
-    console.log('   Open ReachOut → WhatsApp tab in your browser\n');
+    console.log('\n─────────────────────────────────────────');
+    console.log(`  ✅ ReachOut running at http://localhost:${PORT}`);
+    console.log('  📱 WhatsApp → Connect to link your account');
+    console.log('  Press Ctrl+C to stop');
+    console.log('─────────────────────────────────────────\n');
 });
