@@ -17,34 +17,50 @@
 .plan-card {
   position: relative;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   background: var(--surface);
-  padding: 24px;
-  transition: border-color .2s, transform .15s;
+  padding: 28px 24px 24px;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
-.plan-card:hover { border-color: rgba(79,255,176,.3); transform: translateY(-2px); }
+.plan-card:hover {
+  border-color: rgba(79,255,176,.4);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+}
 .plan-card.popular {
   border-color: var(--accent);
-  background: linear-gradient(160deg, rgba(79,255,176,.05) 0%, var(--surface) 60%);
+  background: linear-gradient(160deg, rgba(79,255,176,.07) 0%, var(--surface) 50%);
+  box-shadow: 0 0 0 1px rgba(79,255,176,.15), 0 8px 32px rgba(79,255,176,.08);
 }
+.plan-card.elite-card {
+  border-color: rgba(245,158,11,.5);
+  background: linear-gradient(160deg, rgba(245,158,11,.06) 0%, var(--surface) 50%);
+}
+.plan-card.elite-card:hover { border-color: #f59e0b; box-shadow: 0 12px 40px rgba(245,158,11,.12); }
 .popular-badge {
   position: absolute; top: 0; right: 0;
-  background: var(--accent); color: #0a0d12;
-  font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
-  padding: 4px 14px; border-radius: 0 0 0 12px;
+  background: linear-gradient(135deg, var(--accent), #00c9ff);
+  color: #0a0d12;
+  font-size: 10px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+  padding: 5px 16px; border-radius: 0 var(--radius) 0 12px;
 }
-.plan-name  { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-.plan-desc  { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
-.plan-price { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
-.plan-price span { font-size: 15px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
-.plan-period { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+.plan-icon { font-size: 28px; margin-bottom: 12px; }
+.plan-name  { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.plan-desc  { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.plan-price-row { display: flex; align-items: baseline; gap: 2px; margin-bottom: 2px; }
+.plan-price { font-family: 'Syne', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+.plan-price-unit { font-size: 15px; font-weight: 400; color: var(--muted); margin-left: 2px; }
+.plan-period { font-size: 12px; color: var(--muted); margin-bottom: 20px; margin-top: 4px; }
 .plan-divider { height: 1px; background: var(--border); margin: 16px 0; }
-.plan-feature { display: flex; align-items: center; gap: 10px; font-size: 13px; margin-bottom: 10px; }
-.plan-feature .check { color: var(--accent); font-size: 14px; flex-shrink: 0; }
-.plan-feature .cross { color: var(--muted2); font-size: 14px; flex-shrink: 0; }
-.plan-feature .text  { color: var(--text-muted, #9aa3b5); }
-.plan-feature.dim   .text { color: var(--muted); text-decoration: line-through; }
+.plan-feature { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; margin-bottom: 11px; line-height: 1.4; }
+.plan-feature .check { color: var(--accent); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.plan-feature .cross { color: var(--border2); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.plan-feature .text  { color: var(--text2); }
+.plan-feature.dim   .text { color: var(--muted); }
+.plan-cta { margin-top: auto; padding-top: 20px; }
 
 .plans-grid {
   display: grid;
@@ -56,23 +72,45 @@
 
 .current-plan-box {
   display: flex; align-items: center; gap: 14px;
-  background: rgba(79,255,176,.06); border: 1px solid rgba(79,255,176,.2);
-  border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 24px;
+  background: rgba(79,255,176,.07); border: 1px solid rgba(79,255,176,.25);
+  border-radius: var(--radius-sm); padding: 16px; margin-bottom: 24px;
 }
-.current-plan-icon { font-size: 22px; }
+.current-plan-icon { font-size: 26px; }
 .current-plan-info .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-.current-plan-info .value { font-size: 15px; font-weight: 600; color: var(--accent); margin-top: 2px; }
+.current-plan-info .value { font-size: 15px; font-weight: 700; color: var(--accent); margin-top: 3px; }
+
+/* Billing toggle */
+.billing-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-bottom: 24px; font-size: 13px; color: var(--muted);
+}
+.billing-toggle strong { color: var(--text); }
+.save-badge {
+  background: rgba(79,255,176,.15); color: var(--accent);
+  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+}
 
 .faq-item { border-bottom: 1px solid var(--border); }
 .faq-q {
   width: 100%; text-align: left; background: none; border: none; color: var(--text);
   font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
   padding: 16px 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+  gap: 12px;
 }
-.faq-q .arrow { transition: transform .2s; color: var(--muted); }
+.faq-q .arrow { transition: transform .2s; color: var(--muted); flex-shrink: 0; }
 .faq-item.open .arrow { transform: rotate(180deg); }
-.faq-a { font-size: 13px; color: var(--muted); line-height: 1.7; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .2s; }
+.faq-a { font-size: 13px; color: var(--muted); line-height: 1.75; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .2s; }
 .faq-item.open .faq-a { max-height: 300px; padding-bottom: 16px; }
+
+/* Guarantee strip */
+.guarantee-strip {
+  display: flex; align-items: center; justify-content: center; gap: 24px;
+  padding: 20px 16px; flex-wrap: wrap; gap: 16px;
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  margin: 24px 0;
+}
+.guarantee-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.guarantee-item span:first-child { font-size: 18px; }
 </style>
 </head>
 <body>
@@ -89,6 +127,7 @@
   <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
   <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
   <a class="sidebar-item active" href="pricing.html"><span class="si-icon">💎</span> Pricing</a>
+  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
   <div class="sidebar-bottom">
     <div class="sidebar-user">
       <div class="sidebar-avatar" id="sidebar-avatar">?</div>
@@ -112,7 +151,15 @@
 
   <div style="margin-bottom:24px;" class="hide-mobile">
     <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">Choose Your Plan</div>
-    <div style="font-size:13px;color:var(--muted);margin-top:4px;">Unlock full automation power. Cancel anytime.</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px;">Unlock full automation power. Cancel anytime. No hidden fees.</div>
+  </div>
+
+  <!-- Guarantee strip -->
+  <div class="guarantee-strip">
+    <div class="guarantee-item"><span>🔒</span><span>Secure payments via Razorpay</span></div>
+    <div class="guarantee-item"><span>🔄</span><span>Cancel anytime</span></div>
+    <div class="guarantee-item"><span>⚡</span><span>Instant activation</span></div>
+    <div class="guarantee-item"><span>🇮🇳</span><span>UPI, Cards & Net Banking</span></div>
   </div>
 
   <!-- Current plan status -->
@@ -255,6 +302,7 @@ document.getElementById('logout-btn')?.addEventListener('click', async () => { a
 const PLANS = [
   {
     id: 'free',
+    icon: '🆓',
     name: 'Free',
     desc: 'Get started with the basics',
     price: 0,
@@ -276,6 +324,7 @@ const PLANS = [
   },
   {
     id: 'pro',
+    icon: '🚀',
     name: 'Pro',
     desc: 'For serious job seekers',
     price: 299,
@@ -297,6 +346,7 @@ const PLANS = [
   },
   {
     id: 'elite',
+    icon: '👑',
     name: 'Elite',
     desc: 'Unlimited automation power',
     price: 799,
@@ -340,13 +390,15 @@ if (sub) {
 const grid = document.getElementById('plansGrid');
 grid.innerHTML = PLANS.map(p => {
   const isActive = activePlan === p.id;
-  return `<div class="plan-card ${p.popular ? 'popular' : ''}">
-    ${p.popular ? '<div class="popular-badge">Most Popular</div>' : ''}
+  const cardClass = ['plan-card', p.popular ? 'popular' : '', p.id === 'elite' ? 'elite-card' : ''].filter(Boolean).join(' ');
+  return `<div class="${cardClass}">
+    ${p.popular ? '<div class="popular-badge">⭐ Most Popular</div>' : ''}
+    <div class="plan-icon">${p.icon}</div>
     <div class="plan-name" style="color:${p.color}">${p.name}</div>
     <div class="plan-desc">${p.desc}</div>
-    <div class="plan-price" style="color:${p.color}">
-      ${p.price === 0 ? 'Free' : '₹' + p.price}
-      ${p.price > 0 ? '<span> /mo</span>' : ''}
+    <div class="plan-price-row">
+      <div class="plan-price" style="color:${p.color}">${p.price === 0 ? 'Free' : '₹' + p.price}</div>
+      ${p.price > 0 ? `<span class="plan-price-unit">/mo</span>` : ''}
     </div>
     <div class="plan-period">${p.period}</div>
     <div class="plan-divider"></div>
@@ -354,11 +406,11 @@ grid.innerHTML = PLANS.map(p => {
       <span class="${f.ok ? 'check' : 'cross'}">${f.ok ? '✓' : '✗'}</span>
       <span class="text">${f.text}</span>
     </div>`).join('')}
-    <div style="margin-top:20px;">
+    <div class="plan-cta">
       ${isActive
-        ? `<button class="btn btn-ghost btn-full" disabled>✅ Active Plan</button>`
+        ? `<button class="btn btn-ghost btn-full" style="cursor:default;" disabled>✅ Your Active Plan</button>`
         : p.price === 0
-          ? `<button class="btn btn-ghost btn-full" disabled>Free Plan</button>`
+          ? `<button class="btn btn-ghost btn-full" style="cursor:default;" disabled>Get Started Free</button>`
           : `<button class="${p.btnClass}" style="${p.btnStyle||''}" onclick="startPayment('${p.id}',${p.razorpayAmount},${p.months},'${p.name}')">${p.btnText}</button>`
       }
     </div>

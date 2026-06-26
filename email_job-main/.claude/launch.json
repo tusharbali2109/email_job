@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bulk-mailer",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "bulk-mailer", "-p", "5500", "--no-clipboard"],
+      "port": 5500
+    }
+  ]
+}

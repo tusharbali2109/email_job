@@ -13,57 +13,163 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <style>
-:root { --accent: #25d366; --accent2: #128c7e; }
-.contacts-list { max-height: 360px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface2); }
-.connect-status { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius-sm); background: var(--surface2); border: 1px solid var(--border); }
-.status-info .status-label { font-size: 14px; font-weight: 600; }
-.status-info .status-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
-.queue-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+/* ── WhatsApp green theme ── */
+:root {
+  --wa: #25d366;
+  --wa2: #128c7e;
+  --wa-glow: rgba(37,211,102,.15);
+}
+
+/* ── Connection Hero ── */
+.wa-hero {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 20px; border-radius: var(--radius);
+  border: 1.5px solid var(--border); background: var(--surface);
+  margin-bottom: 16px; transition: border-color .3s;
+}
+.wa-hero.connected {
+  border-color: rgba(37,211,102,.4);
+  background: linear-gradient(135deg, rgba(37,211,102,.06) 0%, var(--surface) 60%);
+}
+.wa-hero-left { display: flex; align-items: center; gap: 14px; }
+.wa-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--wa), var(--wa2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0; position: relative;
+}
+.wa-avatar .wa-dot {
+  position: absolute; bottom: 2px; right: 2px;
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--surface); background: var(--danger);
+  transition: background .3s;
+}
+.wa-avatar .wa-dot.on { background: var(--wa); box-shadow: 0 0 6px rgba(37,211,102,.5); }
+.wa-hero-title { font-size: 15px; font-weight: 700; }
+.wa-hero-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.wa-hero-right { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ── Contacts list ── */
+.contacts-list { max-height: 340px; overflow-y: auto; border-radius: var(--radius-sm); }
+.contact-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; cursor: pointer; transition: background .12s;
+  border-bottom: 1px solid var(--border);
+}
+.contact-row:last-child { border-bottom: none; }
+.contact-row:hover { background: rgba(37,211,102,.04); }
+.contact-row.selected { background: rgba(37,211,102,.07); }
+.cr-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--wa), var(--wa2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+.cr-info { flex: 1; min-width: 0; }
+.cr-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cr-meta { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cr-check {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid var(--border); background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.contact-row.selected .cr-check {
+  background: var(--wa); border-color: var(--wa);
+}
+.contact-row.selected .cr-check::after { content: '✓'; font-size: 11px; color: #fff; font-weight: 700; }
+
+/* ── Queue items ── */
+.queue-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
 .queue-item:last-child { border-bottom: none; }
 .queue-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.qs-queued    { background: var(--muted); }
-.qs-processing{ background: var(--warning); animation: blink 1s infinite; }
-.qs-sent      { background: var(--accent); }
-.qs-delivered { background: var(--accent2); }
-.qs-read      { background: var(--accent2); }
-.qs-failed    { background: var(--danger); }
-.qs-retrying  { background: var(--warning); animation: blink .5s infinite; }
+.qs-queued     { background: var(--muted); }
+.qs-processing { background: var(--warning); animation: blink 1s infinite; }
+.qs-sent       { background: var(--wa); box-shadow: 0 0 4px rgba(37,211,102,.4); }
+.qs-delivered  { background: var(--wa2); }
+.qs-read       { background: var(--wa2); }
+.qs-failed     { background: var(--danger); }
+.qs-retrying   { background: var(--warning); animation: blink .5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-/* QR Modal */
+/* ── QR Modal ── */
 .qr-modal-overlay {
   position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
-  display: none; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(12px);
+  display: none; align-items: center; justify-content: center; padding: 16px;
 }
 .qr-modal-overlay.open { display: flex; }
 .qr-modal {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); padding: 28px 24px;
+  border-radius: 24px; padding: 32px 28px 24px;
   width: 100%; max-width: 360px; text-align: center;
-  animation: slideUp .25s ease;
+  animation: slideUp .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 32px 96px rgba(0,0,0,.8), 0 0 0 1px rgba(37,211,102,.1);
 }
-.qr-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
-.qr-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-.qr-img-wrap {
-  width: 220px; height: 220px; margin: 0 auto 20px;
-  background: #fff; border-radius: 14px; padding: 10px;
-  border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center;
-}
-.qr-img-wrap img { width: 100%; height: 100%; object-fit: contain; }
-.qr-state-msg { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-.qr-steps { font-size: 12px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; text-align: left; }
-.qr-steps span { display: block; padding: 3px 0; }
-.qr-connected-banner {
-  display: none; background: rgba(37,211,102,.1); border: 1px solid rgba(37,211,102,.3);
-  border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px;
-  color: var(--accent); font-weight: 600; font-size: 14px;
+.qr-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
+.qr-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+.qr-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+/* Loading state */
+.qr-loading-box {
+  width: 240px; height: 240px; margin: 0 auto 16px;
+  background: var(--surface2); border-radius: 20px;
+  border: 2px dashed var(--border);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
 }
 @keyframes spinQR { to { transform: rotate(360deg); } }
 .qr-spinner {
-  width: 40px; height: 40px; border: 3px solid var(--border);
-  border-top-color: var(--accent); border-radius: 50%;
-  animation: spinQR .8s linear infinite; margin: 0 auto 12px;
+  width: 48px; height: 48px;
+  border: 3px solid rgba(37,211,102,.2);
+  border-top-color: var(--wa);
+  border-radius: 50%; animation: spinQR .9s linear infinite;
 }
+.qr-loading-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+.qr-loading-timer { font-size: 11px; color: var(--border2); margin-top: 2px; }
+
+/* QR ready state */
+.qr-img-wrap {
+  display: none; width: 240px; height: 240px; margin: 0 auto 16px;
+  background: #fff; border-radius: 20px; padding: 12px;
+  border: 3px solid var(--wa);
+  box-shadow: 0 0 0 6px rgba(37,211,102,.12);
+}
+.qr-img-wrap img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+
+/* Steps */
+.qr-steps {
+  display: none; text-align: left; margin-bottom: 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 16px;
+}
+.qr-step { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 12px; color: var(--text2); }
+.qr-step-num {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(37,211,102,.15); color: var(--wa);
+  font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+
+/* Connected banner */
+.qr-connected-banner {
+  display: none;
+  background: rgba(37,211,102,.1); border: 1px solid rgba(37,211,102,.35);
+  border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px;
+  color: var(--wa); font-weight: 700; font-size: 15px;
+  animation: fadeIn .4s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+
+/* Slow warning */
+.qr-slow-banner {
+  display: none; margin-bottom: 12px;
+  background: rgba(255,209,102,.07); border: 1px solid rgba(255,209,102,.2);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 12px; color: var(--warning); line-height: 1.6; text-align: left;
+}
+
+.qr-init-text { font-size: 11px; color: var(--muted); animation: pulse-txt 2s infinite; }
+@keyframes pulse-txt { 0%,100%{opacity:1} 50%{opacity:.4} }
 </style>
 </head>
 <body>
@@ -80,6 +186,7 @@
   <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
   <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
   <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
   <div class="sidebar-bottom">
     <div class="sidebar-user">
       <div class="sidebar-avatar" id="sidebar-avatar">?</div>
@@ -122,23 +229,21 @@
     <div class="stat-card"><div class="stat-label">Remaining</div><div class="stat-value yellow" id="statRemain">0</div></div>
   </div>
 
-  <!-- Step 1: Connection -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">📡 WhatsApp Connection</div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-wa btn-sm" id="btnConnect" onclick="connectWA()">Connect</button>
-        <button class="btn btn-ghost btn-sm" id="btnDisconnect" onclick="disconnectWA()" style="display:none;">Disconnect</button>
+  <!-- Connection Hero -->
+  <div class="wa-hero" id="waHero">
+    <div class="wa-hero-left">
+      <div class="wa-avatar">
+        💬
+        <div class="wa-dot" id="waDot"></div>
+      </div>
+      <div>
+        <div class="wa-hero-title" id="statusLabel">Not Connected</div>
+        <div class="wa-hero-sub" id="statusSub">Tap Connect to link your WhatsApp account</div>
       </div>
     </div>
-    <div class="card-body">
-      <div class="connect-status" id="connectStatus">
-        <div class="status-dot dot-red" id="statusDot"></div>
-        <div class="status-info">
-          <div class="status-label" id="statusLabel">Not Connected</div>
-          <div class="status-sub"   id="statusSub">Click Connect to link your WhatsApp</div>
-        </div>
-      </div>
+    <div class="wa-hero-right">
+      <button class="btn btn-wa btn-sm" id="btnConnect" onclick="connectWA()">Connect</button>
+      <button class="btn btn-ghost btn-sm" id="btnDisconnect" onclick="disconnectWA()" style="display:none;">Disconnect</button>
     </div>
   </div>
 
@@ -255,31 +360,43 @@
 <!-- QR Connection Modal -->
 <div class="qr-modal-overlay" id="qrModal">
   <div class="qr-modal">
-    <div class="qr-title">💬 Connect WhatsApp</div>
+    <div class="qr-header">
+      <span style="font-size:24px;">💬</span>
+      <div class="qr-title">Connect WhatsApp</div>
+    </div>
     <div class="qr-subtitle" id="qrModalSub">Starting WhatsApp Web…</div>
 
     <!-- Connected banner -->
     <div class="qr-connected-banner" id="qrConnectedBanner">
-      ✅ WhatsApp Connected! Closing…
+      ✅ WhatsApp Connected Successfully!
     </div>
 
-    <!-- QR image area -->
+    <!-- Slow-loading hint -->
+    <div class="qr-slow-banner" id="qrSlowBanner">
+      ⏳ Taking a moment — connecting to WhatsApp servers. Should be ready in a few seconds.
+    </div>
+
+    <!-- Loading box (shown while initializing) -->
+    <div class="qr-loading-box" id="qrLoadingBox">
+      <div class="qr-spinner"></div>
+      <div class="qr-loading-label" id="qrInitText">Connecting to WhatsApp…</div>
+      <div class="qr-loading-timer" id="qrTimer">0s</div>
+    </div>
+
+    <!-- QR image (shown when ready to scan) -->
     <div class="qr-img-wrap" id="qrImgWrap">
-      <div class="qr-spinner" id="qrSpinner"></div>
-      <img id="qrImage" src="" alt="QR Code" style="display:none;width:100%;height:100%;object-fit:contain;">
+      <img id="qrImage" src="" alt="QR Code">
     </div>
 
-    <!-- Steps -->
+    <!-- Steps (shown once QR ready) -->
     <div class="qr-steps" id="qrSteps">
-      <span>1. Open <strong>WhatsApp</strong> on your phone</span>
-      <span>2. Tap <strong>⋮ Menu → Linked Devices</strong></span>
-      <span>3. Tap <strong>"Link a Device"</strong></span>
-      <span>4. Point your camera at this QR code</span>
+      <div class="qr-step"><div class="qr-step-num">1</div><span>Open <strong>WhatsApp</strong> on your phone</span></div>
+      <div class="qr-step"><div class="qr-step-num">2</div><span>Tap <strong>⋮ Menu → Linked Devices</strong></span></div>
+      <div class="qr-step"><div class="qr-step-num">3</div><span>Tap <strong>"Link a Device"</strong></span></div>
+      <div class="qr-step"><div class="qr-step-num">4</div><span>Point your camera at the QR code above</span></div>
     </div>
 
-    <div class="qr-state-msg" id="qrStateMsg" style="color:var(--muted);">Waiting for QR code…</div>
-
-    <button class="btn btn-ghost btn-full" style="margin-top:12px;" onclick="closeQRModal()">Cancel</button>
+    <button class="btn btn-ghost btn-full" onclick="closeQRModal()">Cancel</button>
   </div>
 </div>
 
@@ -338,8 +455,14 @@ if (tmpl) {
 
 /* ── Load contacts ── */
 async function loadContacts() {
-  const { data } = await sb.from('companies').select('*').not('phone','is',null).neq('phone','').order('name');
-  allContacts = data || [];
+  const { data } = await sb.from('companies').select('*').order('name');
+  // Include any contact that has a phone number in either the phone OR contact field
+  allContacts = (data || []).filter(c => {
+    const ph = (c.phone || c.contact || '').toString().replace(/\D/g,'');
+    return ph.length >= 7;
+  });
+  // Normalize: ensure c.phone is always set from whichever field has the number
+  allContacts.forEach(c => { if (!c.phone && c.contact) c.phone = c.contact; });
   document.getElementById('contactsCount').textContent = `${allContacts.length} with phone`;
   renderContacts();
 }
@@ -356,24 +479,25 @@ function getFiltered() {
 function renderContacts() {
   const list = document.getElementById('contactsList');
   const data = getFiltered();
-  if (!data.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No contacts found.</div>'; updateCount(); return; }
+  if (!data.length) {
+    list.innerHTML = '<div style="text-align:center;padding:28px;color:var(--muted);font-size:13px;">No contacts found.</div>';
+    updateCount(); return;
+  }
   list.innerHTML = data.map(c => `
-    <div class="contact-item" onclick="toggleContact(${c.id},this)">
-      <input type="checkbox" class="check-input wa" id="chk_${c.id}" ${selectedIds.has(c.id)?'checked':''} onclick="event.stopPropagation();toggleContact(${c.id},this.closest('.contact-item'))">
-      <div class="contact-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">${(c.name||'?')[0].toUpperCase()}</div>
-      <div class="contact-main">
-        <div class="contact-name">${esc(c.name)}</div>
-        <div class="contact-meta">${esc(c.company)} · ${esc(c.phone||c.contact||'')}</div>
+    <div class="contact-row${selectedIds.has(c.id)?' selected':''}" onclick="toggleContact(${c.id},this)" id="row_${c.id}">
+      <div class="cr-avatar">${(c.name||'?')[0].toUpperCase()}</div>
+      <div class="cr-info">
+        <div class="cr-name">${esc(c.name)}${c.wa_sent ? ' <span style="font-size:10px;color:var(--wa);font-weight:600;">✓ Sent</span>' : ''}</div>
+        <div class="cr-meta">${esc(c.company||'')}${c.company&&c.phone?' · ':''}${esc(c.phone||c.contact||'')}</div>
       </div>
-      ${c.wa_sent ? '<span class="badge badge-wa" style="font-size:10px;">✓ Sent</span>' : ''}
+      <div class="cr-check"></div>
     </div>`).join('');
   updateCount();
 }
 
 window.toggleContact = (id, row) => {
-  const cb = document.getElementById('chk_' + id);
-  if (selectedIds.has(id)) { selectedIds.delete(id); if(cb) cb.checked=false; if(row) row.style.background=''; }
-  else { selectedIds.add(id); if(cb) cb.checked=true; if(row) row.style.background='rgba(37,211,102,.06)'; }
+  if (selectedIds.has(id)) { selectedIds.delete(id); row?.classList.remove('selected'); }
+  else { selectedIds.add(id); row?.classList.add('selected'); }
   updateCount();
 };
 
@@ -413,36 +537,37 @@ async function checkStatus() {
 }
 
 function updateStatusUI(state) {
-  const dot   = document.getElementById('statusDot');
   const label = document.getElementById('statusLabel');
   const sub   = document.getElementById('statusSub');
   const btnC  = document.getElementById('btnConnect');
   const btnD  = document.getElementById('btnDisconnect');
   const chip  = document.getElementById('waStatusChip');
+  const dot   = document.getElementById('waDot');
+  const hero  = document.getElementById('waHero');
 
-  const dotMap = { disconnected:'dot-red', initializing:'dot-yellow', qr:'dot-yellow', ready:'dot-green' };
-  dot.className = 'status-dot ' + (dotMap[state] || 'dot-red');
+  dot.className = 'wa-dot' + (state === 'ready' ? ' on' : '');
+  hero.className = 'wa-hero' + (state === 'ready' ? ' connected' : '');
 
   if (state === 'disconnected') {
     label.textContent = 'Not Connected';
-    sub.textContent   = 'Click Connect to link your WhatsApp';
+    sub.textContent   = 'Tap Connect to link your WhatsApp account';
     btnC.style.display = 'inline-flex'; btnD.style.display = 'none';
     chip.textContent = '🔴 Offline'; chip.style.color = 'var(--danger)';
   } else if (state === 'initializing') {
-    label.textContent = 'Initializing…';
-    sub.textContent   = 'Starting WhatsApp Web, please wait…';
+    label.textContent = 'Starting…';
+    sub.textContent   = 'Launching WhatsApp Web, please wait…';
     btnC.style.display = 'none'; btnD.style.display = 'inline-flex';
-    chip.textContent = '🟡 Starting…'; chip.style.color = 'var(--warning)';
+    chip.textContent = '🟡 Starting'; chip.style.color = 'var(--warning)';
   } else if (state === 'qr') {
     label.textContent = 'Scan QR Code';
-    sub.textContent   = 'Check the popup — scan with your phone';
+    sub.textContent   = 'Modal is open — scan QR with your phone';
     btnC.style.display = 'none'; btnD.style.display = 'inline-flex';
     chip.textContent = '🟡 Scan QR'; chip.style.color = 'var(--warning)';
   } else if (state === 'ready') {
-    label.textContent = 'Connected ✓';
-    sub.textContent   = 'WhatsApp is ready to send messages';
+    label.textContent = '✓ Connected';
+    sub.textContent   = 'WhatsApp is ready — select contacts and send';
     btnC.style.display = 'none'; btnD.style.display = 'inline-flex';
-    chip.textContent = '🟢 Connected'; chip.style.color = 'var(--accent)';
+    chip.textContent = '🟢 Connected'; chip.style.color = 'var(--wa)';
     if (selectedIds.size > 0) document.getElementById('startBtn').disabled = false;
   }
 }
@@ -452,35 +577,32 @@ async function loadQR() {
     const r = await fetch(WA_HOST + '/qr');
     const d = await r.json();
     if (d.qr) {
-      const img = document.getElementById('qrImage');
-      img.src = d.qr;
-      img.style.display = 'block';
-      document.getElementById('qrSpinner').style.display = 'none';
-      document.getElementById('qrStateMsg').textContent = 'Scan this QR with your phone';
-      document.getElementById('qrStateMsg').style.color = 'var(--accent)';
+      document.getElementById('qrImage').src = d.qr;
+      document.getElementById('qrLoadingBox').style.display = 'none';
+      document.getElementById('qrImgWrap').style.display = 'block';
+      document.getElementById('qrSteps').style.display = 'block';
     }
   } catch {}
 }
 
 let qrModalPollTimer = null;
+let qrTimerInterval  = null;
+let qrElapsed        = 0;
 
 window.connectWA = async () => {
   const btn = document.getElementById('btnConnect');
   btn.disabled = true;
 
-  // Check service is reachable first
   try {
     await fetch(WA_HOST + '/status');
   } catch {
-    toast('⚠️ Node service not running. Start it with: cd whatsapp-service && node server.js', 'error', 6000);
+    toast('⚠️ Node service not running. Run: cd whatsapp-service && node server.js', 'error', 7000);
     btn.disabled = false;
     return;
   }
 
-  // Open QR modal
   openQRModal();
 
-  // Tell server to init WhatsApp
   try {
     await fetch(WA_HOST + '/init', { method: 'POST' });
   } catch {
@@ -490,33 +612,18 @@ window.connectWA = async () => {
     return;
   }
 
-  // Animated status messages while waiting
-  const initMsgs = [
-    'Launching WhatsApp Web…',
-    'Starting browser engine…',
-    'Loading WhatsApp…',
-    'Almost there, generating QR…',
-    'Waiting for QR code…',
-  ];
+  const initMsgs = ['Connecting to WhatsApp…','Loading session…','Almost ready…','Generating QR code…','Waiting for QR…'];
   let msgIdx = 0;
   const msgTimer = setInterval(() => {
     msgIdx = (msgIdx + 1) % initMsgs.length;
-    const sub = document.getElementById('qrModalSub');
-    if (sub && sub.textContent !== 'Scan the QR code with WhatsApp') {
-      sub.textContent = initMsgs[msgIdx];
-    }
+    const el = document.getElementById('qrInitText');
+    if (el) el.textContent = initMsgs[msgIdx];
   }, 4000);
 
-  // Show "taking longer than expected" hint after 35s
   const slowTimer = setTimeout(() => {
-    const msg = document.getElementById('qrStateMsg');
-    if (msg && msg.textContent === 'Waiting for QR code…') {
-      msg.textContent = 'Taking longer than usual… Chrome is still loading.';
-      msg.style.color = 'var(--warning)';
-    }
-  }, 35000);
+    document.getElementById('qrSlowBanner').style.display = 'block';
+  }, 30000);
 
-  // Poll until QR appears or connected
   qrModalPollTimer = setInterval(async () => {
     try {
       const r = await fetch(WA_HOST + '/status');
@@ -524,43 +631,52 @@ window.connectWA = async () => {
 
       if (d.state === 'qr') {
         clearInterval(msgTimer);
-        document.getElementById('qrModalSub').textContent = 'Scan the QR code with WhatsApp';
+        document.getElementById('qrModalSub').textContent = 'Scan with your WhatsApp app';
+        document.getElementById('qrSlowBanner').style.display = 'none';
         loadQR();
-      } else if (d.state === 'initializing') {
-        // messages handled by msgTimer above
       } else if (d.state === 'ready') {
-        // Connected!
+        clearTimeout(slowTimer);
+        clearInterval(msgTimer);
         clearInterval(qrModalPollTimer); qrModalPollTimer = null;
+        clearInterval(qrTimerInterval);
+        document.getElementById('qrLoadingBox').style.display = 'none';
         document.getElementById('qrImgWrap').style.display = 'none';
         document.getElementById('qrSteps').style.display = 'none';
-        document.getElementById('qrStateMsg').style.display = 'none';
-        document.getElementById('qrModalSub').textContent = 'WhatsApp linked successfully';
+        document.getElementById('qrSlowBanner').style.display = 'none';
+        document.getElementById('qrModalSub').textContent = 'Linked successfully!';
         document.getElementById('qrConnectedBanner').style.display = 'block';
-        updateStatusUI('ready', false);
+        updateStatusUI('ready');
         checkStatus();
-        setTimeout(closeQRModal, 2000);
+        setTimeout(closeQRModal, 2200);
       }
     } catch {}
   }, 2000);
 };
 
 window.openQRModal = () => {
-  // Reset modal state
-  document.getElementById('qrImage').style.display = 'none';
+  qrElapsed = 0;
+  clearInterval(qrTimerInterval);
+  qrTimerInterval = setInterval(() => {
+    qrElapsed++;
+    const el = document.getElementById('qrTimer');
+    if (el) el.textContent = qrElapsed + 's';
+  }, 1000);
+
   document.getElementById('qrImage').src = '';
-  document.getElementById('qrSpinner').style.display = 'block';
-  document.getElementById('qrImgWrap').style.display = 'flex';
-  document.getElementById('qrSteps').style.display = 'block';
-  document.getElementById('qrStateMsg').style.display = 'block';
-  document.getElementById('qrStateMsg').textContent = 'Waiting for QR code…';
-  document.getElementById('qrStateMsg').style.color = 'var(--muted)';
+  document.getElementById('qrLoadingBox').style.display = 'flex';
+  document.getElementById('qrImgWrap').style.display = 'none';
+  document.getElementById('qrSteps').style.display = 'none';
   document.getElementById('qrConnectedBanner').style.display = 'none';
+  document.getElementById('qrSlowBanner').style.display = 'none';
+  document.getElementById('qrInitText').textContent = 'Launching browser…';
+  document.getElementById('qrTimer').textContent = '0s';
   document.getElementById('qrModalSub').textContent = 'Starting WhatsApp Web…';
   document.getElementById('qrModal').classList.add('open');
 };
 
 window.closeQRModal = () => {
   clearInterval(qrModalPollTimer); qrModalPollTimer = null;
+  clearInterval(qrTimerInterval);  qrTimerInterval  = null;
   document.getElementById('qrModal').classList.remove('open');
   document.getElementById('btnConnect').disabled = false;
 };

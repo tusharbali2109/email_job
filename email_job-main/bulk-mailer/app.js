@@ -74,8 +74,32 @@ export function setupSidebarUser(session) {
   });
 }
 
+/* ── Theme System ────────────────────────────────────────── */
+export function applyTheme() {
+  const root = document.documentElement;
+  const saved = JSON.parse(localStorage.getItem('reachout_theme') || '{}');
+  if (saved.accent)   root.style.setProperty('--accent',   saved.accent);
+  if (saved.accent2)  root.style.setProperty('--accent2',  saved.accent2);
+  if (saved.bg)       root.style.setProperty('--bg',       saved.bg);
+  if (saved.surface)  root.style.setProperty('--surface',  saved.surface);
+  if (saved.surface2) root.style.setProperty('--surface2', saved.surface2);
+}
+
+export function saveTheme(key, value) {
+  const saved = JSON.parse(localStorage.getItem('reachout_theme') || '{}');
+  saved[key] = value;
+  localStorage.setItem('reachout_theme', JSON.stringify(saved));
+  document.documentElement.style.setProperty('--' + key.replace(/([A-Z])/g, '-$1').toLowerCase(), value);
+}
+
+export function resetTheme() {
+  localStorage.removeItem('reachout_theme');
+  location.reload();
+}
+
 /* ── Setup Page ──────────────────────────────────────────── */
 export async function setupPage(activeHref) {
+  applyTheme(); // apply saved theme first
   const session = await requireAuth();
   if (!session) return null;
   setupSidebarUser(session);

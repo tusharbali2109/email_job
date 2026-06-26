@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d12">
+<title>Settings — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+/* Color swatch row */
+.color-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+}
+.color-row:last-child { border-bottom: none; }
+.color-row-left { display: flex; flex-direction: column; gap: 2px; }
+.color-row-label { font-size: 14px; font-weight: 500; }
+.color-row-sub   { font-size: 12px; color: var(--muted); }
+.color-row-right { display: flex; align-items: center; gap: 10px; }
+.color-hex {
+  font-family: monospace; font-size: 12px; color: var(--muted);
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 6px; min-width: 74px; text-align: center;
+}
+.color-swatch-btn {
+  width: 40px; height: 40px; border-radius: 10px; border: 2px solid var(--border);
+  cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0;
+  transition: border-color .2s, transform .1s;
+}
+.color-swatch-btn:hover { border-color: var(--accent); transform: scale(1.05); }
+.color-swatch-btn input[type="color"] {
+  position: absolute; inset: -8px; width: calc(100% + 16px); height: calc(100% + 16px);
+  opacity: 0; cursor: pointer; border: none; padding: 0;
+}
+
+/* Live preview */
+.theme-preview {
+  border-radius: var(--radius); border: 1.5px solid var(--border);
+  overflow: hidden; margin-bottom: 20px;
+}
+.preview-header {
+  background: var(--surface); padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.preview-logo { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; }
+.preview-body { background: var(--bg); padding: 16px; display: flex; gap: 10px; }
+.preview-stat {
+  flex: 1; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px; text-align: center;
+}
+.preview-stat-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--accent); }
+.preview-stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.preview-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 20px; background: var(--accent); color: #0c0f14;
+  border-radius: 10px; font-weight: 700; font-size: 13px; border: none; margin-top: 10px;
+}
+
+/* Presets */
+.presets { display: flex; gap: 10px; flex-wrap: wrap; }
+.preset-chip {
+  width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+  border: 3px solid transparent; transition: all .15s; flex-shrink: 0;
+}
+.preset-chip:hover, .preset-chip.active { border-color: var(--text); transform: scale(1.1); box-shadow: 0 0 0 2px var(--bg); }
+
+/* Info inputs */
+.info-row { margin-bottom: 14px; }
+.info-row label { display: block; font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .8px; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Menu</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item active" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name"  id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="header-title">🎨 Settings</div>
+  </div>
+</header>
+
+<main class="page-content">
+
+  <div style="margin-bottom:24px;" class="hide-mobile">
+    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">App Settings</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px;">Customize colors, branding, and app appearance</div>
+  </div>
+
+  <!-- Live Preview -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header"><div class="card-title">👁 Live Preview</div><span style="font-size:12px;color:var(--muted);">Changes apply instantly</span></div>
+    <div class="card-body" style="padding:0;">
+      <div class="theme-preview" style="margin:0;border-radius:0;border:none;">
+        <div class="preview-header">
+          <div class="preview-logo">Reach<span style="color:var(--accent)">Out</span></div>
+          <span style="margin-left:auto;font-size:12px;color:var(--muted);">Dashboard</span>
+        </div>
+        <div class="preview-body">
+          <div class="preview-stat"><div class="preview-stat-val">42</div><div class="preview-stat-label">Sent</div></div>
+          <div class="preview-stat"><div class="preview-stat-val" style="color:var(--accent2)">18</div><div class="preview-stat-label">WhatsApp</div></div>
+          <div class="preview-stat"><div class="preview-stat-val" style="color:var(--warning)">5</div><div class="preview-stat-label">Pending</div></div>
+        </div>
+        <div style="background:var(--bg);padding:0 16px 16px;">
+          <button class="preview-btn">📤 Send Now</button>
+          <span style="margin-left:10px;font-size:12px;color:var(--muted);">Sidebar active: <span style="color:var(--accent);font-weight:600;">◀</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Presets -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header"><div class="card-title">⚡ Quick Color Presets</div></div>
+    <div class="card-body">
+      <div class="presets" id="presets">
+        <div class="preset-chip" title="Green (Default)" style="background:#4fffb0;" data-accent="#4fffb0" data-accent2="#00c9a7" onclick="applyPreset(this)"></div>
+        <div class="preset-chip" title="WhatsApp"        style="background:#25d366;" data-accent="#25d366" data-accent2="#128c7e" onclick="applyPreset(this)"></div>
+        <div class="preset-chip" title="Blue"            style="background:#3b82f6;" data-accent="#3b82f6" data-accent2="#2563eb" onclick="applyPreset(this)"></div>
+        <div class="preset-chip" title="Purple"          style="background:#a855f7;" data-accent="#a855f7" data-accent2="#7c3aed" onclick="applyPreset(this)"></div>
+        <div class="preset-chip" title="Orange"          style="background:#f97316;" data-accent="#f97316" data-accent2="#ea580c" onclick="applyPreset(this)"></div>
+        <div class="preset-chip" title="Pink"            style="background:#ec4899;" data-accent="#ec4899" data-accent2="#db2777" onclick="applyPreset(this)"></div>
+        <div class="preset-chip" title="Cyan"            style="background:#06b6d4;" data-accent="#06b6d4" data-accent2="#0891b2" onclick="applyPreset(this)"></div>
+        <div class="preset-chip" title="Gold"            style="background:#fbbf24;" data-accent="#fbbf24" data-accent2="#d97706" onclick="applyPreset(this)"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:12px;">Tap a color swatch to preview it, then hit <strong style="color:var(--text);">Save & Apply</strong>.</div>
+    </div>
+  </div>
+
+  <!-- Custom Colors -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header"><div class="card-title">🎨 Custom Colors</div></div>
+    <div class="card-body" style="padding-bottom:4px;">
+
+      <div class="color-row">
+        <div class="color-row-left">
+          <div class="color-row-label">Primary Accent</div>
+          <div class="color-row-sub">Buttons, links, active nav highlights</div>
+        </div>
+        <div class="color-row-right">
+          <span class="color-hex" id="hexAccent">#4fffb0</span>
+          <div class="color-swatch-btn" id="swatchAccent" style="background:var(--accent);">
+            <input type="color" id="pickerAccent" value="#4fffb0" oninput="onColorChange('accent','pickerAccent','swatchAccent','hexAccent')">
+          </div>
+        </div>
+      </div>
+
+      <div class="color-row">
+        <div class="color-row-left">
+          <div class="color-row-label">Secondary Accent</div>
+          <div class="color-row-sub">Gradients, charts, secondary elements</div>
+        </div>
+        <div class="color-row-right">
+          <span class="color-hex" id="hexAccent2">#00c9a7</span>
+          <div class="color-swatch-btn" id="swatchAccent2" style="background:var(--accent2);">
+            <input type="color" id="pickerAccent2" value="#00c9a7" oninput="onColorChange('accent2','pickerAccent2','swatchAccent2','hexAccent2')">
+          </div>
+        </div>
+      </div>
+
+      <div class="color-row">
+        <div class="color-row-left">
+          <div class="color-row-label">Page Background</div>
+          <div class="color-row-sub">Main background behind all content</div>
+        </div>
+        <div class="color-row-right">
+          <span class="color-hex" id="hexBg">#0a0d12</span>
+          <div class="color-swatch-btn" id="swatchBg" style="background:var(--bg);">
+            <input type="color" id="pickerBg" value="#0a0d12" oninput="onColorChange('bg','pickerBg','swatchBg','hexBg')">
+          </div>
+        </div>
+      </div>
+
+      <div class="color-row">
+        <div class="color-row-left">
+          <div class="color-row-label">Card / Sidebar Surface</div>
+          <div class="color-row-sub">Cards, sidebar, header panels</div>
+        </div>
+        <div class="color-row-right">
+          <span class="color-hex" id="hexSurface">#141820</span>
+          <div class="color-swatch-btn" id="swatchSurface" style="background:var(--surface);">
+            <input type="color" id="pickerSurface" value="#141820" oninput="onColorChange('surface','pickerSurface','swatchSurface','hexSurface')">
+          </div>
+        </div>
+      </div>
+
+      <div class="color-row">
+        <div class="color-row-left">
+          <div class="color-row-label">Input / Inner Surface</div>
+          <div class="color-row-sub">Input fields, code blocks, inner rows</div>
+        </div>
+        <div class="color-row-right">
+          <span class="color-hex" id="hexSurface2">#1c2230</span>
+          <div class="color-swatch-btn" id="swatchSurface2" style="background:var(--surface2);">
+            <input type="color" id="pickerSurface2" value="#1c2230" oninput="onColorChange('surface2','pickerSurface2','swatchSurface2','hexSurface2')">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Agency Info -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header"><div class="card-title">🏢 Your Info</div><span style="font-size:12px;color:var(--muted);">Used in email footers</span></div>
+    <div class="card-body">
+      <div class="info-row">
+        <label>App / Agency Name</label>
+        <input type="text" class="form-input" id="agencyName" placeholder="ReachOut Pro" style="margin:0;">
+      </div>
+      <div class="info-row">
+        <label>Your Full Name</label>
+        <input type="text" class="form-input" id="agencyPerson" placeholder="Tushar Bali" style="margin:0;">
+      </div>
+      <div class="info-row" style="margin-bottom:0;">
+        <label>City / Tagline</label>
+        <input type="text" class="form-input" id="agencyAddress" placeholder="New Delhi, India" style="margin:0;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;padding-bottom:32px;">
+    <button class="btn btn-primary" onclick="saveAll()" style="flex:1;min-width:140px;">💾 Save & Apply to All Pages</button>
+    <button class="btn btn-ghost"   onclick="resetAll()">↩ Reset Default</button>
+  </div>
+
+</main>
+</div>
+
+<nav class="bottom-nav">
+  <a class="bn-item" href="index.html"><div class="bn-icon-wrap">📋</div><span class="bn-label">Home</span></a>
+  <a class="bn-item" href="send.html"><div class="bn-icon-wrap">📤</div><span class="bn-label">Send</span></a>
+  <a class="bn-item" href="jobs.html"><div class="bn-icon-wrap">🔍</div><span class="bn-label">Jobs</span></a>
+  <a class="bn-item active" href="settings.html"><div class="bn-icon-wrap">🎨</div><span class="bn-label">Settings</span></a>
+  <a class="bn-item" href="profile.html"><div class="bn-icon-wrap">👤</div><span class="bn-label">Profile</span></a>
+</nav>
+
+<div id="toast-container"></div>
+
+<script type="module">
+import { sb, setupPage, toast, applyTheme } from './app.js';
+
+const session = await setupPage('settings.html');
+if (!session) throw new Error('No session');
+document.getElementById('logout-btn')?.addEventListener('click', async () => {
+  await sb.auth.signOut(); location.href = 'login.html';
+});
+
+const defaults = {
+  accent: '#4fffb0', accent2: '#00c9a7',
+  bg: '#0a0d12', surface: '#141820', surface2: '#1c2230',
+};
+const varMap = { accent:'--accent', accent2:'--accent2', bg:'--bg', surface:'--surface', surface2:'--surface2' };
+
+/* Load saved values */
+const saved = JSON.parse(localStorage.getItem('reachout_theme') || '{}');
+const info  = JSON.parse(localStorage.getItem('reachout_info')  || '{}');
+
+function initPicker(key, pickerId, swatchId, hexId) {
+  const val = saved[key] || defaults[key];
+  document.getElementById(pickerId).value = val;
+  document.getElementById(swatchId).style.background = val;
+  document.getElementById(hexId).textContent = val;
+}
+initPicker('accent',   'pickerAccent',   'swatchAccent',   'hexAccent');
+initPicker('accent2',  'pickerAccent2',  'swatchAccent2',  'hexAccent2');
+initPicker('bg',       'pickerBg',       'swatchBg',       'hexBg');
+initPicker('surface',  'pickerSurface',  'swatchSurface',  'hexSurface');
+initPicker('surface2', 'pickerSurface2', 'swatchSurface2', 'hexSurface2');
+
+if (info.name)    document.getElementById('agencyName').value    = info.name;
+if (info.person)  document.getElementById('agencyPerson').value  = info.person;
+if (info.address) document.getElementById('agencyAddress').value = info.address;
+
+/* Live color change */
+window.onColorChange = (key, pickerId, swatchId, hexId) => {
+  const val = document.getElementById(pickerId).value;
+  document.getElementById(swatchId).style.background = val;
+  document.getElementById(hexId).textContent = val;
+  if (varMap[key]) document.documentElement.style.setProperty(varMap[key], val);
+};
+
+/* Presets */
+window.applyPreset = (el) => {
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const accent  = el.dataset.accent;
+  const accent2 = el.dataset.accent2;
+  ['pickerAccent','swatchAccent','hexAccent'].forEach((id,i) => {
+    const v = accent;
+    if (i===0) document.getElementById(id).value = v;
+    else if (i===1) document.getElementById(id).style.background = v;
+    else document.getElementById(id).textContent = v;
+  });
+  ['pickerAccent2','swatchAccent2','hexAccent2'].forEach((id,i) => {
+    const v = accent2;
+    if (i===0) document.getElementById(id).value = v;
+    else if (i===1) document.getElementById(id).style.background = v;
+    else document.getElementById(id).textContent = v;
+  });
+  document.documentElement.style.setProperty('--accent',  accent);
+  document.documentElement.style.setProperty('--accent2', accent2);
+};
+
+/* Save */
+window.saveAll = () => {
+  const theme = {
+    accent:   document.getElementById('pickerAccent').value,
+    accent2:  document.getElementById('pickerAccent2').value,
+    bg:       document.getElementById('pickerBg').value,
+    surface:  document.getElementById('pickerSurface').value,
+    surface2: document.getElementById('pickerSurface2').value,
+  };
+  localStorage.setItem('reachout_theme', JSON.stringify(theme));
+  const agInfo = {
+    name:    document.getElementById('agencyName').value.trim(),
+    person:  document.getElementById('agencyPerson').value.trim(),
+    address: document.getElementById('agencyAddress').value.trim(),
+  };
+  localStorage.setItem('reachout_info', JSON.stringify(agInfo));
+  // Apply globally on this page
+  Object.entries(varMap).forEach(([k,v]) => document.documentElement.style.setProperty(v, theme[k]));
+  toast('✅ Theme saved — will apply on all pages now!', 'success', 3500);
+};
+
+/* Reset */
+window.resetAll = () => {
+  if (!confirm('Reset all colors back to default?')) return;
+  localStorage.removeItem('reachout_theme');
+  localStorage.removeItem('reachout_info');
+  toast('↩ Restored defaults', 'info', 1500);
+  setTimeout(() => location.reload(), 900);
+};
+</script>
+</body>
+</html>
