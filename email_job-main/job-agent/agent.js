@@ -7,10 +7,18 @@
 const { chromium } = require('playwright');
 const express      = require('express');
 const cors         = require('cors');
+const path         = require('path');
+const fs           = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 
 const app  = express();
 const PORT = 3002;
+
+// Session storage paths (saved next to agent.js)
+const SESSIONS_DIR     = path.join(__dirname, 'sessions');
+const NAUKRI_SESSION   = path.join(SESSIONS_DIR, 'naukri.json');
+const LINKEDIN_SESSION = path.join(SESSIONS_DIR, 'linkedin.json');
+if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR);
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
@@ -44,25 +52,23 @@ async function randomDelay(min = 1500, max = 4000) {
 // LINKEDIN EASY APPLY
 // ══════════════════════════════════════════
 async function runLinkedIn(page, profile, keywords, maxApply) {
-    log('🔷 LinkedIn: Logging in...');
-    await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded' });
-    await randomDelay(1000, 2000);
+    log('🔷 LinkedIn: Loading session...');
 
-    // Fill login
-    await page.fill('#username', profile.linkedin_email || profile.email);
-    await randomDelay(500, 1000);
-    await page.fill('#password', profile.linkedin_pass);
-    await randomDelay(500, 1000);
-    await page.click('[type="submit"]');
-    await page.waitForLoadState('networkidle');
-    await randomDelay(2000, 4000);
-
-    if (page.url().includes('checkpoint') || page.url().includes('login')) {
-        log('⚠️ LinkedIn: CAPTCHA/verification needed — solve it in the browser window, then the agent will continue in 30s', 'warn');
-        await sleep(30000);
+    if (!fs.existsSync(LINKEDIN_SESSION)) {
+        throw new Error('LinkedIn session not found — please click "Login LinkedIn" in the dashboard first');
     }
 
-    log('✅ LinkedIn: Logged in');
+    const saved = JSON.parse(fs.readFileSync(LINKEDIN_SESSION, 'utf8'));
+    await page.context().addCookies(saved.cookies);
+
+    await page.goto('https://www.linkedin.com/feed/', { waitUntil: 'domcontentloaded' });
+    await randomDelay(1000, 2000);
+
+    if (page.url().includes('login') || page.url().includes('checkpoint')) {
+        throw new Error('LinkedIn session expired — please click "Login LinkedIn" in the dashboard to re-authenticate');
+    }
+
+    log('✅ LinkedIn: Session restored');
 
     // Search jobs
     const searchUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(keywords)}&f_AL=true&f_WT=2`;
@@ -197,24 +203,25 @@ async function runLinkedIn(page, profile, keywords, maxApply) {
 // NAUKRI APPLY
 // ══════════════════════════════════════════
 async function runNaukri(page, profile, keywords, maxApply) {
-    log('🟡 Naukri: Logging in...');
-    await page.goto('https://www.naukri.com/nlogin/login', { waitUntil: 'domcontentloaded' });
-    await randomDelay(2000, 3000);
+    log('🟡 Naukri: Loading session...');
 
-    await page.fill('input[placeholder="Enter your active Email ID / Username"]', profile.naukri_email || profile.email);
-    await randomDelay(500, 1000);
-    await page.fill('input[placeholder="Enter your password"]', profile.naukri_pass);
-    await randomDelay(500, 1000);
-    await page.click('button[type="submit"]');
-    await page.waitForLoadState('networkidle');
-    await randomDelay(2000, 4000);
-
-    if (page.url().includes('login')) {
-        log('⚠️ Naukri: Login may have failed — check browser window', 'warn');
-        await sleep(15000);
+    if (!fs.existsSync(NAUKRI_SESSION)) {
+        throw new Error('Naukri session not found — please click "Login Naukri" in the dashboard first');
     }
 
-    log('✅ Naukri: Logged in');
+    // Restore saved cookies into this context
+    const saved = JSON.parse(fs.readFileSync(NAUKRI_SESSION, 'utf8'));
+    await page.context().addCookies(saved.cookies);
+
+    await page.goto('https://www.naukri.com/', { waitUntil: 'domcontentloaded' });
+    await randomDelay(2000, 3000);
+
+    // Verify we're actually logged in
+    if (page.url().includes('login') || page.url().includes('nlogin')) {
+        throw new Error('Naukri session expired — please click "Login Naukri" in the dashboard to re-authenticate');
+    }
+
+    log('✅ Naukri: Session restored');
 
     // Search
     const searchUrl = `https://www.naukri.com/${encodeURIComponent(keywords.replace(/\s+/g, '-'))}-jobs`;
@@ -465,6 +472,90 @@ app.post('/stop', async (req, res) => {
     stopRequested = true;
     log('⛔ Stop requested by user', 'warn');
     res.json({ success: true });
+});
+
+// ── Session check endpoints ──
+app.get('/session-status', (req, res) => {
+    res.json({
+        naukri:   fs.existsSync(NAUKRI_SESSION),
+        linkedin: fs.existsSync(LINKEDIN_SESSION),
+    });
+});
+
+// Opens a visible browser — user logs in manually — cookies are saved on success
+// Real Chrome path + user profile dir — Google trusts this browser
+const CHROME_EXE      = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe';
+const CHROME_PROFILE  = path.join(process.env.LOCALAPPDATA, 'Google', 'Chrome', 'User Data');
+
+async function openLoginBrowser(url) {
+    // Use a COPY of the user profile so Chrome doesn't complain about multiple instances
+    const tmpProfile = path.join(SESSIONS_DIR, 'chrome-tmp-profile');
+    const ctx = await chromium.launchPersistentContext(tmpProfile, {
+        headless: false,
+        executablePath: CHROME_EXE,
+        args: [
+            '--start-maximized',
+            '--disable-blink-features=AutomationControlled',
+            '--no-first-run',
+            '--no-default-browser-check',
+        ],
+        ignoreDefaultArgs: ['--enable-automation'],
+        viewport: null,
+    });
+    const page = ctx.pages()[0] || await ctx.newPage();
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    return { ctx, page };
+}
+
+app.post('/naukri-login', async (req, res) => {
+    if (agentRunning) return res.status(400).json({ success: false, error: 'Agent is running, stop it first' });
+    res.json({ success: true, message: 'Browser opening — log in manually, window will close automatically' });
+
+    let ctx;
+    try {
+        ({ ctx } = await openLoginBrowser('https://www.naukri.com/nlogin/login'));
+        const page = ctx.pages()[0];
+        log('🟡 Naukri login browser opened — waiting for user to log in...', 'warn');
+
+        await page.waitForFunction(
+            () => !window.location.href.includes('login') && !window.location.href.includes('nlogin'),
+            { timeout: 180000 }
+        );
+
+        const cookies = await ctx.cookies();
+        fs.writeFileSync(NAUKRI_SESSION, JSON.stringify({ cookies }, null, 2));
+        log('✅ Naukri session saved successfully!', 'success');
+    } catch (e) {
+        log(`❌ Naukri login failed: ${e.message}`, 'error');
+    } finally {
+        if (ctx) await ctx.close().catch(() => {});
+    }
+});
+
+app.post('/linkedin-login', async (req, res) => {
+    if (agentRunning) return res.status(400).json({ success: false, error: 'Agent is running, stop it first' });
+    res.json({ success: true, message: 'Browser opening — log in manually, window will close automatically' });
+
+    let ctx;
+    try {
+        ({ ctx } = await openLoginBrowser('https://www.linkedin.com/login'));
+        const page = ctx.pages()[0];
+        log('🔷 LinkedIn login browser opened — waiting for user to log in...', 'warn');
+
+        page.setDefaultTimeout(180000);
+        await page.waitForFunction(
+            () => !window.location.href.includes('/login') && !window.location.href.includes('/checkpoint') && window.location.hostname.includes('linkedin.com'),
+            { timeout: 180000 }
+        );
+
+        const cookies = await ctx.cookies();
+        fs.writeFileSync(LINKEDIN_SESSION, JSON.stringify({ cookies }, null, 2));
+        log('✅ LinkedIn session saved successfully!', 'success');
+    } catch (e) {
+        log(`❌ LinkedIn login failed: ${e.message}`, 'error');
+    } finally {
+        if (ctx) await ctx.close().catch(() => {});
+    }
 });
 
 app.get('/logs', (req, res) => res.json(agentLogs));

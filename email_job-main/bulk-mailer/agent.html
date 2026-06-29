@@ -148,33 +148,49 @@
 
   <!-- Credentials card -->
   <div class="card">
-    <div class="card-title" style="color:#ffd166">🔑 Platform Credentials</div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Credentials sirf tumhare browser mein save hote hain — server par nahi jaate</p>
-    <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label">🔷 LinkedIn Email</label>
-        <input class="form-input" id="li-email" type="email" placeholder="yourname@gmail.com">
+    <div class="card-title" style="color:#ffd166">🔑 Platform Login</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:20px">Ek baar login karo — session save ho jaayega, baar baar password nahi daalna padega</p>
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- LinkedIn -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:22px">🔷</span>
+          <div>
+            <div style="font-weight:600;font-size:14px">LinkedIn</div>
+            <div id="li-status" style="font-size:12px;color:var(--muted)">Checking...</div>
+          </div>
+        </div>
+        <button id="li-login-btn" class="btn btn-secondary" onclick="platformLogin('linkedin')" style="padding:8px 18px;font-size:13px">Login</button>
       </div>
-      <div class="form-group">
-        <label class="form-label">🔷 LinkedIn Password</label>
-        <input class="form-input" id="li-pass" type="password" placeholder="••••••••">
+
+      <!-- Naukri -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:22px">🟡</span>
+          <div>
+            <div style="font-weight:600;font-size:14px">Naukri</div>
+            <div id="nk-status" style="font-size:12px;color:var(--muted)">Checking...</div>
+          </div>
+        </div>
+        <button id="nk-login-btn" class="btn btn-secondary" onclick="platformLogin('naukri')" style="padding:8px 18px;font-size:13px">Login</button>
       </div>
-      <div class="form-group">
-        <label class="form-label">🟡 Naukri Email</label>
-        <input class="form-input" id="nk-email" type="email" placeholder="yourname@gmail.com">
+
+      <!-- Indeed (still credential-based for now) -->
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:22px">🔵</span>
+          <div>
+            <div style="font-weight:600;font-size:14px">Indeed</div>
+            <div style="font-size:12px;color:var(--muted)">Email &amp; Password</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="in-email" type="email" placeholder="Email" style="width:160px;padding:7px 10px;font-size:13px">
+          <input class="form-input" id="in-pass" type="password" placeholder="Password" style="width:120px;padding:7px 10px;font-size:13px">
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">🟡 Naukri Password</label>
-        <input class="form-input" id="nk-pass" type="password" placeholder="••••••••">
-      </div>
-      <div class="form-group">
-        <label class="form-label">🔵 Indeed Email</label>
-        <input class="form-input" id="in-email" type="email" placeholder="yourname@gmail.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label">🔵 Indeed Password</label>
-        <input class="form-input" id="in-pass" type="password" placeholder="••••••••">
-      </div>
+
     </div>
   </div>
 
@@ -244,21 +260,85 @@ if (!session) throw 0;
 const { data: profile } = await sb.from('user_profile').select('*').limit(1).single();
 if (profile) {
   document.getElementById('keywords').value = profile.job_role || '';
-  // Restore saved credentials from localStorage
   const saved = JSON.parse(localStorage.getItem('agent_creds') || '{}');
-  if (saved.li_email)  document.getElementById('li-email').value  = saved.li_email;
-  if (saved.li_pass)   document.getElementById('li-pass').value   = saved.li_pass;
-  if (saved.nk_email)  document.getElementById('nk-email').value  = saved.nk_email;
-  if (saved.nk_pass)   document.getElementById('nk-pass').value   = saved.nk_pass;
-  if (saved.in_email)  document.getElementById('in-email').value  = saved.in_email;
-  if (saved.in_pass)   document.getElementById('in-pass').value   = saved.in_pass;
+  if (saved.in_email) document.getElementById('in-email').value = saved.in_email;
+  if (saved.in_pass)  document.getElementById('in-pass').value  = saved.in_pass;
 }
+
+// Check session status for LinkedIn / Naukri
+async function refreshSessionStatus() {
+  try {
+    const res  = await fetch(AGENT_URL + '/session-status', { signal: AbortSignal.timeout(2000) });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const liStatus = document.getElementById('li-status');
+    const nkStatus = document.getElementById('nk-status');
+    const liBtn    = document.getElementById('li-login-btn');
+    const nkBtn    = document.getElementById('nk-login-btn');
+
+    if (data.linkedin) {
+      liStatus.textContent = '✅ Logged in — session saved';
+      liStatus.style.color = '#06d6a0';
+      liBtn.textContent = 'Re-login';
+    } else {
+      liStatus.textContent = '❌ Not logged in — click Login';
+      liStatus.style.color = '#ef476f';
+      liBtn.textContent = 'Login';
+    }
+    if (data.naukri) {
+      nkStatus.textContent = '✅ Logged in — session saved';
+      nkStatus.style.color = '#06d6a0';
+      nkBtn.textContent = 'Re-login';
+    } else {
+      nkStatus.textContent = '❌ Not logged in — click Login';
+      nkStatus.style.color = '#ef476f';
+      nkBtn.textContent = 'Login';
+    }
+  } catch {
+    document.getElementById('li-status').textContent = 'Agent offline';
+    document.getElementById('nk-status').textContent = 'Agent offline';
+  }
+}
+
+window.platformLogin = async function(platform) {
+  const endpoint = platform === 'linkedin' ? '/linkedin-login' : '/naukri-login';
+  const btn      = document.getElementById(platform === 'linkedin' ? 'li-login-btn' : 'nk-login-btn');
+  const status   = document.getElementById(platform === 'linkedin' ? 'li-status' : 'nk-status');
+  try {
+    btn.disabled = true;
+    btn.textContent = 'Opening...';
+    status.textContent = 'Browser khul raha hai — login karo aur wait karo...';
+    status.style.color = '#ffd166';
+    const res = await fetch(AGENT_URL + endpoint, { method: 'POST' });
+    if (!res.ok) throw new Error(await res.text());
+    toast(`${platform === 'linkedin' ? 'LinkedIn' : 'Naukri'} browser khul gaya — login karo!`, 'info');
+    // Poll until session is saved (up to 3 min)
+    let attempts = 0;
+    const check = setInterval(async () => {
+      attempts++;
+      await refreshSessionStatus();
+      const saved = platform === 'linkedin'
+        ? document.getElementById('li-status').textContent.includes('✅')
+        : document.getElementById('nk-status').textContent.includes('✅');
+      if (saved || attempts > 36) {
+        clearInterval(check);
+        btn.disabled = false;
+        if (saved) toast(`${platform === 'linkedin' ? 'LinkedIn' : 'Naukri'} session save ho gaya!`, 'success');
+      }
+    }, 5000);
+  } catch (e) {
+    toast('Login failed: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Login';
+  }
+};
 
 // Check agent online
 async function checkAgent() {
   try {
     const res = await fetch(AGENT_URL + '/status', { signal: AbortSignal.timeout(2000) });
-    if (res.ok) { agentOnline = true; document.getElementById('offline-banner').style.display = 'none'; return true; }
+    if (res.ok) { agentOnline = true; document.getElementById('offline-banner').style.display = 'none'; refreshSessionStatus(); return true; }
   } catch {}
   agentOnline = false;
   document.getElementById('offline-banner').style.display = '';
@@ -318,10 +398,6 @@ window.toggleChip = function(cb) {
 
 function getCredentials() {
   const creds = {
-    li_email: document.getElementById('li-email').value.trim(),
-    li_pass:  document.getElementById('li-pass').value,
-    nk_email: document.getElementById('nk-email').value.trim(),
-    nk_pass:  document.getElementById('nk-pass').value,
     in_email: document.getElementById('in-email').value.trim(),
     in_pass:  document.getElementById('in-pass').value,
   };
@@ -339,16 +415,15 @@ window.startAgent = async function() {
   if (!platforms.length) { toast('Kam se kam ek platform select karo', 'warning'); return; }
 
   const creds = getCredentials();
-  const activePlatforms = platforms;
 
-  // Validate credentials for selected platforms
-  if (activePlatforms.includes('linkedin') && (!creds.li_email || !creds.li_pass)) {
-    toast('LinkedIn email aur password daalo', 'error'); return;
+  // Validate: session must be saved for linkedin/naukri
+  if (platforms.includes('linkedin') && document.getElementById('li-status').textContent.includes('❌')) {
+    toast('LinkedIn mein pehle login karo (Login button dabao)', 'error'); return;
   }
-  if (activePlatforms.includes('naukri') && (!creds.nk_email || !creds.nk_pass)) {
-    toast('Naukri email aur password daalo', 'error'); return;
+  if (platforms.includes('naukri') && document.getElementById('nk-status').textContent.includes('❌')) {
+    toast('Naukri mein pehle login karo (Login button dabao)', 'error'); return;
   }
-  if (activePlatforms.includes('indeed') && (!creds.in_email || !creds.in_pass)) {
+  if (platforms.includes('indeed') && (!creds.in_email || !creds.in_pass)) {
     toast('Indeed email aur password daalo', 'error'); return;
   }
 
@@ -359,12 +434,8 @@ window.startAgent = async function() {
     experience:   profile?.experience || '2',
     skills:       profile?.skills || '',
     name:         profile?.name || '',
-    linkedin_email: creds.li_email,
-    linkedin_pass:  creds.li_pass,
-    naukri_email:   creds.nk_email,
-    naukri_pass:    creds.nk_pass,
-    indeed_email:   creds.in_email,
-    indeed_pass:    creds.in_pass,
+    indeed_email: creds.in_email,
+    indeed_pass:  creds.in_pass,
   };
 
   const res = await fetch(AGENT_URL + '/start', {
