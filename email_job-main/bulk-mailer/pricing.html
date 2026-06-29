@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <title>Pricing — ReachOut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
 <link rel="stylesheet" href="app.css">
 <style>
@@ -48,10 +48,10 @@
   padding: 5px 16px; border-radius: 0 var(--radius) 0 12px;
 }
 .plan-icon { font-size: 28px; margin-bottom: 12px; }
-.plan-name  { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.plan-name  { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
 .plan-desc  { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
 .plan-price-row { display: flex; align-items: baseline; gap: 2px; margin-bottom: 2px; }
-.plan-price { font-family: 'Syne', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+.plan-price { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
 .plan-price-unit { font-size: 15px; font-weight: 400; color: var(--muted); margin-left: 2px; }
 .plan-period { font-size: 12px; color: var(--muted); margin-bottom: 20px; margin-top: 4px; }
 .plan-divider { height: 1px; background: var(--border); margin: 16px 0; }
@@ -114,44 +114,89 @@
 </style>
 </head>
 <body>
-<div class="app-layout">
+<div class="app-layout" style="flex-direction:column;">
 
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">Reach<span>Out</span></div>
-  <div class="sidebar-section">Menu</div>
-  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
-  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
-  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
-  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
-  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
-  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
-  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
-  <a class="sidebar-item active" href="pricing.html"><span class="si-icon">💎</span> Pricing</a>
-  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
-  <div class="sidebar-bottom">
-    <div class="sidebar-user">
-      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
-      <div class="sidebar-user-info">
-        <div class="sidebar-user-name"  id="sidebar-name">Loading…</div>
-        <div class="sidebar-user-email" id="sidebar-email">…</div>
-      </div>
+<!-- Public top navbar (visible to all) -->
+<style>
+.pub-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,10,15,.92); backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  height: 60px; display: flex; align-items: center;
+  padding: 0 24px; gap: 16px; width: 100%;
+}
+.pub-nav-logo {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 18px; font-weight: 800; letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 8px;
+  text-decoration: none; color: var(--text);
+}
+.pub-nav-logo span { color: var(--accent); }
+.pub-nav-logo-dot {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.pub-nav-links { display: flex; gap: 4px; margin-left: 16px; }
+.pub-nav-link {
+  padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  color: var(--text2); text-decoration: none; transition: all .15s;
+}
+.pub-nav-link:hover { color: var(--text); background: var(--surface2); }
+.pub-nav-link.active { color: var(--accent); background: rgba(0,229,160,.08); }
+.pub-nav-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.pub-nav-badge {
+  padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  background: rgba(0,229,160,.12); color: var(--accent);
+  border: 1px solid rgba(0,229,160,.25);
+}
+.pricing-hero { text-align: center; padding: 52px 20px 36px; }
+.pricing-hero-tag {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 99px; font-size: 12px; font-weight: 600;
+  background: rgba(0,229,160,.1); color: var(--accent);
+  border: 1px solid rgba(0,229,160,.2); margin-bottom: 18px;
+}
+.pricing-hero h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(28px, 5vw, 48px); font-weight: 800;
+  letter-spacing: -1.5px; line-height: 1.15; margin-bottom: 14px;
+}
+.pricing-hero h1 span { color: var(--accent); }
+.pricing-hero p { font-size: 15px; color: var(--text2); max-width: 480px; margin: 0 auto 28px; line-height: 1.6; }
+.hero-cta-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+@media(max-width:600px) { .pub-nav-links { display: none; } }
+</style>
+
+<!-- Public Nav -->
+<nav class="pub-nav" style="width:100%;flex-shrink:0;">
+  <a href="pricing.html" class="pub-nav-logo">
+    <div class="pub-nav-logo-dot">🚀</div>
+    Reach<span>Out</span>
+  </a>
+  <div class="pub-nav-links">
+    <a href="pricing.html" class="pub-nav-link active">Pricing</a>
+  </div>
+  <div class="pub-nav-right">
+    <span id="pub-plan-badge" style="display:none" class="pub-nav-badge">—</span>
+    <a href="login.html" class="btn btn-ghost btn-sm" id="pub-login-btn">Sign In</a>
+    <a href="index.html" class="btn btn-primary btn-sm" id="pub-dash-btn" style="display:none">Dashboard →</a>
+  </div>
+</nav>
+
+<div style="flex:1;overflow-y:auto;">
+<main style="max-width:900px;margin:0 auto;padding:0 18px 60px;">
+
+  <!-- Hero -->
+  <div class="pricing-hero">
+    <div class="pricing-hero-tag">✨ Simple, transparent pricing</div>
+    <h1>Automate your job search.<br><span>Land faster.</span></h1>
+    <p>Send bulk emails, message on WhatsApp, auto-apply on LinkedIn & Naukri — all from one dashboard.</p>
+    <div class="hero-cta-row">
+      <a href="login.html" class="btn btn-gradient btn-lg">Get Started Free →</a>
+      <a href="login.html" class="btn btn-ghost btn-lg">Sign In</a>
     </div>
-    <button class="sidebar-logout" id="logout-btn">Logout</button>
-  </div>
-</aside>
-
-<header class="app-header">
-  <div class="app-header-inner">
-    <div class="header-title">💎 Pricing</div>
-    <div id="headerPlanChip" style="display:none;" class="badge badge-success" style="font-size:11px;"></div>
-  </div>
-</header>
-
-<main class="page-content">
-
-  <div style="margin-bottom:24px;" class="hide-mobile">
-    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">Choose Your Plan</div>
-    <div style="font-size:13px;color:var(--muted);margin-top:4px;">Unlock full automation power. Cancel anytime. No hidden fees.</div>
   </div>
 
   <!-- Guarantee strip -->
@@ -282,22 +327,35 @@
 </main>
 </div>
 
-<nav class="bottom-nav">
-  <a class="bn-item" href="index.html"><div class="bn-icon-wrap">📋</div><span class="bn-label">Home</span></a>
-  <a class="bn-item" href="send.html"><div class="bn-icon-wrap">📤</div><span class="bn-label">Send</span></a>
-  <a class="bn-item" href="jobs.html"><div class="bn-icon-wrap">🔍</div><span class="bn-label">Jobs</span></a>
-  <a class="bn-item" href="whatsapp.html"><div class="bn-icon-wrap">💬</div><span class="bn-label">WhatsApp</span></a>
-  <a class="bn-item" href="profile.html"><div class="bn-icon-wrap">👤</div><span class="bn-label">Profile</span></a>
-</nav>
+</div><!-- /flex wrapper -->
+</div><!-- /app-layout -->
 
 <div id="toast-container"></div>
 
 <script type="module">
-import { sb, setupPage, toast } from './app.js';
+import { sb, toast } from './app.js';
 
-const session = await setupPage('pricing.html');
-if (!session) throw new Error('No session');
-document.getElementById('logout-btn')?.addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'login.html'; });
+// Optional auth — page is public, but show plan if logged in
+const { data: { session } } = await sb.auth.getSession();
+
+if (session) {
+  document.getElementById('pub-login-btn').style.display = 'none';
+  document.getElementById('pub-dash-btn').style.display  = '';
+  // Load subscription
+  const { data: sub } = await sb.from('subscriptions').select('*').eq('email', session.user.email).maybeSingle();
+  activePlan = sub?.plan?.toLowerCase() || 'free';
+  if (sub) {
+    const expiry   = new Date(sub.expiry);
+    const daysLeft = Math.ceil((expiry - new Date()) / 86400000);
+    const badge = document.getElementById('pub-plan-badge');
+    badge.style.display = '';
+    badge.textContent   = `${sub.plan} — ${daysLeft > 0 ? daysLeft + 'd left' : 'Expired'}`;
+    document.getElementById('currentPlanBox').style.display = 'flex';
+    document.getElementById('currentPlanText').textContent  = `${sub.plan} Plan · ${daysLeft > 0 ? daysLeft + ' days left' : 'Expired'}`;
+  }
+}
+
+let activePlan = 'free';
 
 const PLANS = [
   {
@@ -369,23 +427,6 @@ const PLANS = [
   },
 ];
 
-// Load subscription
-const { data: sub } = await sb.from('subscriptions').select('*').eq('email', session.user.email).maybeSingle();
-const activePlan = sub?.plan?.toLowerCase() || 'free';
-
-if (sub) {
-  const expiry = new Date(sub.expiry);
-  const daysLeft = Math.ceil((expiry - new Date()) / 86400000);
-  const box = document.getElementById('currentPlanBox');
-  box.style.display = 'flex';
-  document.getElementById('currentPlanText').textContent =
-    `${sub.plan} Plan · ${daysLeft > 0 ? daysLeft + ' days left' : 'Expired'}`;
-
-  const chip = document.getElementById('headerPlanChip');
-  chip.style.display = 'inline-flex';
-  chip.textContent = sub.plan;
-}
-
 // Render plan cards
 const grid = document.getElementById('plansGrid');
 grid.innerHTML = PLANS.map(p => {
@@ -419,6 +460,7 @@ grid.innerHTML = PLANS.map(p => {
 
 // Razorpay payment
 window.startPayment = (planId, amountPaise, months, planName) => {
+  if (!session) { location.href = 'login.html?next=pricing.html'; return; }
   const u = session.user;
   const email = u.email;
   const name = u.user_metadata?.name || email.split('@')[0];

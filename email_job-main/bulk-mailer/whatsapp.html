@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a0d12">
+<meta name="theme-color" content="#080a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ReachOut">
 <link rel="manifest" href="manifest.json">
 <title>WhatsApp — ReachOut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <style>
 /* ── WhatsApp green theme ── */
@@ -107,7 +107,7 @@
   box-shadow: 0 32px 96px rgba(0,0,0,.8), 0 0 0 1px rgba(37,211,102,.1);
 }
 .qr-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
-.qr-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+.qr-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; }
 .qr-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
 
 /* Loading state */
@@ -178,14 +178,23 @@
 <!-- Desktop Sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">Reach<span>Out</span></div>
-  <div class="sidebar-section">Menu</div>
+  <div class="sidebar-section">Outreach</div>
   <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
   <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
   <a class="sidebar-item active" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
   <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <div class="sidebar-section">Jobs</div>
   <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="pipeline.html"><span class="si-icon">📊</span> Pipeline</a>
+  <a class="sidebar-item" href="ai_tailor.html"><span class="si-icon">🤖</span> AI Tailor</a>
+  <a class="sidebar-item" href="agent.html"><span class="si-icon">🦾</span> Auto Apply</a>
+  <div class="sidebar-section">Automation</div>
+  <a class="sidebar-item" href="followup.html"><span class="si-icon">🔁</span> Follow-ups</a>
   <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="sidebar-item" href="blacklist.html"><span class="si-icon">🚫</span> Blacklist</a>
   <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span> Pricing</a>
   <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
   <div class="sidebar-bottom">
     <div class="sidebar-user">
@@ -211,7 +220,7 @@
 
   <!-- Desktop title -->
   <div style="margin-bottom:20px;" class="hide-mobile">
-    <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">Send WhatsApp</div>
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">Send WhatsApp</div>
     <div style="font-size:13px;color:var(--muted);margin-top:4px;">Bulk send messages to your contacts via WhatsApp</div>
   </div>
 

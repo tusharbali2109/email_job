@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Job Agent — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.page-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800;margin-bottom:4px}
+.page-sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;font-family:inherit;width:100%}
+.form-input:focus{outline:none;border-color:var(--accent)}
+.platform-grid{display:flex;gap:10px;flex-wrap:wrap}
+.platform-chip{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .2s;user-select:none;font-size:13px;font-weight:500}
+.platform-chip input{accent-color:var(--accent)}
+.platform-chip.checked{border-color:var(--accent);background:rgba(79,255,176,.06);color:var(--accent)}
+.btn-row{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap}
+.btn{padding:11px 24px;border-radius:10px;border:none;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-start{background:linear-gradient(135deg,#4fffb0,#00c9ff);color:#0a0d12}
+.btn-start:hover{opacity:.9;transform:translateY(-1px)}
+.btn-start:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-stop{background:rgba(255,95,109,.15);color:#ff5f6d;border:1px solid rgba(255,95,109,.3)}
+.btn-stop:hover{background:rgba(255,95,109,.25)}
+/* Stats */
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.stat-box{flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:6px}
+.stat-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:26px;font-weight:800}
+/* Live current */
+.current-box{background:rgba(79,255,176,.05);border:1px solid rgba(79,255,176,.2);border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:13px;display:none}
+.current-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#4fffb0;font-weight:700;margin-bottom:4px}
+.current-val{color:var(--text);font-weight:500}
+/* Logs */
+.log-wrap{background:var(--surface2);border-radius:10px;padding:14px;max-height:320px;overflow-y:auto;font-family:monospace;font-size:12px;display:flex;flex-direction:column;gap:4px}
+.log-entry{padding:4px 0;border-bottom:1px solid rgba(37,45,61,.4);line-height:1.5}
+.log-entry:last-child{border:none}
+.log-time{color:var(--muted);margin-right:8px}
+.log-info{color:var(--text)}
+.log-success{color:#4fffb0}
+.log-warn{color:#ffd166}
+.log-error{color:#ff5f6d}
+/* Applications table */
+.app-table{width:100%;border-collapse:collapse;font-size:13px}
+.app-table th{text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:8px 12px;border-bottom:1px solid var(--border);font-weight:600}
+.app-table td{padding:11px 12px;border-bottom:1px solid rgba(37,45,61,.4)}
+.app-table tr:last-child td{border:none}
+.plat-badge{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700}
+.plat-linkedin{background:rgba(0,119,181,.2);color:#0077b5}
+.plat-naukri{background:rgba(255,107,0,.15);color:#ff6b00}
+.plat-indeed{background:rgba(0,123,255,.15);color:#007bff}
+.status-applied{color:#4fffb0}
+.empty-state{text-align:center;color:var(--muted);padding:32px;font-size:13px}
+/* Agent offline */
+.offline-banner{background:rgba(255,95,109,.08);border:1px solid rgba(255,95,109,.25);border-radius:10px;padding:14px 18px;color:#ff5f6d;font-size:13px;margin-bottom:16px;display:none}
+.offline-banner code{background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;font-family:monospace}
+/* Pulse dot */
+.pulse{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px}
+.pulse.on{background:#4fffb0;box-shadow:0 0 0 2px rgba(79,255,176,.3);animation:pulse-anim 1.5s infinite}
+.pulse.off{background:var(--muted)}
+@keyframes pulse-anim{0%,100%{box-shadow:0 0 0 2px rgba(79,255,176,.3)}50%{box-shadow:0 0 0 6px rgba(79,255,176,.05)}}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}.stats-row{gap:8px}.stat-box{min-width:80px}}
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Outreach</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <div class="sidebar-section">Jobs</div>
+  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="pipeline.html"><span class="si-icon">📊</span> Pipeline</a>
+  <a class="sidebar-item" href="ai_tailor.html"><span class="si-icon">🤖</span> AI Tailor</a>
+  <a class="sidebar-item active" href="agent.html"><span class="si-icon">🦾</span> Auto Apply</a>
+  <div class="sidebar-section">Automation</div>
+  <a class="sidebar-item" href="followup.html"><span class="si-icon">🔁</span> Follow-ups</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="sidebar-item" href="blacklist.html"><span class="si-icon">🚫</span> Blacklist</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span> Pricing</a>
+  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-title">🦾 Auto Apply Agent</div>
+  <div class="page-sub">Agent tumhari jagah LinkedIn, Naukri aur Indeed par automatically apply karega</div>
+
+  <!-- Offline banner -->
+  <div class="offline-banner" id="offline-banner">
+    ⚠️ Job Agent service nahi chal rahi. Pehle start karo:<br>
+    <code>cd job-agent &amp;&amp; npm install &amp;&amp; npm start</code>
+  </div>
+
+  <!-- Config card -->
+  <div class="card">
+    <div class="card-title" style="color:#4fffb0">⚙️ Agent Configuration</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label">Job Search Keywords</label>
+        <input class="form-input" id="keywords" placeholder="e.g. PHP Developer, React, Full Stack" value="">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Max Apply Per Platform</label>
+        <input class="form-input" type="number" id="max-apply" value="10" min="1" max="50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Platforms</label>
+        <div class="platform-grid">
+          <label class="platform-chip checked" id="chip-linkedin">
+            <input type="checkbox" value="linkedin" checked onchange="toggleChip(this)"> 🔷 LinkedIn
+          </label>
+          <label class="platform-chip checked" id="chip-naukri">
+            <input type="checkbox" value="naukri" checked onchange="toggleChip(this)"> 🟡 Naukri
+          </label>
+          <label class="platform-chip checked" id="chip-indeed">
+            <input type="checkbox" value="indeed" checked onchange="toggleChip(this)"> 🔵 Indeed
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Credentials card -->
+  <div class="card">
+    <div class="card-title" style="color:#ffd166">🔑 Platform Credentials</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Credentials sirf tumhare browser mein save hote hain — server par nahi jaate</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">🔷 LinkedIn Email</label>
+        <input class="form-input" id="li-email" type="email" placeholder="yourname@gmail.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔷 LinkedIn Password</label>
+        <input class="form-input" id="li-pass" type="password" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🟡 Naukri Email</label>
+        <input class="form-input" id="nk-email" type="email" placeholder="yourname@gmail.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🟡 Naukri Password</label>
+        <input class="form-input" id="nk-pass" type="password" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔵 Indeed Email</label>
+        <input class="form-input" id="in-email" type="email" placeholder="yourname@gmail.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🔵 Indeed Password</label>
+        <input class="form-input" id="in-pass" type="password" placeholder="••••••••">
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="btn-row" style="margin-bottom:20px">
+    <button class="btn btn-start" id="btn-start" onclick="startAgent()">🚀 Start Agent</button>
+    <button class="btn btn-stop" id="btn-stop" onclick="stopAgent()" style="display:none">⛔ Stop</button>
+  </div>
+
+  <!-- Live status -->
+  <div class="current-box" id="current-box">
+    <div class="current-label">Currently Applying</div>
+    <div class="current-val" id="current-val">—</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-label"><span class="pulse off" id="pulse-dot"></span>Status</div>
+      <div class="stat-val" id="stat-status" style="font-size:16px;padding-top:4px">Idle</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Applied</div>
+      <div class="stat-val" id="stat-applied" style="color:#4fffb0">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Skipped</div>
+      <div class="stat-val" id="stat-skipped" style="color:#ffd166">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Failed</div>
+      <div class="stat-val" id="stat-failed" style="color:#ff5f6d">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Total</div>
+      <div class="stat-val" id="stat-total" style="color:var(--muted)">0</div>
+    </div>
+  </div>
+
+  <!-- Live Logs -->
+  <div class="card">
+    <div class="card-title" style="color:#00c9ff">📟 Live Logs</div>
+    <div class="log-wrap" id="log-wrap">
+      <div class="log-entry" style="color:var(--muted)">Agent idle — press Start to begin</div>
+    </div>
+  </div>
+
+  <!-- Applications history -->
+  <div class="card">
+    <div class="card-title" style="color:#b388ff">📋 Applications History</div>
+    <div id="apps-wrap"><div class="empty-state">No applications yet</div></div>
+  </div>
+</main>
+</div>
+
+<script type="module">
+import { setupPage, sb, toast } from './app.js';
+
+const AGENT_URL = 'http://localhost:3002';
+let polling = null;
+let agentOnline = false;
+
+const session = await setupPage('agent.html');
+if (!session) throw 0;
+
+// Load profile for prefill
+const { data: profile } = await sb.from('user_profile').select('*').limit(1).single();
+if (profile) {
+  document.getElementById('keywords').value = profile.job_role || '';
+  // Restore saved credentials from localStorage
+  const saved = JSON.parse(localStorage.getItem('agent_creds') || '{}');
+  if (saved.li_email)  document.getElementById('li-email').value  = saved.li_email;
+  if (saved.li_pass)   document.getElementById('li-pass').value   = saved.li_pass;
+  if (saved.nk_email)  document.getElementById('nk-email').value  = saved.nk_email;
+  if (saved.nk_pass)   document.getElementById('nk-pass').value   = saved.nk_pass;
+  if (saved.in_email)  document.getElementById('in-email').value  = saved.in_email;
+  if (saved.in_pass)   document.getElementById('in-pass').value   = saved.in_pass;
+}
+
+// Check agent online
+async function checkAgent() {
+  try {
+    const res = await fetch(AGENT_URL + '/status', { signal: AbortSignal.timeout(2000) });
+    if (res.ok) { agentOnline = true; document.getElementById('offline-banner').style.display = 'none'; return true; }
+  } catch {}
+  agentOnline = false;
+  document.getElementById('offline-banner').style.display = '';
+  return false;
+}
+
+// Poll status
+async function poll() {
+  if (!agentOnline) { await checkAgent(); return; }
+  try {
+    const res  = await fetch(AGENT_URL + '/status');
+    const data = await res.json();
+    updateUI(data);
+  } catch { agentOnline = false; document.getElementById('offline-banner').style.display = ''; }
+}
+
+function updateUI(data) {
+  const running = data.running;
+  const stats   = data.stats || {};
+  const logs    = data.logs  || [];
+
+  // Status
+  const dot = document.getElementById('pulse-dot');
+  dot.className = 'pulse ' + (running ? 'on' : 'off');
+  document.getElementById('stat-status').textContent  = running ? 'Running' : 'Idle';
+  document.getElementById('stat-applied').textContent = stats.applied  || 0;
+  document.getElementById('stat-skipped').textContent = stats.skipped  || 0;
+  document.getElementById('stat-failed').textContent  = stats.failed   || 0;
+  document.getElementById('stat-total').textContent   = stats.total    || 0;
+
+  // Current
+  const cb  = document.getElementById('current-box');
+  const cv  = document.getElementById('current-val');
+  if (stats.current) { cb.style.display = ''; cv.textContent = stats.current; }
+  else cb.style.display = 'none';
+
+  // Buttons
+  document.getElementById('btn-start').style.display = running ? 'none' : '';
+  document.getElementById('btn-stop').style.display  = running ? '' : 'none';
+  document.getElementById('btn-start').disabled      = running;
+
+  // Logs
+  const wrap = document.getElementById('log-wrap');
+  if (logs.length) {
+    wrap.innerHTML = logs.map(l => {
+      const t = l.time ? l.time.slice(11,19) : '';
+      const cls = l.type === 'success' ? 'log-success' : l.type === 'warn' ? 'log-warn' : l.type === 'error' ? 'log-error' : 'log-info';
+      return `<div class="log-entry ${cls}"><span class="log-time">${t}</span>${l.msg}</div>`;
+    }).join('');
+  }
+}
+
+window.toggleChip = function(cb) {
+  const chip = cb.closest('.platform-chip');
+  chip.classList.toggle('checked', cb.checked);
+};
+
+function getCredentials() {
+  const creds = {
+    li_email: document.getElementById('li-email').value.trim(),
+    li_pass:  document.getElementById('li-pass').value,
+    nk_email: document.getElementById('nk-email').value.trim(),
+    nk_pass:  document.getElementById('nk-pass').value,
+    in_email: document.getElementById('in-email').value.trim(),
+    in_pass:  document.getElementById('in-pass').value,
+  };
+  localStorage.setItem('agent_creds', JSON.stringify(creds));
+  return creds;
+}
+
+window.startAgent = async function() {
+  if (!agentOnline) { toast('Job Agent service nahi chal rahi — pehle start karo: cd job-agent && npm start', 'error', 6000); return; }
+
+  const keywords   = document.getElementById('keywords').value.trim();
+  const maxApply   = parseInt(document.getElementById('max-apply').value) || 10;
+  const platforms  = [...document.querySelectorAll('.platform-chip input:checked')].map(c => c.value);
+  if (!keywords)   { toast('Keywords daalo pehle', 'warning'); return; }
+  if (!platforms.length) { toast('Kam se kam ek platform select karo', 'warning'); return; }
+
+  const creds = getCredentials();
+  const activePlatforms = platforms;
+
+  // Validate credentials for selected platforms
+  if (activePlatforms.includes('linkedin') && (!creds.li_email || !creds.li_pass)) {
+    toast('LinkedIn email aur password daalo', 'error'); return;
+  }
+  if (activePlatforms.includes('naukri') && (!creds.nk_email || !creds.nk_pass)) {
+    toast('Naukri email aur password daalo', 'error'); return;
+  }
+  if (activePlatforms.includes('indeed') && (!creds.in_email || !creds.in_pass)) {
+    toast('Indeed email aur password daalo', 'error'); return;
+  }
+
+  const profileData = {
+    email:        profile?.email || '',
+    mobile:       profile?.mobile || '',
+    location:     profile?.location || 'India',
+    experience:   profile?.experience || '2',
+    skills:       profile?.skills || '',
+    name:         profile?.name || '',
+    linkedin_email: creds.li_email,
+    linkedin_pass:  creds.li_pass,
+    naukri_email:   creds.nk_email,
+    naukri_pass:    creds.nk_pass,
+    indeed_email:   creds.in_email,
+    indeed_pass:    creds.in_pass,
+  };
+
+  const res = await fetch(AGENT_URL + '/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ keywords, maxPerPlatform: maxApply, platforms: activePlatforms, profile: profileData })
+  });
+  const d = await res.json();
+  if (d.success) toast('Agent start ho gaya! Browser window open hoga.', 'success');
+  else toast(d.error, 'error');
+
+  loadApps();
+};
+
+window.stopAgent = async function() {
+  await fetch(AGENT_URL + '/stop', { method: 'POST' });
+  toast('Agent rok diya gaya', 'info');
+};
+
+async function loadApps() {
+  if (!agentOnline) return;
+  const res  = await fetch(AGENT_URL + '/applications').catch(() => null);
+  if (!res) return;
+  const apps = await res.json();
+  const wrap = document.getElementById('apps-wrap');
+  if (!apps.length) { wrap.innerHTML = '<div class="empty-state">No applications yet</div>'; return; }
+  wrap.innerHTML = `<table class="app-table">
+    <tr><th>Platform</th><th>Job Title</th><th>Company</th><th>Status</th><th>Time</th></tr>
+    ${apps.map(a => `<tr>
+      <td><span class="plat-badge plat-${a.platform}">${a.platform}</span></td>
+      <td>${a.title||''}</td>
+      <td>${a.company||''}</td>
+      <td class="status-applied">✅ ${a.status}</td>
+      <td style="color:var(--muted);font-size:11px">${a.applied_at ? new Date(a.applied_at).toLocaleString('en-IN',{hour:'2-digit',minute:'2-digit',day:'numeric',month:'short'}) : ''}</td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+// Start polling
+await checkAgent();
+loadApps();
+polling = setInterval(poll, 2500);
+</script>
+</body>
+</html>

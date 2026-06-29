@@ -19,6 +19,8 @@ if (isset($_POST['save'])) {
     $cron_enabled = isset($_POST['cron_enabled']) ? 1 : 0;
     $cron_time    = $_POST['cron_time']   ?? '09:00';
     $cron_days    = implode(',', $_POST['cron_days'] ?? ['mon','tue','wed','thu','fri']);
+    $imap_host    = trim($_POST['imap_host'] ?? '');
+    $imap_pass    = trim($_POST['imap_pass'] ?? '');
 
     $file = $profile['resume'] ?? '';
     if (isset($_FILES['resume']) && !empty($_FILES['resume']['name'])) {
@@ -31,8 +33,8 @@ if (isset($_POST['save'])) {
     }
 
     $stmt = $pdo->prepare("INSERT INTO user_profile
-        (id, name, email, mobile, resume, cover_letter, skills, job_role, experience, daily_limit, smtp_pass, groq_key, location, cron_enabled, cron_time, cron_days)
-        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, name, email, mobile, resume, cover_letter, skills, job_role, experience, daily_limit, smtp_pass, groq_key, location, cron_enabled, cron_time, cron_days, imap_host, imap_pass)
+        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT (id) DO UPDATE SET
             name=EXCLUDED.name, email=EXCLUDED.email, mobile=EXCLUDED.mobile,
             resume=EXCLUDED.resume, cover_letter=EXCLUDED.cover_letter,
@@ -40,10 +42,11 @@ if (isset($_POST['save'])) {
             experience=EXCLUDED.experience, daily_limit=EXCLUDED.daily_limit,
             smtp_pass=EXCLUDED.smtp_pass, groq_key=EXCLUDED.groq_key,
             location=EXCLUDED.location, cron_enabled=EXCLUDED.cron_enabled,
-            cron_time=EXCLUDED.cron_time, cron_days=EXCLUDED.cron_days");
+            cron_time=EXCLUDED.cron_time, cron_days=EXCLUDED.cron_days,
+            imap_host=EXCLUDED.imap_host, imap_pass=EXCLUDED.imap_pass");
     $stmt->execute([$name, $email, $mobile, $file, $cover, $skills, $job_role,
                     $experience, $daily, $smtp_pass, $groq_key, $location,
-                    $cron_enabled, $cron_time, $cron_days]);
+                    $cron_enabled, $cron_time, $cron_days, $imap_host, $imap_pass]);
 
     $success = true;
     $profile  = $pdo->query("SELECT * FROM user_profile WHERE id=1")->fetch();
@@ -325,13 +328,25 @@ $jobsFound = (int)$pdo->query("SELECT COUNT(*) FROM jobs")->fetchColumn();
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="logo">Reach<span>Out</span></div>
-  <div class="nav-label">Menu</div>
+  <div class="nav-label">Outreach</div>
   <a class="nav-item" href="index.php"><span class="icon">📋</span> Dashboard</a>
   <a class="nav-item" href="send.php"><span class="icon">📤</span> Send Emails</a>
-  <a class="nav-item active" href="profile.php"><span class="icon">👤</span> My Profile</a>
+  <a class="nav-item" href="whatsapp.php"><span class="icon">💬</span> Send WhatsApp</a>
   <a class="nav-item" href="index.php#csv-section"><span class="icon">📂</span> CSV Import</a>
-  <a class="nav-item" href="cron_log.php"><span class="icon">🤖</span> Cron Logs</a>
-  <a class="nav-item" href="job_fetch.php?secret=MY_CRON_SECRET_2024"><span class="icon">🔍</span> Fetch Jobs</a>
+  <div class="nav-label">Jobs</div>
+  <a class="nav-item" href="jobs.php"><span class="icon">🔍</span> Job Hunt</a>
+  <a class="nav-item" href="pipeline.php"><span class="icon">📊</span> Pipeline</a>
+  <a class="nav-item" href="ai_tailor.php"><span class="icon">🤖</span> AI Tailor</a>
+  <div class="nav-label">Automation</div>
+  <a class="nav-item" href="job_fetch.php?secret=MY_CRON_SECRET_2024"><span class="icon">🔎</span> Fetch Jobs</a>
+  <a class="nav-item" href="followup_cron.php?secret=MY_CRON_SECRET_2024"><span class="icon">🔁</span> Follow-ups</a>
+  <a class="nav-item" href="reply_check.php?secret=MY_CRON_SECRET_2024"><span class="icon">📬</span> Check Replies</a>
+  <a class="nav-item" href="wa_digest.php?secret=MY_CRON_SECRET_2024"><span class="icon">📱</span> WA Digest</a>
+  <a class="nav-item" href="cron_log.php"><span class="icon">📅</span> Cron Logs</a>
+  <div class="nav-label">Settings</div>
+  <a class="nav-item" href="blacklist.php"><span class="icon">🚫</span> Blacklist</a>
+  <a class="nav-item active" href="profile.php"><span class="icon">👤</span> My Profile</a>
+  <a class="nav-item" href="whatsapp_logs.php"><span class="icon">📃</span> WA Logs</a>
 </aside>
 
 <!-- MAIN -->
@@ -499,6 +514,21 @@ $jobsFound = (int)$pdo->query("SELECT COUNT(*) FROM jobs")->fetchColumn();
               <button type="button" class="key-toggle" onclick="toggleVis('groqKey',this)">Show</button>
             </div>
             <div class="hint">Save karte hi ai_email.php mein automatically update ho jaayegi</div>
+          </div>
+          <div class="form-group full">
+            <label>IMAP Host (for Reply Detection — optional)</label>
+            <input type="text" name="imap_host" placeholder="{imap.gmail.com:993/imap/ssl}INBOX"
+              value="<?= htmlspecialchars($profile['imap_host'] ?? '') ?>">
+            <div class="hint">Gmail ke liye khali chhod do — auto-detect hoga. Custom IMAP: {mail.yourdomain.com:993/imap/ssl}INBOX</div>
+          </div>
+          <div class="form-group full">
+            <label>IMAP Password (App Password for Gmail)</label>
+            <div class="key-field">
+              <input type="password" id="imapPass" name="imap_pass" placeholder="Same as SMTP App Password (Gmail)"
+                value="<?= htmlspecialchars($profile['imap_pass'] ?? '') ?>">
+              <button type="button" class="key-toggle" onclick="toggleVis('imapPass',this)">Show</button>
+            </div>
+            <div class="hint">Gmail mein SMTP aur IMAP dono ka same App Password use hota hai</div>
           </div>
         </div>
       </div>

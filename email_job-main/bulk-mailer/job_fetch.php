@@ -145,8 +145,25 @@ log_msg("═══════════════════════�
 // ══════════════════════════════
 // HELPER FUNCTIONS
 // ══════════════════════════════
+function isEmailDomainValid($email) {
+    $domain = substr(strrchr($email, '@'), 1);
+    if (!$domain) return false;
+    return checkdnsrr($domain, 'MX') || checkdnsrr($domain, 'A');
+}
+
+function isBlacklistedJob($pdo, $email) {
+    $domain = strtolower(substr(strrchr($email, '@'), 1));
+    $email  = strtolower(trim($email));
+    $s = $pdo->prepare("SELECT COUNT(*) FROM blacklist WHERE (type='email' AND LOWER(value)=?) OR (type='domain' AND LOWER(value)=?)");
+    $s->execute([$email, $domain]);
+    return $s->fetchColumn() > 0;
+}
+
 function syncToQueue($pdo, $title, $company, $email) {
     if (empty($email)) return;
+    if (!isEmailDomainValid($email)) return;
+    if (isBlacklistedJob($pdo, $email)) return;
+
     $exists = $pdo->prepare("SELECT COUNT(*) FROM ai_queue WHERE email=?");
     $exists->execute([$email]);
     if ($exists->fetchColumn() > 0) return;

@@ -362,24 +362,29 @@ $rows  = $pdo->query("SELECT * FROM companies ORDER BY id DESC")->fetchAll();
   <aside class="sidebar" id="sidebar">
     <div class="logo">Reach<span>Out</span></div>
 
-    <div class="nav-label">Menu</div>
+    <div class="nav-label">Outreach</div>
     <a class="nav-item active" href="index.php"><span class="icon">📋</span> Dashboard</a>
     <a class="nav-item" href="send.php"><span class="icon">📤</span> Send Emails</a>
     <a class="nav-item" href="whatsapp.php"><span class="icon">💬</span> Send WhatsApp</a>
     <a class="nav-item" href="#" id="add-contact-nav"><span class="icon">➕</span> Add Contact</a>
     <a class="nav-item" href="#csv-section"><span class="icon">📂</span> CSV Import</a>
-<a class="nav-item" href="profile.php">
-  <span class="icon">👤</span> My Profile
-</a>
-<a class="nav-item" href="job_fetch.php?secret=MY_CRON_SECRET_2024">
-  <span class="icon">🔍</span> Fetch Jobs
-</a>
-<a class="nav-item" href="cron_log.php">
-  <span class="icon">🤖</span> Cron Logs
-</a>
-<a class="nav-item" href="jobs.php">
-  <span class="icon">🔍</span> Job Hunt
-</a>
+
+    <div class="nav-label">Jobs</div>
+    <a class="nav-item" href="jobs.php"><span class="icon">🔍</span> Job Hunt</a>
+    <a class="nav-item" href="pipeline.php"><span class="icon">📊</span> Pipeline</a>
+    <a class="nav-item" href="ai_tailor.php"><span class="icon">🤖</span> AI Tailor</a>
+
+    <div class="nav-label">Automation</div>
+    <a class="nav-item" href="job_fetch.php?secret=MY_CRON_SECRET_2024"><span class="icon">🔎</span> Fetch Jobs</a>
+    <a class="nav-item" href="followup_cron.php?secret=MY_CRON_SECRET_2024"><span class="icon">🔁</span> Run Follow-ups</a>
+    <a class="nav-item" href="reply_check.php?secret=MY_CRON_SECRET_2024"><span class="icon">📬</span> Check Replies</a>
+    <a class="nav-item" href="wa_digest.php?secret=MY_CRON_SECRET_2024"><span class="icon">📱</span> WA Digest</a>
+    <a class="nav-item" href="cron_log.php"><span class="icon">📅</span> Cron Logs</a>
+
+    <div class="nav-label">Settings</div>
+    <a class="nav-item" href="blacklist.php"><span class="icon">🚫</span> Blacklist</a>
+    <a class="nav-item" href="profile.php"><span class="icon">👤</span> My Profile</a>
+    <a class="nav-item" href="whatsapp_logs.php"><span class="icon">📃</span> WA Logs</a>
 
     <!-- User info + Logout at bottom -->
     <div class="sidebar-bottom">

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Follow-ups — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.page-title { font-family:'Plus Jakarta Sans',sans-serif; font-size:26px; font-weight:800; margin-bottom:4px; }
+.page-sub { color:var(--muted); font-size:13px; margin-bottom:28px; }
+.stats-row { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+.stat-box { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; flex:1; min-width:130px; }
+.stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; font-weight:600; margin-bottom:6px; }
+.stat-val { font-family:'Plus Jakarta Sans',sans-serif; font-size:26px; font-weight:800; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:18px; }
+.card-head { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.card-title { font-size:14px; font-weight:700; color:#b388ff; }
+.btn { padding:9px 18px; border-radius:8px; border:none; font-weight:600; font-size:13px; cursor:pointer; transition:all .2s; font-family:inherit; display:inline-flex; align-items:center; gap:7px; }
+.btn-primary { background:var(--accent); color:#0a0d12; }
+.btn-primary:hover { opacity:.85; }
+.btn-sm { padding:5px 12px; font-size:12px; border-radius:6px; }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+.btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+.company-row { display:flex; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid rgba(37,45,61,.5); transition:background .1s; }
+.company-row:last-child { border-bottom:none; }
+.company-row:hover { background:rgba(255,255,255,.02); }
+.co-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#b388ff,#7c4dff); display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:14px; color:#fff; flex-shrink:0; }
+.co-info { flex:1; min-width:0; }
+.co-name { font-size:14px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.co-detail { font-size:11px; color:var(--muted); margin-top:2px; }
+.co-right { text-align:right; flex-shrink:0; }
+.days-badge { font-size:11px; font-weight:700; padding:3px 8px; border-radius:4px; }
+.days-hot { background:rgba(255,95,109,.15); color:#ff5f6d; }
+.days-warm { background:rgba(255,209,102,.15); color:#ffd166; }
+.days-cold { background:rgba(107,122,153,.15); color:#6b7a99; }
+.empty-state { text-align:center; color:var(--muted); padding:48px; font-size:14px; }
+.info-box { background:rgba(179,136,255,.06); border:1px solid rgba(179,136,255,.2); border-radius:10px; padding:14px 18px; font-size:13px; color:#b388ff; margin-bottom:20px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Outreach</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <div class="sidebar-section">Jobs</div>
+  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="pipeline.html"><span class="si-icon">📊</span> Pipeline</a>
+  <a class="sidebar-item" href="ai_tailor.html"><span class="si-icon">🤖</span> AI Tailor</a>
+  <a class="sidebar-item" href="agent.html"><span class="si-icon">🦾</span> Auto Apply</a>
+  <div class="sidebar-section">Automation</div>
+  <a class="sidebar-item active" href="followup.html"><span class="si-icon">🔁</span> Follow-ups</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="sidebar-item" href="blacklist.html"><span class="si-icon">🚫</span> Blacklist</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span> Pricing</a>
+  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-title">🔁 Follow-up Tracker</div>
+  <div class="page-sub">Companies that need a follow-up email — no reply in 3+ days</div>
+
+  <div class="info-box">
+    💡 <strong>How it works:</strong> Companies are listed here if you sent them an email 3+ days ago and got no reply yet. Mark them as followed-up after you send a follow-up manually, or use the server-side cron (<code>followup_cron.php</code>) to auto-send.
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-label">Due for Follow-up</div><div class="stat-val" id="stat-due" style="color:#b388ff">—</div></div>
+    <div class="stat-box"><div class="stat-label">Already Followed Up</div><div class="stat-val" id="stat-done" style="color:#4fffb0">—</div></div>
+    <div class="stat-box"><div class="stat-label">Replied</div><div class="stat-val" id="stat-replied" style="color:#00c9ff">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Pending Follow-ups</div>
+    </div>
+    <div id="fu-list"><div class="empty-state">Loading…</div></div>
+  </div>
+</main>
+</div>
+
+<script type="module">
+import { setupPage, sb, toast, esc } from './app.js';
+
+await setupPage('followup.html');
+
+const now = Date.now();
+
+function daysSince(dateStr) {
+  if (!dateStr) return 999;
+  return Math.floor((now - new Date(dateStr).getTime()) / 86400000);
+}
+
+async function load() {
+  const { data, error } = await sb
+    .from('companies')
+    .select('id,name,company,email,sent_at,followup_sent_at,replied,pipeline_stage')
+    .eq('status','sent')
+    .order('sent_at', { ascending: true });
+
+  if (error) { document.getElementById('fu-list').innerHTML = `<div class="empty-state">❌ ${error.message}</div>`; return; }
+
+  const due     = (data||[]).filter(c => !c.replied && !c.followup_sent_at && daysSince(c.sent_at) >= 3 && daysSince(c.sent_at) <= 14 && c.pipeline_stage !== 'rejected');
+  const done    = (data||[]).filter(c => c.followup_sent_at);
+  const replied = (data||[]).filter(c => c.replied);
+
+  document.getElementById('stat-due').textContent    = due.length;
+  document.getElementById('stat-done').textContent   = done.length;
+  document.getElementById('stat-replied').textContent = replied.length;
+
+  const list = document.getElementById('fu-list');
+  if (!due.length) { list.innerHTML = '<div class="empty-state">🎉 No follow-ups due right now. Check back in a few days!</div>'; return; }
+
+  list.innerHTML = due.map(c => {
+    const days = daysSince(c.sent_at);
+    const badgeClass = days >= 7 ? 'days-hot' : days >= 5 ? 'days-warm' : 'days-cold';
+    return `<div class="company-row" id="row-${c.id}">
+      <div class="co-avatar">${(c.company||c.name||'?')[0].toUpperCase()}</div>
+      <div class="co-info">
+        <div class="co-name">${esc(c.name)} — ${esc(c.company)}</div>
+        <div class="co-detail">${esc(c.email)} · Sent ${days} days ago</div>
+      </div>
+      <div class="co-right">
+        <span class="days-badge ${badgeClass}">${days}d ago</span><br><br>
+        <button class="btn btn-sm btn-outline" onclick="markDone(${c.id})">✅ Mark Sent</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.markDone = async function(id) {
+  const { error } = await sb.from('companies').update({ followup_sent_at: new Date().toISOString() }).eq('id', id);
+  if (error) { toast(error.message,'error'); return; }
+  const row = document.getElementById('row-'+id);
+  if (row) { row.style.opacity='.4'; row.style.pointerEvents='none'; }
+  toast('Marked as followed up','success');
+  setTimeout(load, 800);
+};
+
+load();
+</script>
+</body>
+</html>

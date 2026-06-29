@@ -70,7 +70,7 @@ try {
 
     $mail->send();
 
-    $pdo->prepare("UPDATE companies SET status='sent' WHERE id=?")->execute([$id]);
+    $pdo->prepare("UPDATE companies SET status='sent', sent_at=NOW(), pipeline_stage='applied' WHERE id=?")->execute([$id]);
     echo json_encode(['success' => true]);
 
 } catch (Exception $e) {

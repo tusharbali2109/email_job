@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Blacklist — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.page-title { font-family:'Plus Jakarta Sans',sans-serif; font-size:26px; font-weight:800; margin-bottom:4px; }
+.page-sub { color:var(--muted); font-size:13px; margin-bottom:28px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:18px; }
+.card-title { font-size:14px; font-weight:700; color:#ff5f6d; margin-bottom:16px; }
+.add-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-label { font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+.form-input { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-size:14px; font-family:inherit; min-width:180px; }
+.form-input:focus { outline:none; border-color:#ff5f6d; }
+select.form-input { min-width:120px; cursor:pointer; }
+.btn { padding:10px 20px; border-radius:8px; border:none; font-weight:600; font-size:14px; cursor:pointer; transition:all .2s; font-family:inherit; }
+.btn-danger { background:#ff5f6d; color:#fff; }
+.btn-danger:hover { opacity:.85; }
+.bl-table { width:100%; border-collapse:collapse; }
+.bl-table th { text-align:left; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; padding:10px 12px; border-bottom:1px solid var(--border); font-weight:600; }
+.bl-table td { padding:12px; border-bottom:1px solid rgba(37,45,61,.5); font-size:14px; }
+.bl-table tr:last-child td { border-bottom:none; }
+.badge { padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; }
+.badge-email { background:rgba(255,95,109,.15); color:#ff5f6d; }
+.badge-domain { background:rgba(255,138,101,.15); color:#ff8a65; }
+.btn-del { padding:5px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:600; font-size:12px; background:rgba(255,95,109,.12); color:#ff5f6d; font-family:inherit; transition:all .15s; }
+.btn-del:hover { background:rgba(255,95,109,.25); }
+.empty-state { text-align:center; color:var(--muted); padding:40px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Outreach</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <div class="sidebar-section">Jobs</div>
+  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="pipeline.html"><span class="si-icon">📊</span> Pipeline</a>
+  <a class="sidebar-item" href="ai_tailor.html"><span class="si-icon">🤖</span> AI Tailor</a>
+  <a class="sidebar-item" href="agent.html"><span class="si-icon">🦾</span> Auto Apply</a>
+  <div class="sidebar-section">Automation</div>
+  <a class="sidebar-item" href="followup.html"><span class="si-icon">🔁</span> Follow-ups</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="sidebar-item active" href="blacklist.html"><span class="si-icon">🚫</span> Blacklist</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span> Pricing</a>
+  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-title">🚫 Blacklist</div>
+  <div class="page-sub">Block emails or domains from being imported or added to queue</div>
+
+  <div class="card">
+    <div class="card-title">Add to Blacklist</div>
+    <div class="add-row">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-input" id="bl-type">
+          <option value="email">Email</option>
+          <option value="domain">Domain</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Value</label>
+        <input class="form-input" id="bl-value" placeholder="spam@example.com or example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason (optional)</label>
+        <input class="form-input" id="bl-reason" placeholder="Why blacklisted?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">&nbsp;</label>
+        <button class="btn btn-danger" onclick="addEntry()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Blacklisted Entries <span id="bl-count" style="color:var(--muted);font-weight:400"></span></div>
+    <div id="bl-list"><div class="empty-state">Loading…</div></div>
+  </div>
+</main>
+</div>
+
+<script type="module">
+import { setupPage, sb, toast, esc } from './app.js';
+
+await setupPage('blacklist.html');
+
+async function load() {
+  const { data, error } = await sb.from('blacklist').select('*').order('created_at', { ascending: false });
+  const list = document.getElementById('bl-list');
+  const count = document.getElementById('bl-count');
+
+  if (error) { list.innerHTML = `<div class="empty-state">❌ ${error.message}<br><small>Run migrate.php first to create the blacklist table.</small></div>`; return; }
+  if (!data?.length) { list.innerHTML = '<div class="empty-state">No blacklist entries yet. Add emails or domains above.</div>'; count.textContent=''; return; }
+
+  count.textContent = `(${data.length})`;
+  list.innerHTML = `<table class="bl-table">
+    <tr><th>Type</th><th>Value</th><th>Reason</th><th>Added</th><th></th></tr>
+    ${data.map(r => `
+    <tr data-id="${r.id}">
+      <td><span class="badge badge-${r.type}">${r.type}</span></td>
+      <td>${esc(r.value)}</td>
+      <td style="color:var(--muted)">${esc(r.reason||'')}</td>
+      <td style="color:var(--muted);font-size:12px">${new Date(r.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</td>
+      <td><button class="btn-del" onclick="delEntry(${r.id},this)">Delete</button></td>
+    </tr>`).join('')}
+  </table>`;
+}
+
+window.addEntry = async function() {
+  const type   = document.getElementById('bl-type').value;
+  const value  = document.getElementById('bl-value').value.trim().toLowerCase();
+  const reason = document.getElementById('bl-reason').value.trim();
+  if (!value) return alert('Enter a value');
+
+  const { error } = await sb.from('blacklist').insert({ type, value, reason });
+  if (error) { toast(error.message, 'error'); return; }
+  document.getElementById('bl-value').value = '';
+  document.getElementById('bl-reason').value = '';
+  toast('Added to blacklist', 'success');
+  load();
+};
+
+window.delEntry = async function(id, btn) {
+  if (!confirm('Remove from blacklist?')) return;
+  const { error } = await sb.from('blacklist').delete().eq('id', id);
+  if (error) { toast(error.message, 'error'); return; }
+  btn.closest('tr').remove();
+  toast('Removed', 'success');
+  const rows = document.querySelectorAll('.bl-table tr[data-id]');
+  document.getElementById('bl-count').textContent = rows.length ? `(${rows.length})` : '';
+};
+
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>AI Tailor — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.page-title { font-family:'Plus Jakarta Sans',sans-serif; font-size:26px; font-weight:800; margin-bottom:4px; }
+.page-sub { color:var(--muted); font-size:13px; margin-bottom:28px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; margin-bottom:18px; }
+.card-title { font-size:14px; font-weight:700; color:var(--accent2,#00c9ff); margin-bottom:16px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-group { display:flex; flex-direction:column; gap:6px; }
+.form-group.full { grid-column:1/-1; }
+.form-label { font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+.form-input { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-size:14px; font-family:inherit; width:100%; }
+.form-input:focus { outline:none; border-color:#00c9ff; }
+textarea.form-input { min-height:130px; resize:vertical; }
+.btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+.btn { padding:10px 20px; border-radius:8px; border:none; font-weight:600; font-size:14px; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:8px; font-family:inherit; }
+.btn-ai { background:linear-gradient(135deg,#00c9ff,#0080ff); color:#fff; }
+.btn-ai:hover { opacity:.85; }
+.btn-ai:disabled { opacity:.5; cursor:not-allowed; }
+.btn-copy { background:rgba(79,255,176,.1); color:#4fffb0; border:1px solid rgba(79,255,176,.2); }
+.result-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; display:none; }
+.result-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.result-title { font-size:14px; font-weight:700; color:#4fffb0; }
+.result-box { background:var(--surface2); border-radius:10px; padding:18px; font-size:14px; line-height:1.75; min-height:80px; }
+.result-box h3 { font-size:13px; font-weight:700; color:#4fffb0; margin:12px 0 6px; }
+.result-box ul { padding-left:18px; }
+.result-box li { margin-bottom:4px; }
+.result-box p { margin-bottom:8px; }
+.spinner { width:15px; height:15px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg) } }
+.no-key-banner { background:rgba(255,95,109,.08); border:1px solid rgba(255,95,109,.25); border-radius:10px; padding:14px 18px; color:#ff8a65; font-size:13px; margin-bottom:20px; }
+.no-key-banner a { color:#ff8a65; }
+@media(max-width:600px){ .form-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Outreach</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <div class="sidebar-section">Jobs</div>
+  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item" href="pipeline.html"><span class="si-icon">📊</span> Pipeline</a>
+  <a class="sidebar-item active" href="ai_tailor.html"><span class="si-icon">🤖</span> AI Tailor</a>
+  <div class="sidebar-section">Automation</div>
+  <a class="sidebar-item" href="followup.html"><span class="si-icon">🔁</span> Follow-ups</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="sidebar-item" href="blacklist.html"><span class="si-icon">🚫</span> Blacklist</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span> Pricing</a>
+  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-title">🤖 AI Application Tailor</div>
+  <div class="page-sub">Paste a job description — get a custom cover letter, resume tips & subject lines</div>
+
+  <div id="no-key-banner" class="no-key-banner" style="display:none">
+    ⚠️ Groq API key not set. <a href="profile.html">Go to Profile → add Groq Key</a> (free at console.groq.com)
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Job Details</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Job Title</label>
+        <input class="form-input" id="job_title" placeholder="e.g. Full Stack Developer">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company Name</label>
+        <input class="form-input" id="company" placeholder="e.g. Acme Corp">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Job Description (paste here)</label>
+        <textarea class="form-input" id="job_desc" placeholder="Paste the full job description here…"></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ai" id="btn-cl" onclick="generate('cover_letter')">✉️ Cover Letter</button>
+      <button class="btn btn-ai" id="btn-rt" onclick="generate('resume_tips')">📄 Resume Tips</button>
+      <button class="btn btn-ai" id="btn-es" onclick="generate('email_subject')">💡 Subject Lines</button>
+    </div>
+  </div>
+
+  <div class="result-card" id="result-card">
+    <div class="result-head">
+      <div class="result-title" id="result-title">Result</div>
+      <button class="btn btn-copy" onclick="copyResult()">📋 Copy</button>
+    </div>
+    <div class="result-box" id="result-box"></div>
+  </div>
+</main>
+</div>
+
+<script type="module">
+import { setupPage, sb, esc } from './app.js';
+
+const session = await setupPage('ai_tailor.html');
+if (!session) throw 0;
+
+// Load profile for groq key + skills
+const { data: profile } = await sb.from('user_profile').select('groq_key,skills,experience,job_role,name').limit(1).single();
+if (!profile?.groq_key) document.getElementById('no-key-banner').style.display = '';
+
+window.generate = async function(action) {
+  const jt = document.getElementById('job_title').value.trim();
+  const co = document.getElementById('company').value.trim();
+  const jd = document.getElementById('job_desc').value.trim();
+  if (!jt || !co || !jd) return alert('Fill in Job Title, Company, and Job Description first.');
+  if (!profile?.groq_key) return alert('Add Groq API key in Profile first.');
+
+  const titles = { cover_letter:'✉️ Cover Letter', resume_tips:'📄 Resume Tips', email_subject:'💡 Email Subject Lines' };
+  const rc = document.getElementById('result-card');
+  const rb = document.getElementById('result-box');
+  document.getElementById('result-title').textContent = titles[action];
+  rb.innerHTML = '<span class="spinner"></span> Generating…';
+  rc.style.display = '';
+
+  const prompts = {
+    cover_letter: `Write a professional job application cover letter for:
+Job Title: ${jt} | Company: ${co}
+Job Description: ${jd.slice(0,600)}
+Candidate: Name: ${profile.name}, Skills: ${profile.skills}, Experience: ${profile.experience} years
+Rules: max 200 words, mention company & job title, reference 2-3 matching skills, return clean HTML with <p> tags only`,
+    resume_tips: `Analyze this job description and return EXACTLY this HTML:
+<h3>Keywords to Add</h3><ul>[3-5 keywords from JD]</ul>
+<h3>Skills to Highlight</h3><ul>[3-4 matching skills]</ul>
+<h3>Resume Tips</h3><ul>[3 actionable tips]</ul>
+JD: ${jd.slice(0,600)} | Candidate Skills: ${profile.skills}`,
+    email_subject: `Generate 3 creative professional email subject lines for a job application.
+Job: ${jt} at ${co} | Applicant: ${profile.name}
+Return ONLY 3 numbered lines. No explanation.`
+  };
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + profile.groq_key },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role:'system', content:'You are an expert job application coach. Return exactly what is asked.' },
+          { role:'user',   content: prompts[action] }
+        ],
+        max_tokens: 600, temperature: 0.7
+      })
+    });
+    const d = await res.json();
+    rb.innerHTML = d.choices?.[0]?.message?.content || '❌ Empty response';
+  } catch(e) {
+    rb.innerHTML = '<span style="color:#ff5f6d">❌ ' + e.message + '</span>';
+  }
+};
+
+window.copyResult = function() {
+  const text = document.getElementById('result-box').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '📋 Copy', 2000);
+  });
+};
+</script>
+</body>
+</html>

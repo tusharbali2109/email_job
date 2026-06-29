@@ -251,13 +251,25 @@ body{font-family:var(--fb);background:var(--bg);color:var(--tx);min-height:100vh
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="logo">Reach<span>Out</span></div>
-  <div class="nav-sec">Menu</div>
+  <div class="nav-sec">Outreach</div>
   <a class="nav-item" href="index.php"><span class="ic">📋</span> Dashboard</a>
-  <a class="nav-item active" href="jobs.php"><span class="ic">🔍</span> Job Hunt</a>
   <a class="nav-item" href="send.php"><span class="ic">📤</span> Send Emails</a>
-  <a class="nav-item" href="cron_log.php"><span class="ic">🤖</span> Cron Logs</a>
-  <a class="nav-item" href="profile.php"><span class="ic">👤</span> Profile</a>
+  <a class="nav-item" href="whatsapp.php"><span class="ic">💬</span> Send WhatsApp</a>
   <a class="nav-item" href="index.php#csv-section"><span class="ic">📂</span> CSV Import</a>
+  <div class="nav-sec">Jobs</div>
+  <a class="nav-item active" href="jobs.php"><span class="ic">🔍</span> Job Hunt</a>
+  <a class="nav-item" href="pipeline.php"><span class="ic">📊</span> Pipeline</a>
+  <a class="nav-item" href="ai_tailor.php"><span class="ic">🤖</span> AI Tailor</a>
+  <div class="nav-sec">Automation</div>
+  <a class="nav-item" href="job_fetch.php?secret=MY_CRON_SECRET_2024"><span class="ic">🔎</span> Fetch Jobs</a>
+  <a class="nav-item" href="followup_cron.php?secret=MY_CRON_SECRET_2024"><span class="ic">🔁</span> Follow-ups</a>
+  <a class="nav-item" href="reply_check.php?secret=MY_CRON_SECRET_2024"><span class="ic">📬</span> Check Replies</a>
+  <a class="nav-item" href="wa_digest.php?secret=MY_CRON_SECRET_2024"><span class="ic">📱</span> WA Digest</a>
+  <a class="nav-item" href="cron_log.php"><span class="ic">📅</span> Cron Logs</a>
+  <div class="nav-sec">Settings</div>
+  <a class="nav-item" href="blacklist.php"><span class="ic">🚫</span> Blacklist</a>
+  <a class="nav-item" href="profile.php"><span class="ic">👤</span> My Profile</a>
+  <a class="nav-item" href="whatsapp_logs.php"><span class="ic">📃</span> WA Logs</a>
 
   <div class="sb-bottom">
     <div class="user-chip">

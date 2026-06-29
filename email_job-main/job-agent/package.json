@@ -1,0 +1,17 @@
+{
+  "name": "job-agent",
+  "version": "1.0.0",
+  "description": "AI Job Application Agent for ReachOut — auto-applies on LinkedIn, Naukri, Indeed",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js",
+    "install-browsers": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.45.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  }
+}

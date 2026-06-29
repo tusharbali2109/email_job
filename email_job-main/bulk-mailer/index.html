@@ -3,201 +3,534 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a0d12">
+<meta name="theme-color" content="#080a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ReachOut">
 <link rel="manifest" href="manifest.json">
-<title>ReachOut — Dashboard</title>
+<title>Dashboard — ReachOut</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 <style>
-.avatar-cell { display: flex; align-items: center; gap: 10px; }
-.av { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),var(--accent2)); display: flex; align-items: center; justify-content: center; font-family:'Syne',sans-serif; font-weight:700; font-size:12px; color:#0c0f14; flex-shrink:0; }
-.select-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.select-row label { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
-.selected-count { font-size: 13px; color: var(--accent); font-weight: 600; margin-left: auto; }
-.bulk-bar { display: flex; gap: 8px; padding: 10px 16px; background: rgba(79,255,176,.06); border: 1px solid rgba(79,255,176,.2); border-radius: var(--radius-sm); margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
-.search-wrap { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+/* ── Dashboard-specific ── */
+.dash-hero {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px; gap: 16px; flex-wrap: wrap;
+}
+.dash-greeting {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+.dash-greeting span { color: var(--accent); }
+.dash-subtitle { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+/* Stats row */
+.stats-row { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 18px; }
+
+/* Activity chart */
+.chart-wrap { height: 80px; position: relative; overflow: hidden; }
+.chart-bars {
+  display: flex; align-items: flex-end; gap: 3px;
+  height: 100%; width: 100%;
+}
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+.chart-bar {
+  flex-shrink: 0; border-radius: 4px 4px 0 0; width: 100%;
+  transition: height .6s cubic-bezier(.4,0,.2,1);
+  background: linear-gradient(to top, rgba(0,229,160,.6), rgba(0,229,160,.2));
+  min-height: 4px;
+}
+.chart-bar:hover { background: linear-gradient(to top, var(--accent), rgba(0,229,160,.5)); }
+.chart-label { font-size: 9px; color: var(--muted2); white-space: nowrap; flex-shrink: 0; }
+
+/* Pipeline mini */
+.pipeline-mini { display: flex; gap: 6px; flex-wrap: wrap; }
+.pipe-stage {
+  flex: 1; min-width: 0;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 10px 12px; text-align: center;
+  transition: all var(--t);
+}
+.pipe-stage:hover { border-color: var(--border2); }
+.pipe-count {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 22px; font-weight: 800; line-height: 1; margin-bottom: 4px;
+}
+.pipe-label { font-size: 9px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+/* Rate ring */
+.rate-ring-wrap {
+  display: flex; align-items: center; gap: 16px;
+}
+.rate-ring-info { flex: 1; }
+.rate-ring-val {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 32px; font-weight: 800; color: var(--accent);
+}
+.rate-ring-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* Quick actions */
+.quick-actions { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 18px; }
+.quick-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: var(--text);
+  transition: all var(--t-fast); cursor: pointer;
+}
+.quick-card:hover {
+  border-color: var(--border2);
+  background: var(--surface2);
+  transform: translateY(-1px);
+}
+.quick-icon {
+  width: 38px; height: 38px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.quick-text { flex: 1; min-width: 0; }
+.quick-label { font-size: 13px; font-weight: 600; }
+.quick-sub   { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.quick-arrow { color: var(--muted2); font-size: 14px; }
+
+/* Two-column layout on desktop */
+@media(min-width:1024px) {
+  .dash-grid { display: grid; grid-template-columns: 1fr 380px; gap: 16px; align-items: start; }
+  .stats-row { grid-template-columns: repeat(4,1fr); }
+  .quick-actions { grid-template-columns: repeat(4,1fr); }
+}
+@media(min-width:1280px) {
+  .dash-grid { grid-template-columns: 1fr 420px; }
+}
+
+/* Agent status banner */
+.agent-banner {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; border-radius: var(--r);
+  background: linear-gradient(135deg, rgba(0,229,160,.08) 0%, rgba(59,130,246,.05) 100%);
+  border: 1px solid rgba(0,229,160,.2);
+  margin-bottom: 18px; cursor: pointer;
+  transition: all var(--t);
+  text-decoration: none;
+}
+.agent-banner:hover { border-color: rgba(0,229,160,.35); }
+.agent-banner-icon {
+  width: 42px; height: 42px; border-radius: var(--r-sm);
+  background: var(--accent-glow);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.agent-banner-text { flex: 1; min-width: 0; }
+.agent-banner-title { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+.agent-banner-sub   { font-size: 12px; color: var(--text2); }
+.agent-banner-cta {
+  padding: 7px 14px; border-radius: var(--r-sm);
+  background: var(--accent); color: #050a0e;
+  font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+}
+
+/* Search bar in contacts card */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.search-bar input {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
+}
+.search-bar input::placeholder { color: var(--muted); }
+.search-icon { color: var(--muted); font-size: 15px; flex-shrink: 0; }
+.search-count { font-size: 11px; color: var(--muted2); flex-shrink: 0; }
+
+/* Bulk bar */
+.bulk-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  background: rgba(0,229,160,.06); border-bottom: 1px solid rgba(0,229,160,.2);
+  animation: fadeIn .2s ease;
+}
+.bulk-count { font-size: 13px; color: var(--accent); font-weight: 600; flex: 1; }
 </style>
 </head>
 <body>
 <div class="app-layout">
 
-<!-- Desktop Sidebar -->
+<!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">Reach<span>Out</span></div>
-  <div class="sidebar-section">Menu</div>
-  <a class="sidebar-item active" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
-  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
-  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
-  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
-  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
-  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
-  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
-  <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span> Pricing</a>
-  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🚀</div>
+      <span>Reach<span>Out</span></span>
+    </div>
+    <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">‹</button>
+  </div>
+
+  <div class="sidebar-search">
+    <div class="sidebar-search-wrap">
+      <input type="text" placeholder="Search…" id="sb-search" autocomplete="off">
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="sidebar-section">Outreach</div>
+    <a class="sidebar-item active" href="index.html"><span class="si-icon">📋</span><span class="si-label">Dashboard</span></a>
+    <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span><span class="si-label">Send Emails</span></a>
+    <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span><span class="si-label">WhatsApp</span></a>
+    <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span><span class="si-label">WA Logs</span></a>
+
+    <div class="sidebar-section">Jobs</div>
+    <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span><span class="si-label">Job Hunt</span></a>
+    <a class="sidebar-item" href="pipeline.html"><span class="si-icon">📊</span><span class="si-label">Pipeline</span></a>
+    <a class="sidebar-item" href="ai_tailor.html"><span class="si-icon">🤖</span><span class="si-label">AI Tailor</span></a>
+    <a class="sidebar-item" href="agent.html"><span class="si-icon">🦾</span><span class="si-label">Auto Apply</span><span class="si-badge">AI</span></a>
+
+    <div class="sidebar-section">Automation</div>
+    <a class="sidebar-item" href="followup.html"><span class="si-icon">🔁</span><span class="si-label">Follow-ups</span></a>
+    <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span><span class="si-label">Template</span></a>
+
+    <div class="sidebar-section">Settings</div>
+    <a class="sidebar-item" href="blacklist.html"><span class="si-icon">🚫</span><span class="si-label">Blacklist</span></a>
+    <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span><span class="si-label">Profile</span></a>
+    <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span><span class="si-label">Pricing</span></a>
+    <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span><span class="si-label">Settings</span></a>
+  </nav>
+
   <div class="sidebar-bottom">
     <div class="sidebar-user">
       <div class="sidebar-avatar" id="sidebar-avatar">?</div>
       <div class="sidebar-user-info">
-        <div class="sidebar-user-name"  id="sidebar-name">Loading...</div>
-        <div class="sidebar-user-email" id="sidebar-email">...</div>
+        <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
       </div>
     </div>
-    <button class="sidebar-logout" id="sidebar-logout" id="logout-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Logout
+    <button class="sidebar-logout logout-btn">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Sign out</span>
     </button>
   </div>
 </aside>
 
+<!-- Desktop top bar -->
+<div class="main-wrap">
+<header class="top-bar">
+  <div class="top-bar-breadcrumb">
+    <span>ReachOut</span>
+    <span class="sep">/</span>
+    <span class="crumb-active">Dashboard</span>
+  </div>
+  <div class="top-bar-actions">
+    <button class="kbd-hint" data-cmd>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Search or jump to…
+      <kbd>⌘K</kbd>
+    </button>
+    <div class="top-bar-notif">
+      🔔
+      <div class="notif-dot"></div>
+    </div>
+    <div class="sidebar-avatar" id="top-bar-avatar" style="cursor:pointer;width:34px;height:34px;font-size:13px;" onclick="location.href='profile.html'">?</div>
+  </div>
+</header>
+
 <!-- Mobile Header -->
-<header class="app-header" id="appHeader">
+<header class="app-header">
   <div class="app-header-inner">
-    <div class="header-logo-text">Reach<span>Out</span></div>
-    <div class="header-action">
-      <button class="btn btn-primary btn-sm" id="add-contact-top">+ Add</button>
+    <div class="header-logo">
+      <div class="header-logo-dot">🚀</div>
+      Reach<span>Out</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" data-cmd style="font-size:17px;">🔍</button>
+      <button class="icon-btn" id="fab-add" style="font-size:18px;">＋</button>
     </div>
   </div>
 </header>
 
-<!-- Main Content -->
+<!-- Page Content -->
 <main class="page-content">
 
-  <!-- Page heading (desktop) -->
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;" class="hide-mobile">
+  <!-- Hero -->
+  <div class="dash-hero">
     <div>
-      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;">Dashboard</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Manage contacts &amp; send bulk emails</div>
+      <div class="dash-greeting">Good <span id="greeting-time">morning</span>, <span id="greeting-name">there</span> 👋</div>
+      <div class="dash-subtitle" id="dash-date">Loading…</div>
     </div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn btn-secondary" id="add-contact-desk">➕ Add Contact</button>
-      <a href="whatsapp.html" class="btn btn-secondary" style="border-color:#25d366;color:#25d366;">💬 WhatsApp</a>
-      <a href="send.html" class="btn btn-primary">📤 Send Emails</a>
+    <div class="flex gap-8 hide-mobile">
+      <button class="btn btn-secondary" id="add-contact-desk">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Contact
+      </button>
+      <a href="send.html" class="btn btn-gradient">📤 Send Emails</a>
     </div>
   </div>
+
+  <!-- Agent Banner -->
+  <a class="agent-banner" href="agent.html">
+    <div class="agent-banner-icon">🦾</div>
+    <div class="agent-banner-text">
+      <div class="agent-banner-title">Auto Apply Agent</div>
+      <div class="agent-banner-sub">Apply to hundreds of jobs on LinkedIn, Naukri &amp; Indeed automatically</div>
+    </div>
+    <div class="agent-banner-cta">Launch →</div>
+  </a>
 
   <!-- Stats -->
-  <div class="stats-grid" style="margin-bottom:16px;">
-    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value blue" id="sTotal">—</div></div>
-    <div class="stat-card"><div class="stat-label">Sent</div><div class="stat-value green" id="sSent">—</div></div>
-    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-value yellow" id="sPend">—</div></div>
-    <div class="stat-card"><div class="stat-label">Success</div><div class="stat-value green" id="sRate">—</div></div>
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card">
+      <div class="stat-card-accent" style="--c1:#00e5a0;--c2:#3b82f6"></div>
+      <div class="stat-icon" style="--ic-bg:rgba(0,229,160,.1)">👥</div>
+      <div class="stat-label">Total Contacts</div>
+      <div class="stat-value c-green" id="sTotal">—</div>
+      <div class="stat-trend"><span id="sTotalTrend" class="trend-up"></span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="--c1:#3b82f6;--c2:#a855f7"></div>
+      <div class="stat-icon" style="--ic-bg:rgba(59,130,246,.1)">📤</div>
+      <div class="stat-label">Emails Sent</div>
+      <div class="stat-value c-blue" id="sSent">—</div>
+      <div class="stat-trend"><span id="sSentRate"></span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="--c1:#f59e0b;--c2:#ef4444"></div>
+      <div class="stat-icon" style="--ic-bg:rgba(245,158,11,.1)">⏳</div>
+      <div class="stat-label">Pending</div>
+      <div class="stat-value c-yellow" id="sPend">—</div>
+      <div class="stat-trend" id="sPendAction"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-accent" style="--c1:#00e5a0;--c2:#00e5a0"></div>
+      <div class="stat-icon" style="--ic-bg:rgba(0,229,160,.08)">📈</div>
+      <div class="stat-label">Success Rate</div>
+      <div class="stat-value c-green" id="sRate">—</div>
+      <div class="stat-trend" id="sRateTrend"></div>
+    </div>
   </div>
 
-  <!-- Quick Actions (mobile) -->
-  <div style="display:flex;gap:10px;margin-bottom:16px;" class="show-mobile" id="quick-mobile">
-    <a href="send.html" class="btn btn-primary" style="flex:1;">📤 Send Emails</a>
-    <a href="whatsapp.html" class="btn btn-wa" style="flex:1;">💬 WhatsApp</a>
-  </div>
-
-  <!-- Contacts Card -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-title">👥 Contacts</div>
-      <button class="btn btn-secondary btn-sm" id="add-contact-panel">+ Add</button>
-    </div>
-    <div class="search-wrap">
-      <input type="text" class="form-input" id="searchInput" placeholder="Search name, email, company…" oninput="filterContacts()" style="margin:0;">
-    </div>
-    <!-- Bulk actions bar (hidden by default) -->
-    <div class="bulk-bar" id="bulkBar" style="display:none; margin:10px 16px 0;">
-      <span id="bulkCount" style="font-size:13px;color:var(--accent);font-weight:600;flex:1;"></span>
-      <button class="btn btn-danger btn-sm" onclick="bulkDelete()">🗑 Delete</button>
-      <button class="btn btn-secondary btn-sm" onclick="clearSelection()">✕ Clear</button>
-    </div>
-    <div style="padding:10px 16px 4px;">
-      <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;cursor:pointer;">
-        <input type="checkbox" class="check-input" id="selectAll" onchange="toggleSelectAll(this)">
-        Select all
-      </label>
-    </div>
-    <div id="contactsTable"></div>
-  </div>
-
-  <!-- CSV Import Card -->
-  <div class="card">
-    <div class="card-header"><div class="card-title">📂 Import CSV</div></div>
-    <div class="card-body">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">
-        CSV columns: <strong style="color:var(--text)">name, email, company, phone</strong>
-      </p>
-      <div class="dropzone" id="dropzone">
-        <input type="file" accept=".csv" id="csv-input" onchange="handleCSV(this)">
-        <div class="dropzone-icon">📄</div>
-        <div class="dropzone-text" id="dz-text"><strong>Tap to browse</strong> or drag &amp; drop<br>CSV files only</div>
+  <!-- Main grid -->
+  <div class="dash-grid">
+    <!-- Left column -->
+    <div>
+      <!-- Quick Actions -->
+      <div class="quick-actions hide-mobile">
+        <a href="send.html" class="quick-card">
+          <div class="quick-icon" style="background:rgba(0,229,160,.1)">📤</div>
+          <div class="quick-text">
+            <div class="quick-label">Send Emails</div>
+            <div class="quick-sub">Bulk outreach</div>
+          </div>
+          <div class="quick-arrow">›</div>
+        </a>
+        <a href="jobs.html" class="quick-card">
+          <div class="quick-icon" style="background:rgba(59,130,246,.1)">🔍</div>
+          <div class="quick-text">
+            <div class="quick-label">Find Jobs</div>
+            <div class="quick-sub">AI job fetch</div>
+          </div>
+          <div class="quick-arrow">›</div>
+        </a>
+        <a href="ai_tailor.html" class="quick-card">
+          <div class="quick-icon" style="background:rgba(168,85,247,.1)">🤖</div>
+          <div class="quick-text">
+            <div class="quick-label">AI Tailor</div>
+            <div class="quick-sub">Cover letter</div>
+          </div>
+          <div class="quick-arrow">›</div>
+        </a>
+        <a href="pipeline.html" class="quick-card">
+          <div class="quick-icon" style="background:rgba(245,158,11,.1)">📊</div>
+          <div class="quick-text">
+            <div class="quick-label">Pipeline</div>
+            <div class="quick-sub">Track status</div>
+          </div>
+          <div class="quick-arrow">›</div>
+        </a>
       </div>
-      <div id="csvProgress" style="display:none;margin-top:10px;font-size:13px;color:var(--accent);"></div>
-    </div>
-  </div>
 
-  <!-- Pending count -->
-  <div class="card">
-    <div class="card-body" style="display:flex;align-items:center;gap:12px;">
-      <div style="flex:1;">
-        <div style="font-size:13px;color:var(--muted);" id="pendingCount">Loading pending count…</div>
+      <!-- Contacts Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Contacts
+          </div>
+          <button class="btn btn-secondary btn-sm" id="add-contact-panel">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+          <span class="search-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="text" id="searchInput" placeholder="Search contacts…" oninput="filterContacts()" autocomplete="off">
+          <span class="search-count" id="search-count"></span>
+        </div>
+
+        <!-- Bulk bar -->
+        <div class="bulk-bar" id="bulkBar" style="display:none">
+          <span class="bulk-count" id="bulkCount">0 selected</span>
+          <button class="btn btn-danger btn-sm" onclick="bulkDelete()">🗑 Delete</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSelection()">✕ Clear</button>
+        </div>
+
+        <!-- Select all -->
+        <div style="padding:8px 16px 4px; border-bottom:1px solid var(--border);">
+          <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px;cursor:pointer;">
+            <input type="checkbox" class="check-input" id="selectAll" onchange="toggleSelectAll(this)">
+            Select all
+          </label>
+        </div>
+
+        <div id="contactsTable"></div>
       </div>
-      <a href="send.html" class="btn btn-primary btn-sm">📤 Send Now</a>
+
+      <!-- CSV Import -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📂 Import CSV</div>
+        </div>
+        <div class="card-body">
+          <div class="banner banner-info" style="margin-bottom:14px;">
+            <span class="banner-icon">💡</span>
+            <span>CSV columns: <strong>name, email, company, phone</strong></span>
+          </div>
+          <div class="dropzone" id="dropzone">
+            <input type="file" accept=".csv" id="csv-input" onchange="handleCSV(this)">
+            <div class="dropzone-icon">📄</div>
+            <div class="dropzone-title">Drop your CSV here</div>
+            <div class="dropzone-text" id="dz-text"><strong>Browse files</strong> or drag &amp; drop · CSV only</div>
+          </div>
+          <div id="csvProgress" style="display:none;margin-top:12px;font-size:13px;"></div>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- Right column -->
+    <div>
+      <!-- 7-day activity -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            7-Day Activity
+          </div>
+          <span class="section-count" id="week-total">— sent</span>
+        </div>
+        <div class="card-body" style="padding-top:12px;">
+          <div class="chart-wrap" id="activity-chart">
+            <div class="chart-bars" id="chart-bars"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pipeline mini -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 Pipeline</div>
+          <a href="pipeline.html" class="btn btn-ghost btn-sm">View all ›</a>
+        </div>
+        <div class="card-body">
+          <div class="pipeline-mini" id="pipeline-mini">
+            <div class="pipe-stage"><div class="pipe-count" style="color:var(--accent2)">—</div><div class="pipe-label">Applied</div></div>
+            <div class="pipe-stage"><div class="pipe-count" style="color:var(--accent3)">—</div><div class="pipe-label">Interview</div></div>
+            <div class="pipe-stage"><div class="pipe-count" style="color:var(--warning)">—</div><div class="pipe-label">Offer</div></div>
+            <div class="pipe-stage"><div class="pipe-count" style="color:var(--danger)">—</div><div class="pipe-label">Rejected</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Recent Activity
+          </div>
+        </div>
+        <div style="padding:4px 18px 14px;" id="activity-feed">
+          <div class="skeleton skeleton-card" style="margin-top:10px;height:56px;"></div>
+          <div class="skeleton skeleton-card" style="margin-top:8px;height:56px;"></div>
+          <div class="skeleton skeleton-card" style="margin-top:8px;height:56px;"></div>
+        </div>
+      </div>
+
+      <!-- Pending callout -->
+      <div class="card card-glow">
+        <div class="card-body" style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:28px;">📬</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:600;" id="pendingCount">Loading…</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Click to send all pending</div>
+          </div>
+          <a href="send.html" class="btn btn-primary btn-sm">Send Now</a>
+        </div>
+      </div>
+    </div>
+  </div><!-- /dash-grid -->
 
 </main>
-</div>
+</div><!-- /main-wrap -->
+</div><!-- /app-layout -->
 
-<!-- Bottom Navigation -->
+<!-- Bottom Nav -->
 <nav class="bottom-nav">
   <a class="bn-item active" href="index.html">
-    <div class="bn-icon-wrap">📋</div>
+    <div class="bn-icon-pill">📋</div>
     <span class="bn-label">Home</span>
   </a>
   <a class="bn-item" href="send.html">
-    <div class="bn-icon-wrap">📤</div>
+    <div class="bn-icon-pill">📤</div>
     <span class="bn-label">Send</span>
   </a>
   <a class="bn-item" href="jobs.html">
-    <div class="bn-icon-wrap">🔍</div>
+    <div class="bn-icon-pill">🔍</div>
     <span class="bn-label">Jobs</span>
   </a>
   <a class="bn-item" href="whatsapp.html">
-    <div class="bn-icon-wrap">💬</div>
+    <div class="bn-icon-pill">💬</div>
     <span class="bn-label">WhatsApp</span>
   </a>
   <a class="bn-item" href="profile.html">
-    <div class="bn-icon-wrap">👤</div>
+    <div class="bn-icon-pill">👤</div>
     <span class="bn-label">Profile</span>
   </a>
 </nav>
 
 <!-- FAB -->
-<button class="fab hide-desktop" id="fab-add" title="Add Contact">＋</button>
+<button class="fab hide-desktop" id="fab-main" title="Add Contact">＋</button>
 
 <!-- Add Contact Modal -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Add Contact
+    <div class="modal-title">
+      Add Contact
       <button class="modal-close" onclick="closeModal()">×</button>
     </div>
     <form id="contactForm" onsubmit="addContact(event)">
-      <div class="form-group">
-        <label class="form-label">Full Name *</label>
-        <input type="text" class="form-input" name="name" placeholder="Jane Smith" required>
+      <div class="grid-2">
+        <div class="form-group full">
+          <label class="form-label">Full Name *</label>
+          <input type="text" class="form-input" name="name" placeholder="Jane Smith" required autocomplete="off">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Email Address *</label>
+          <input type="email" class="form-input" name="email" placeholder="jane@company.com" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company *</label>
+          <input type="text" class="form-input" name="company" placeholder="Acme Corp" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-input" name="phone" placeholder="+91 98765 43210">
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Email Address *</label>
-        <input type="email" class="form-input" name="email" placeholder="jane@company.com" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Company *</label>
-        <input type="text" class="form-input" name="company" placeholder="Acme Corp" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Phone (optional)</label>
-        <input type="tel" class="form-input" name="phone" placeholder="+91 98765 43210">
-      </div>
-      <div style="display:flex;gap:10px;margin-top:18px;">
+      <div style="display:flex;gap:10px;margin-top:20px;">
         <button type="button" class="btn btn-ghost btn-full" onclick="closeModal()">Cancel</button>
         <button type="submit" class="btn btn-primary btn-full" id="saveBtn">Save Contact</button>
       </div>
@@ -205,123 +538,241 @@
   </div>
 </div>
 
-<!-- Toast container -->
+<!-- Command Palette -->
+<div class="cmd-overlay" id="cmd-overlay">
+  <div class="cmd-palette">
+    <div class="cmd-input-wrap">
+      <span class="cmd-search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input class="cmd-input" placeholder="Search pages, contacts, jobs…" autocomplete="off">
+      <div class="cmd-hint"><kbd>Esc</kbd> close</div>
+    </div>
+    <div class="cmd-results"></div>
+    <div class="cmd-footer">
+      <span><kbd>↑↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>G+D</kbd> dashboard</span>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script type="module">
 import { sb, setupPage, toast, esc } from './app.js';
 
 const session = await setupPage('index.html');
-if (!session) throw new Error('No session');
+if (!session) throw 0;
 
-// Extra logout wiring
-document.querySelectorAll('#sidebar-logout, #logout-btn').forEach(b =>
-  b?.addEventListener('click', async () => { await sb.auth.signOut(); location.href = 'login.html'; })
-);
+// Also sync top-bar avatar
+const nm = session.user.user_metadata?.name || session.user.email.split('@')[0];
+const topAv = document.getElementById('top-bar-avatar');
+if (topAv) topAv.textContent = nm[0].toUpperCase();
+
+// Greeting
+const h = new Date().getHours();
+const greetEl = document.getElementById('greeting-time');
+if (greetEl) greetEl.textContent = h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+const gName = document.getElementById('greeting-name');
+if (gName) gName.textContent = nm.split(' ')[0];
+const dateEl = document.getElementById('dash-date');
+if (dateEl) dateEl.textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
 let allContacts = [];
 let selectedIds = new Set();
 
-/* ── Load data ── */
+/* ── Stats ── */
 async function loadStats() {
-  const { data } = await sb.from('companies').select('status');
+  const { data } = await sb.from('companies').select('status,sent_at');
   if (!data) return;
   const total = data.length;
   const sent  = data.filter(r => r.status === 'sent').length;
   const pend  = data.filter(r => !r.status || r.status === 'pending').length;
-  document.getElementById('sTotal').textContent = total;
-  document.getElementById('sSent').textContent  = sent;
-  document.getElementById('sPend').textContent  = pend;
-  document.getElementById('sRate').textContent  = total > 0 ? Math.round((sent/total)*100) + '%' : '0%';
-  document.getElementById('pendingCount').textContent =
-    pend > 0 ? `${pend} email${pend !== 1 ? 's' : ''} pending to send` : '✅ All emails sent!';
+  const rate  = total > 0 ? Math.round((sent/total)*100) : 0;
+
+  const setText = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  setText('sTotal', total.toLocaleString());
+  setText('sSent',  sent.toLocaleString());
+  setText('sPend',  pend.toLocaleString());
+  setText('sRate',  rate + '%');
+  setText('sSentRate', sent > 0 ? `${rate}% open rate` : '');
+  setText('pendingCount', pend > 0 ? `${pend} email${pend!==1?'s':''} ready to send` : '✅ All emails sent!');
+
+  const pendAction = document.getElementById('sPendAction');
+  if (pendAction && pend > 0) {
+    pendAction.innerHTML = `<a href="send.html" style="color:var(--accent2);font-size:11px;text-decoration:none;">Send now →</a>`;
+  }
+
+  // 7-day chart
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const counts = Array(7).fill(0);
+  data.filter(r => r.sent_at).forEach(r => {
+    const d = new Date(r.sent_at); d.setHours(0,0,0,0);
+    const diff = Math.floor((today - d) / 86400000);
+    if (diff >= 0 && diff < 7) counts[6 - diff]++;
+  });
+  const maxC = Math.max(...counts, 1);
+  const weekTotal = counts.reduce((a,b)=>a+b,0);
+  const weekTotalEl = document.getElementById('week-total');
+  if (weekTotalEl) weekTotalEl.textContent = weekTotal + ' sent';
+  const barsWrap = document.getElementById('chart-bars');
+  if (barsWrap) {
+    const dayLabels = [-6,-5,-4,-3,-2,-1,0].map(d => {
+      const dt = new Date(); dt.setDate(dt.getDate()+d);
+      return dt.toLocaleDateString('en',{weekday:'short'}).slice(0,2);
+    });
+    barsWrap.innerHTML = counts.map((c,i) => `
+      <div class="chart-bar-wrap" title="${dayLabels[i]}: ${c}">
+        <div class="chart-bar" style="height:${Math.max(5,(c/maxC)*100)}%;${c===0?'opacity:.3':''}"></div>
+        <div class="chart-label">${dayLabels[i]}</div>
+      </div>`).join('');
+  }
 }
 
+/* ── Pipeline mini ── */
+async function loadPipeline() {
+  const { data } = await sb.from('companies').select('pipeline_stage').not('pipeline_stage','is',null);
+  if (!data) return;
+  const count = (stage) => data.filter(r => r.pipeline_stage === stage).length;
+  const stages = [
+    { label:'Applied',  color:'var(--accent2)',  stage:'applied'   },
+    { label:'Interview',color:'var(--accent3)',  stage:'interview' },
+    { label:'Offer',    color:'var(--warning)',  stage:'offer'     },
+    { label:'Rejected', color:'var(--danger)',   stage:'rejected'  },
+  ];
+  const wrap = document.getElementById('pipeline-mini');
+  if (wrap) {
+    wrap.innerHTML = stages.map(s => `
+      <div class="pipe-stage" onclick="location.href='pipeline.html'" style="cursor:pointer;">
+        <div class="pipe-count" style="color:${s.color}">${count(s.stage)}</div>
+        <div class="pipe-label">${s.label}</div>
+      </div>`).join('');
+  }
+}
+
+/* ── Contacts ── */
 async function loadContacts() {
   const { data } = await sb.from('companies').select('*').order('id', { ascending: false });
   allContacts = data || [];
   renderContacts(allContacts);
+  updateSearchCount(allContacts.length, allContacts.length);
 }
 
 function renderContacts(data) {
   const wrap = document.getElementById('contactsTable');
   if (!data.length) {
-    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No contacts yet</div><div class="empty-sub">Add one or import a CSV file.</div></div>';
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="empty-visual">📭</div>
+      <div class="empty-title">No contacts yet</div>
+      <div class="empty-sub">Add a contact manually or import a CSV file to get started.</div>
+      <button class="btn btn-primary" onclick="openModal()">Add First Contact</button>
+    </div>`;
     return;
   }
 
-  // On mobile: card list. On desktop: table
   const isMobile = window.innerWidth < 900;
   if (isMobile) {
     wrap.innerHTML = data.map(r => {
-      const s = (r.status || 'pending').toLowerCase();
-      const cls = s === 'sent' ? 'badge-sent' : s === 'failed' ? 'badge-failed' : 'badge-pending';
-      const lbl = s === 'sent' ? 'Sent' : s === 'failed' ? 'Failed' : 'Pending';
-      const checked = selectedIds.has(r.id) ? 'checked' : '';
-      return `<div class="contact-item" style="position:relative;" onclick="handleItemClick(${r.id}, event)">
-        <input type="checkbox" class="check-input" id="chk_${r.id}" ${checked} onclick="event.stopPropagation(); toggleContact(${r.id})">
-        <div class="contact-avatar">${(r.name||'?')[0].toUpperCase()}</div>
+      const s = (r.status||'pending').toLowerCase();
+      const cls = s==='sent'?'badge-sent':s==='failed'?'badge-failed':'badge-pending';
+      const lbl = s==='sent'?'Sent':s==='failed'?'Failed':'Pending';
+      const ch = selectedIds.has(r.id) ? 'checked' : '';
+      return `<div class="contact-item" onclick="handleItemClick(${r.id},event)">
+        <input type="checkbox" class="check-input" id="chk_${r.id}" ${ch} onclick="event.stopPropagation();toggleContact(${r.id})">
+        <div class="avatar avatar-sm">${(r.name||'?')[0].toUpperCase()}</div>
         <div class="contact-main">
           <div class="contact-name">${esc(r.name)}</div>
           <div class="contact-meta">${esc(r.company)} · ${esc(r.email)}</div>
         </div>
-        <span class="badge ${cls}">${lbl}</span>
-        <button onclick="event.stopPropagation(); deleteContact(${r.id})" style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px;margin-left:4px;flex-shrink:0;" title="Delete">🗑</button>
+        <span class="badge ${cls}"><span class="badge-dot"></span>${lbl}</span>
+        <button onclick="event.stopPropagation();deleteContact(${r.id})" class="icon-btn" title="Delete" style="flex-shrink:0;">🗑</button>
       </div>`;
     }).join('');
   } else {
     wrap.innerHTML = `<div class="table-wrap"><table>
-      <thead><tr><th style="width:32px;"><input type="checkbox" class="check-input" id="selectAllTable" onchange="toggleSelectAll(this)"></th><th>Contact</th><th>Email</th><th>Company</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr>
+        <th style="width:32px;"><input type="checkbox" class="check-input" id="selectAllTable" onchange="toggleSelectAll(this)"></th>
+        <th>Contact</th><th>Email</th><th>Company</th><th>Phone</th><th>Status</th><th></th>
+      </tr></thead>
       <tbody>${data.map(r => {
         const s = (r.status||'pending').toLowerCase();
         const cls = s==='sent'?'badge-sent':s==='failed'?'badge-failed':'badge-pending';
         const lbl = s==='sent'?'Sent':s==='failed'?'Failed':'Pending';
-        const checked = selectedIds.has(r.id) ? 'checked' : '';
+        const ch  = selectedIds.has(r.id)?'checked':'';
         return `<tr>
-          <td><input type="checkbox" class="check-input" id="chk_${r.id}" ${checked} onchange="toggleContact(${r.id})"></td>
-          <td><div class="avatar-cell"><div class="av">${(r.name||'?')[0].toUpperCase()}</div>${esc(r.name)}</div></td>
-          <td style="color:var(--muted);font-size:12px;">${esc(r.email)}</td>
-          <td>${esc(r.company)}</td>
+          <td><input type="checkbox" class="check-input" id="chk_${r.id}" ${ch} onchange="toggleContact(${r.id})"></td>
+          <td><div style="display:flex;align-items:center;gap:10px;">
+            <div class="avatar avatar-sm">${(r.name||'?')[0].toUpperCase()}</div>
+            <span style="font-weight:500;font-size:13px;">${esc(r.name)}</span>
+          </div></td>
+          <td style="color:var(--text2);font-size:12px;">${esc(r.email)}</td>
+          <td style="font-size:13px;">${esc(r.company)}</td>
           <td style="color:var(--muted);font-size:12px;">${esc(r.contact||r.phone||'—')}</td>
-          <td><span class="badge ${cls}">${lbl}</span></td>
+          <td><span class="badge ${cls}"><span class="badge-dot"></span>${lbl}</span></td>
           <td><button class="btn btn-danger btn-sm" onclick="deleteContact(${r.id})">🗑</button></td>
         </tr>`;
-      }).join('')}</tbody>
-    </table></div>`;
+      }).join('')}</tbody></table></div>`;
   }
   updateBulkBar();
 }
 
+function updateSearchCount(shown, total) {
+  const el = document.getElementById('search-count');
+  if (el) el.textContent = shown < total ? `${shown} of ${total}` : `${total}`;
+}
+
+/* ── Recent activity ── */
+async function loadActivity() {
+  const { data } = await sb.from('companies').select('name,company,status,sent_at').eq('status','sent').order('sent_at',{ascending:false}).limit(8);
+  const wrap = document.getElementById('activity-feed');
+  if (!wrap) return;
+  if (!data?.length) {
+    wrap.innerHTML = `<div class="empty-state" style="padding:28px 0;"><div class="empty-visual" style="width:48px;height:48px;font-size:20px;">📭</div><div class="empty-sub" style="margin:8px auto 0;">No activity yet. Send your first email!</div></div>`;
+    return;
+  }
+  wrap.innerHTML = `<div class="timeline" style="padding-top:8px;">` +
+    data.map(r => {
+      const t = r.sent_at ? new Date(r.sent_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
+      return `<div class="timeline-item">
+        <div class="timeline-left">
+          <div class="timeline-dot" style="background:var(--accent)"></div>
+          <div class="timeline-line"></div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title">${esc(r.name)}</div>
+          <div class="timeline-sub">${esc(r.company)} · Email sent</div>
+        </div>
+        <div class="timeline-time">${t}</div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+/* ── Selection ── */
 window.handleItemClick = (id, e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
 };
-
 window.toggleContact = (id) => {
-  if (selectedIds.has(id)) selectedIds.delete(id);
-  else selectedIds.add(id);
-  const cb = document.getElementById('chk_' + id);
+  selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
+  const cb = document.getElementById('chk_'+id);
   if (cb) cb.checked = selectedIds.has(id);
   updateBulkBar();
 };
-
 window.toggleSelectAll = (el) => {
   const visible = getCurrentFiltered();
-  if (el.checked) visible.forEach(c => selectedIds.add(c.id));
-  else visible.forEach(c => selectedIds.delete(c.id));
+  visible.forEach(c => el.checked ? selectedIds.add(c.id) : selectedIds.delete(c.id));
   renderContacts(visible);
 };
-
 window.clearSelection = () => { selectedIds.clear(); renderContacts(getCurrentFiltered()); };
 
 function updateBulkBar() {
   const bar = document.getElementById('bulkBar');
+  if (!bar) return;
   const n = selectedIds.size;
-  if (n > 0) {
-    bar.style.display = 'flex';
-    document.getElementById('bulkCount').textContent = `${n} selected`;
-  } else {
-    bar.style.display = 'none';
-  }
+  bar.style.display = n > 0 ? 'flex' : 'none';
+  const cnt = document.getElementById('bulkCount');
+  if (cnt) cnt.textContent = `${n} contact${n!==1?'s':''} selected`;
 }
 
 window.bulkDelete = async () => {
@@ -329,30 +780,30 @@ window.bulkDelete = async () => {
   if (!confirm(`Delete ${selectedIds.size} contact(s)?`)) return;
   const ids = [...selectedIds];
   const { error } = await sb.from('companies').delete().in('id', ids);
-  if (error) toast('❌ ' + error.message, 'error');
-  else {
-    toast(`🗑 ${ids.length} contact(s) deleted`, 'success');
-    selectedIds.clear();
-    loadContacts(); loadStats();
-  }
+  if (error) { toast(error.message, 'error'); return; }
+  toast(`${ids.length} contact(s) deleted`, 'success');
+  selectedIds.clear(); loadContacts(); loadStats();
 };
 
 function getCurrentFiltered() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
   return q ? allContacts.filter(c =>
     (c.name||'').toLowerCase().includes(q) ||
     (c.email||'').toLowerCase().includes(q) ||
     (c.company||'').toLowerCase().includes(q)
   ) : allContacts;
 }
-
-window.filterContacts = () => renderContacts(getCurrentFiltered());
+window.filterContacts = () => {
+  const filtered = getCurrentFiltered();
+  renderContacts(filtered);
+  updateSearchCount(filtered.length, allContacts.length);
+};
 
 window.deleteContact = async (id) => {
   if (!confirm('Delete this contact?')) return;
   const { error } = await sb.from('companies').delete().eq('id', id);
-  if (error) toast('❌ ' + error.message, 'error');
-  else { toast('✅ Contact deleted', 'success'); loadContacts(); loadStats(); }
+  if (error) { toast(error.message,'error'); return; }
+  toast('Contact deleted','success'); loadContacts(); loadStats();
 };
 
 window.addContact = async (e) => {
@@ -365,23 +816,24 @@ window.addContact = async (e) => {
     company: f.get('company'), phone: f.get('phone') || null, status: 'pending',
   }]);
   btn.disabled = false; btn.textContent = 'Save Contact';
-  if (error) toast('❌ ' + error.message, 'error');
-  else { closeModal(); toast('✅ Contact added!', 'success'); e.target.reset(); loadContacts(); loadStats(); }
+  if (error) { toast(error.message,'error'); return; }
+  closeModal(); toast('Contact added!','success'); e.target.reset();
+  loadContacts(); loadStats();
 };
 
-/* ── CSV Import ── */
+/* ── CSV ── */
 window.handleCSV = async (input) => {
   const file = input.files[0]; if (!file) return;
-  document.getElementById('dz-text').innerHTML = `<strong style="color:var(--accent)">${file.name}</strong><br>Processing…`;
+  document.getElementById('dz-text').innerHTML = `<strong style="color:var(--accent)">${esc(file.name)}</strong><br>Processing…`;
   const prog = document.getElementById('csvProgress');
-  prog.style.display = 'block'; prog.textContent = 'Reading CSV…';
+  prog.style.display = 'block'; prog.style.color = 'var(--text2)'; prog.textContent = 'Reading CSV…';
 
   const text = await file.text();
   const lines = text.trim().split('\n');
   const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/[^a-z]/g,''));
-  const idx = (names) => { for(const n of names){ const i=headers.indexOf(n); if(i>=0)return i; } return -1; };
-  const iN = idx(['name','fullname','contactname']);
+  const idx = names => { for(const n of names){ const i=headers.indexOf(n); if(i>=0)return i; } return -1; };
   const iE = idx(['email','emailaddress']);
+  const iN = idx(['name','fullname','contactname']);
   const iC = idx(['company','companyname','organization']);
   const iP = idx(['phone','mobile','contact','phonenumber']);
   if (iE < 0) { prog.textContent = '❌ No email column found.'; prog.style.color='var(--danger)'; return; }
@@ -390,39 +842,54 @@ window.handleCSV = async (input) => {
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
     if (!cols[iE]) continue;
-    rows.push({ name: iN>=0?cols[iN]:'N/A', email: cols[iE], company: iC>=0?cols[iC]:'N/A', phone: iP>=0?cols[iP]:null, status:'pending' });
+    rows.push({ name:iN>=0?cols[iN]:'N/A', email:cols[iE], company:iC>=0?cols[iC]:'N/A', phone:iP>=0?cols[iP]:null, status:'pending' });
   }
 
   prog.textContent = `Importing ${rows.length} contacts…`;
   const { error } = await sb.from('companies').upsert(rows, { onConflict:'email', ignoreDuplicates:true });
-  if (error) { prog.textContent = '❌ Error: ' + error.message; prog.style.color='var(--danger)'; }
-  else {
-    prog.textContent = `✅ Imported ${rows.length} contacts!`; prog.style.color = 'var(--accent)';
-    toast(`✅ Imported ${rows.length} contacts!`, 'success');
-    loadContacts(); loadStats();
-  }
-  document.getElementById('dz-text').innerHTML = '<strong>Tap to browse</strong> or drag &amp; drop<br>CSV files only';
+  if (error) { prog.textContent='❌ '+error.message; prog.style.color='var(--danger)'; return; }
+  prog.textContent = `✅ Imported ${rows.length} contacts!`; prog.style.color='var(--accent)';
+  toast(`Imported ${rows.length} contacts!`,'success');
+  loadContacts(); loadStats();
+  document.getElementById('dz-text').innerHTML = '<strong>Browse files</strong> or drag &amp; drop · CSV only';
 };
 
 /* ── Modal ── */
 const openModal = () => document.getElementById('modal').classList.add('open');
+window.openModal = openModal;
 window.closeModal = () => document.getElementById('modal').classList.remove('open');
 document.getElementById('modal').addEventListener('click', e => { if(e.target===document.getElementById('modal')) closeModal(); });
+['add-contact-top','add-contact-desk','add-contact-panel','fab-add','fab-main'].forEach(id =>
+  document.getElementById(id)?.addEventListener('click', openModal)
+);
 
-document.getElementById('add-contact-top')?.addEventListener('click', openModal);
-document.getElementById('add-contact-desk')?.addEventListener('click', openModal);
-document.getElementById('add-contact-panel')?.addEventListener('click', openModal);
-document.getElementById('fab-add')?.addEventListener('click', openModal);
+/* ── Sidebar search ── */
+document.getElementById('sb-search')?.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    el.style.display = !q || el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+  document.querySelectorAll('.sidebar-section').forEach(el => el.style.display = q ? 'none' : '');
+});
+
+/* ── Drag/drop CSV ── */
+const dz = document.getElementById('dropzone');
+dz?.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragging'); });
+dz?.addEventListener('dragleave', () => dz.classList.remove('dragging'));
+dz?.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (file) { const inp = document.getElementById('csv-input'); inp.files = e.dataTransfer.files; handleCSV(inp); }
+});
 
 /* ── URL params ── */
 const p = new URLSearchParams(location.search);
-if (p.has('success')) { toast('✅ ' + p.get('success'), 'success'); history.replaceState({},'',location.pathname); }
+if (p.has('success')) { toast(p.get('success'),'success'); history.replaceState({},'',location.pathname); }
 
-/* ── Re-render on resize ── */
 window.addEventListener('resize', () => renderContacts(getCurrentFiltered()));
 
-loadStats();
-loadContacts();
+/* ── Init ── */
+await Promise.all([loadStats(), loadContacts(), loadPipeline(), loadActivity()]);
 </script>
 </body>
 </html>

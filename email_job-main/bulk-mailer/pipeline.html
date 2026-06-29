@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>Pipeline — ReachOut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+.board { display:flex; gap:14px; overflow-x:auto; padding-bottom:20px; min-height:70vh; }
+.col { flex:0 0 240px; background:var(--surface); border-radius:14px; border:1px solid var(--border); display:flex; flex-direction:column; }
+.col-head { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.col-title { font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.col-count { background:var(--surface2); border-radius:20px; padding:2px 9px; font-size:11px; color:var(--muted); }
+.col-body { padding:10px; display:flex; flex-direction:column; gap:8px; flex:1; overflow-y:auto; }
+.kcard { background:var(--surface2); border-radius:10px; padding:12px; border:1px solid var(--border); cursor:grab; transition:box-shadow .15s; }
+.kcard:hover { box-shadow:0 4px 16px rgba(0,0,0,.3); }
+.kcard.dragging { opacity:.4; cursor:grabbing; }
+.col.over { background:rgba(79,255,176,.04); border-color:#4fffb0; }
+.kcard-name { font-size:13px; font-weight:600; margin-bottom:3px; }
+.kcard-company { font-size:12px; color:var(--accent); margin-bottom:4px; }
+.kcard-email { font-size:11px; color:var(--muted); margin-bottom:7px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kcard-tags { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px; }
+.ktag { font-size:10px; padding:2px 6px; border-radius:4px; font-weight:600; }
+.ktag-open { background:rgba(79,255,176,.15); color:#4fffb0; }
+.ktag-reply { background:rgba(0,201,255,.15); color:#00c9ff; }
+.knote { font-size:11px; color:var(--muted); background:rgba(255,255,255,.03); border-radius:6px; padding:5px 7px; min-height:24px; cursor:text; outline:none; border:1px solid transparent; }
+.knote:focus { border-color:var(--border); color:var(--text); }
+.knote:empty::before { content:'Add note...'; color:rgba(107,122,153,.4); }
+.page-title { font-family:'Plus Jakarta Sans',sans-serif; font-size:26px; font-weight:800; margin-bottom:4px; }
+.page-sub { color:var(--muted); font-size:13px; margin-bottom:24px; }
+.loading { text-align:center; color:var(--muted); padding:40px; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">Reach<span>Out</span></div>
+  <div class="sidebar-section">Outreach</div>
+  <a class="sidebar-item" href="index.html"><span class="si-icon">📋</span> Dashboard</a>
+  <a class="sidebar-item" href="send.html"><span class="si-icon">📤</span> Send Emails</a>
+  <a class="sidebar-item" href="whatsapp.html"><span class="si-icon">💬</span> WhatsApp</a>
+  <a class="sidebar-item" href="whatsapp_logs.html"><span class="si-icon">📝</span> WA Logs</a>
+  <div class="sidebar-section">Jobs</div>
+  <a class="sidebar-item" href="jobs.html"><span class="si-icon">🔍</span> Job Hunt</a>
+  <a class="sidebar-item active" href="pipeline.html"><span class="si-icon">📊</span> Pipeline</a>
+  <a class="sidebar-item" href="ai_tailor.html"><span class="si-icon">🤖</span> AI Tailor</a>
+  <a class="sidebar-item" href="agent.html"><span class="si-icon">🦾</span> Auto Apply</a>
+  <div class="sidebar-section">Automation</div>
+  <a class="sidebar-item" href="followup.html"><span class="si-icon">🔁</span> Follow-ups</a>
+  <a class="sidebar-item" href="template.html"><span class="si-icon">✏️</span> Template</a>
+  <div class="sidebar-section">Settings</div>
+  <a class="sidebar-item" href="blacklist.html"><span class="si-icon">🚫</span> Blacklist</a>
+  <a class="sidebar-item" href="profile.html"><span class="si-icon">👤</span> Profile</a>
+  <a class="sidebar-item" href="pricing.html"><span class="si-icon">💳</span> Pricing</a>
+  <a class="sidebar-item" href="settings.html"><span class="si-icon">🎨</span> Settings</a>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-name">Loading…</div>
+        <div class="sidebar-user-email" id="sidebar-email">…</div>
+      </div>
+    </div>
+    <button class="sidebar-logout" id="logout-btn">Logout</button>
+  </div>
+</aside>
+
+<main class="main-content">
+  <div class="page-title">📊 Application Pipeline</div>
+  <div class="page-sub">Drag companies across stages to track your job applications</div>
+
+  <div class="board" id="board">
+    <div class="loading">Loading pipeline…</div>
+  </div>
+</main>
+</div>
+
+<script type="module">
+import { setupPage, sb, toast, esc } from './app.js';
+
+const STAGES = [
+  { key:'applied',   label:'Applied',   icon:'📤', color:'#4fffb0' },
+  { key:'replied',   label:'Replied',   icon:'📬', color:'#00c9ff' },
+  { key:'interview', label:'Interview', icon:'🎯', color:'#ffd166' },
+  { key:'offer',     label:'Offer',     icon:'🎉', color:'#b388ff' },
+  { key:'rejected',  label:'Rejected',  icon:'❌', color:'#ff5f6d' },
+];
+
+let dragging = null;
+
+await setupPage('pipeline.html');
+
+async function load() {
+  const { data, error } = await sb
+    .from('companies')
+    .select('id,name,company,email,opened,replied,notes,pipeline_stage')
+    .eq('status','sent')
+    .order('id', { ascending: false });
+
+  if (error) { document.getElementById('board').innerHTML = `<div class="loading">❌ ${error.message}</div>`; return; }
+
+  const grouped = {};
+  STAGES.forEach(s => grouped[s.key] = []);
+  (data || []).forEach(r => {
+    const stage = r.pipeline_stage || 'applied';
+    if (grouped[stage]) grouped[stage].push(r);
+    else grouped['applied'].push(r);
+  });
+
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  STAGES.forEach(s => {
+    const col = document.createElement('div');
+    col.className = 'col';
+    col.dataset.stage = s.key;
+    col.innerHTML = `
+      <div class="col-head">
+        <div class="col-title" style="color:${s.color}">${s.icon} ${s.label}</div>
+        <span class="col-count">${grouped[s.key].length}</span>
+      </div>
+      <div class="col-body" id="col-${s.key}"></div>`;
+
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('over'));
+    col.addEventListener('drop', async e => {
+      e.preventDefault(); col.classList.remove('over');
+      if (!dragging) return;
+      const id = dragging.dataset.id;
+      const stage = s.key;
+      col.querySelector('.col-body').appendChild(dragging);
+      updateCounts();
+      await sb.from('companies').update({ pipeline_stage: stage }).eq('id', id);
+      toast(`Moved to ${s.label}`, 'success');
+    });
+
+    board.appendChild(col);
+
+    grouped[s.key].forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'kcard';
+      card.draggable = true;
+      card.dataset.id = c.id;
+      card.innerHTML = `
+        <div class="kcard-name">${esc(c.name)}</div>
+        <div class="kcard-company">${esc(c.company)}</div>
+        <div class="kcard-email">${esc(c.email)}</div>
+        <div class="kcard-tags">
+          ${c.opened ? '<span class="ktag ktag-open">Opened</span>' : ''}
+          ${c.replied ? '<span class="ktag ktag-reply">Replied</span>' : ''}
+        </div>
+        <div class="knote" contenteditable="true">${esc(c.notes || '')}</div>`;
+
+      card.addEventListener('dragstart', e => { dragging = card; card.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+      card.addEventListener('dragend', () => { card.classList.remove('dragging'); document.querySelectorAll('.col').forEach(c=>c.classList.remove('over')); });
+
+      card.querySelector('.knote').addEventListener('blur', async el => {
+        const note = el.target.innerText.trim();
+        await sb.from('companies').update({ notes: note }).eq('id', c.id);
+      });
+
+      col.querySelector('.col-body').appendChild(card);
+    });
+  });
+}
+
+function updateCounts() {
+  document.querySelectorAll('.col').forEach(col => {
+    col.querySelector('.col-count').textContent = col.querySelectorAll('.kcard').length;
+  });
+}
+
+load();
+</script>
+</body>
+</html>

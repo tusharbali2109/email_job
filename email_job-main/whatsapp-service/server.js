@@ -388,6 +388,22 @@ app.get('/logs', (req, res) => {
     res.json(sendLogs);
 });
 
+app.post('/check-whatsapp', async (req, res) => {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ success: false, error: 'phone required' });
+    if (clientState !== 'ready' || !sock) {
+        return res.status(503).json({ success: false, error: 'WhatsApp not connected' });
+    }
+    try {
+        const jid = cleanPhone(phone);
+        if (!jid) return res.json({ success: true, exists: false });
+        const [result] = await sock.onWhatsApp(jid.replace('@s.whatsapp.net', ''));
+        res.json({ success: true, exists: !!(result && result.exists) });
+    } catch (e) {
+        res.json({ success: false, error: e.message });
+    }
+});
+
 app.post('/retry', (req, res) => {
     if (isSending) return res.status(400).json({ success: false, error: 'Already running' });
     const failed = sendQueue.filter(i => i.status === 'failed');

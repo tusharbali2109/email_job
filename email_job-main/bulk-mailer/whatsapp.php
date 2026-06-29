@@ -199,16 +199,27 @@ body {
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">Reach<span>Out</span></div>
-  <div class="nav-label">Menu</div>
+  <div class="nav-label">Outreach</div>
   <a class="nav-item" href="index.php"><span class="icon">📋</span> Dashboard</a>
   <a class="nav-item" href="send.php"><span class="icon">📤</span> Send Emails</a>
   <a class="nav-item active" href="whatsapp.php"><span class="icon">💬</span> Send WhatsApp</a>
-  <a class="nav-item" href="whatsapp_logs.php"><span class="icon">📝</span> WA Logs</a>
-  <a class="nav-item" href="profile.php"><span class="icon">👤</span> My Profile</a>
   <a class="nav-item" href="index.php#csv-section"><span class="icon">📂</span> CSV Import</a>
-  <a class="nav-item" href="template.php"><span class="icon">✏️</span> Template</a>
+  <div class="nav-label">Jobs</div>
+  <a class="nav-item" href="jobs.php"><span class="icon">🔍</span> Job Hunt</a>
+  <a class="nav-item" href="pipeline.php"><span class="icon">📊</span> Pipeline</a>
+  <a class="nav-item" href="ai_tailor.php"><span class="icon">🤖</span> AI Tailor</a>
+  <div class="nav-label">Automation</div>
+  <a class="nav-item" href="job_fetch.php?secret=MY_CRON_SECRET_2024"><span class="icon">🔎</span> Fetch Jobs</a>
+  <a class="nav-item" href="followup_cron.php?secret=MY_CRON_SECRET_2024"><span class="icon">🔁</span> Follow-ups</a>
+  <a class="nav-item" href="reply_check.php?secret=MY_CRON_SECRET_2024"><span class="icon">📬</span> Check Replies</a>
+  <a class="nav-item" href="wa_digest.php?secret=MY_CRON_SECRET_2024"><span class="icon">📱</span> WA Digest</a>
+  <a class="nav-item" href="cron_log.php"><span class="icon">📅</span> Cron Logs</a>
+  <div class="nav-label">Settings</div>
+  <a class="nav-item" href="blacklist.php"><span class="icon">🚫</span> Blacklist</a>
+  <a class="nav-item" href="profile.php"><span class="icon">👤</span> My Profile</a>
+  <a class="nav-item" href="whatsapp_logs.php"><span class="icon">📃</span> WA Logs</a>
   <div class="sidebar-bottom">
-    <div class="version-text">ReachOut v1.0 · WhatsApp Module</div>
+    <div class="version-text">ReachOut v2.0</div>
   </div>
 </aside>
 
